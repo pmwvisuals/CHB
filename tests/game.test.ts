@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { Vector3, Group, Mesh, BoxGeometry } from 'three';
+import { Capsule } from 'three/addons/math/Capsule.js';
+import { Octree } from 'three/addons/math/Octree.js';
+import { simulatePlayer, type PlayerState } from '../lib/game/physics';
+import { buildWorld } from '../lib/game/world';
+import { groundHeight, readSave, defaults } from '../lib/game/data';
+const pass=(name:string)=>console.log('PASS '+name);
+const ctx=new Proxy({}, {get:()=>()=>{}});
+Object.assign(globalThis,{document:{createElement:()=>({width:128,height:128,getContext:()=>ctx})}});
+const p=(x=0,z=0,y=0):PlayerState=>({keys:new Set(),yaw:0,grounded:false,jumpQueued:false,velocity:new Vector3(),collider:new Capsule(new Vector3(x,y+.33,z),new Vector3(x,y+1.63,z),.32)});
+const step=(s:PlayerState,tree:Octree,n=120)=>{for(let i=0;i<n;i++)simulatePlayer(s,tree,1/120);};
+const stage=new Group();const floor=new Mesh(new BoxGeometry(200,1,200));floor.position.y=-.5;stage.add(floor);const wall=new Mesh(new BoxGeometry(30,10,1));wall.position.set(0,5,-20);stage.add(wall);stage.updateMatrixWorld(true);const tree=new Octree().fromGraphNode(stage);
+let player=p();step(player,tree);assert.ok(player.grounded);assert.ok(Math.abs(player.collider.start.y-.32)<.01);pass('gravity settles on solid ground');
+player.jumpQueued=true;let peak=0;for(let i=0;i<120;i++){simulatePlayer(player,tree,1/120);peak=Math.max(peak,player.collider.start.y-.32);}assert.ok(peak>1&&peak<1.3);assert.ok(player.grounded);pass('jump rises, falls and lands');
+player.jumpQueued=true;simulatePlayer(player,tree,1/120);const vy=player.velocity.y;player.jumpQueued=true;simulatePlayer(player,tree,1/120);assert.ok(player.velocity.y<vy);pass('jump cannot repeat in mid-air');
+const straight=p(),diagonal=p();straight.keys.add('KeyW');diagonal.keys.add('KeyW');diagonal.keys.add('KeyD');step(straight,tree,240);step(diagonal,tree,240);assert.ok(Math.abs(straight.collider.start.clone().setY(0).length()-diagonal.collider.start.clone().setY(0).length())<.01);pass('diagonal movement is normalized');
+const sprint=p();sprint.keys.add('KeyW');sprint.keys.add('ShiftLeft');step(sprint,tree,240);assert.ok(-sprint.collider.start.z>14);pass('sprint is faster than walking');
+player=p();player.keys.add('KeyW');step(player,tree,1200);assert.ok(player.collider.start.z>-19.25);pass('solid wall blocks sustained movement');
+const renderRates=[30,60,144].map(rate=>{const s=p();s.keys.add('KeyD');let acc=0;for(let frame=0;frame<rate*2;frame++){acc+=1/rate;while(acc+1e-9>=1/120){simulatePlayer(s,tree,1/120);acc-=1/120;}}return s.collider.start.x;});assert.ok(Math.max(...renderRates)-Math.min(...renderRates)<.001);pass('30, 60 and 144 FPS produce the same movement distance');
+const world=buildWorld();player=p(0,113,groundHeight(0,113));player.keys.add('KeyW');step(player,world.octree,2100);assert.ok(player.collider.start.z<36,`arrival blocked at ${player.collider.start.z}`);assert.ok(player.collider.start.y>-1);pass('arrival hill and path lead into camp');
+player=p(0,45,groundHeight(0,45));player.keys.add('KeyW');step(player,world.octree,1200);assert.ok(player.collider.start.z<5,`courtyard blocked at ${player.collider.start.z}`);pass('gap between cabins leads into courtyard');
+player=p(-55,62,groundHeight(-55,62));player.keys.add('KeyW');step(player,world.octree,360);assert.ok(player.collider.start.z<52&&player.collider.start.z>43,`house entry at ${player.collider.start.z}`);pass('Big House ground-floor doorway is enterable');
+for(const index of [2,5]){const a=index/12*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33;player=p(x*.75,z*.75,groundHeight(x*.75,z*.75));player.yaw=Math.atan2(-x,-z);player.keys.add('KeyW');step(player,world.octree,250);assert.ok(Math.hypot(player.collider.start.x-x,player.collider.start.z-z)<4,`cabin ${index} blocked`);pass(`${index===2?'Poseidon':'Athena'} cabin is enterable`);}
+player=p(55,20,groundHeight(55,20));player.yaw=-Math.PI/2;player.keys.add('KeyW');step(player,world.octree,900);assert.ok(player.collider.start.x<66);pass('lakeshore stops entry into deep water');
+Object.assign(globalThis,{localStorage:{getItem:()=>'{broken'}});assert.deepEqual(readSave().settings,defaults);pass('corrupt saved data safely uses defaults');
+Object.assign(globalThis,{localStorage:{getItem:()=>{throw new Error('unavailable');}}});assert.deepEqual(readSave().discoveries,[]);pass('unavailable storage does not block play');
+world.dispose();console.log('All game checks passed.');

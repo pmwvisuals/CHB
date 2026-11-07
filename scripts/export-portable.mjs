@@ -1,0 +1,10 @@
+import { build } from 'esbuild';
+import { readFile, writeFile } from 'node:fs/promises';
+const result=await build({entryPoints:['main.tsx'],bundle:true,format:'iife',write:false,outfile:'.sites-runtime/portable.js',minify:true,target:'es2022',alias:{'@':process.cwd()},define:{'process.env.NODE_ENV':'"production"'}});
+const js=result.outputFiles.find(f=>f.path.endsWith('.js')).text.replaceAll('</script','<\\/script');
+const css=result.outputFiles.find(f=>f.path.endsWith('.css')).text;
+let html=await readFile('index.html','utf8');
+const favicon=await readFile('public/favicon.svg','utf8');
+html=html.replace('href="/favicon.svg"',`href="data:image/svg+xml,${encodeURIComponent(favicon)}"`).replace('<link rel="stylesheet" href="/assets/main.css"/>',`<style>${css}</style>`).replace('<script type="module" src="/assets/main.js"></script>',()=>`<script>${js}</script>`);
+await writeFile('camp-half-blood.html',html);
+console.log('Portable game exported: camp-half-blood.html');
