@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { buildWorld } from './world';
-import { groundHeight, landmarks, type Settings } from './data';
+import { groundHeight, landmarks, poseidonTemple, type Settings } from './data';
 import { CampAudio } from './audio';
 import { simulatePlayer } from './physics';
 
@@ -12,11 +12,11 @@ export class CampEngine {
   collider=new Capsule(new T.Vector3(),new T.Vector3(),.32); velocity=new T.Vector3(); audio=new CampAudio();
   keys=new Set<string>(); settings:Settings; active=false; started=false; grounded=false; yaw=0; pitch=-.07; nearest:string|null=null;
   jumpQueued=false;
-  private frame=0;private previous=0;private accumulator=0;private lastHud=0;private time=0;private frames=0;private fps=60;private fpsStart=0;private dragging=false;private resizeObserver:ResizeObserver;private removers:(()=>void)[]=[];
+  private disposed=false;private frame=0;private previous=0;private accumulator=0;private lastHud=0;private time=0;private frames=0;private fps=60;private fpsStart=0;private dragging=false;private resizeObserver:ResizeObserver;private removers:(()=>void)[]=[];
   constructor(private host:HTMLElement,settings:Settings,private events:Events){
     this.settings=settings;this.renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
     this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.03;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.renderer.shadowMap.needsUpdate=true;host.appendChild(this.renderer.domElement);
-    this.renderer.domElement.setAttribute('aria-label','First-person view of Asterion Sanctuary');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();this.applySettings(settings);
+    this.renderer.domElement.setAttribute('aria-label','First-person view of Asterion Sanctuary');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();if(new URLSearchParams(location.search).get('return')==='poseidon'){const t=poseidonTemple;this.teleport(t.x+Math.sin(t.rotation)*5,t.z+Math.cos(t.rotation)*5);this.yaw=t.rotation+Math.PI;this.started=true;}this.applySettings(settings);
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);this.resize();
     const listen=(target:EventTarget,name:string,fn:EventListener)=>{target.addEventListener(name,fn);this.removers.push(()=>target.removeEventListener(name,fn));};
     listen(window,'keydown',((e:KeyboardEvent)=>{if(!this.active)return;if(['Space','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','KeyM','KeyE','Escape'].includes(e.code))e.preventDefault();if(e.code==='Escape'){this.pause();this.events.pause();return;}if(e.code==='KeyM'&&!e.repeat){this.pause();this.events.map();return;}if(e.code==='KeyE'&&!e.repeat&&this.nearest){this.pause();this.events.inspect(this.nearest);return;}if(e.code==='Space'&&!e.repeat)this.jumpQueued=true;this.keys.add(e.code);}) as EventListener);
@@ -46,11 +46,14 @@ export class CampEngine {
     simulatePlayer(this,this.world.octree,dt);
     if(this.collider.end.y<-20||!Number.isFinite(this.collider.end.y))this.reset();
     this.syncCamera();
+    const t=poseidonTemple,dx=this.collider.start.x-t.x,dz=this.collider.start.z-t.z;
+    const lx=dx*Math.cos(t.rotation)-dz*Math.sin(t.rotation),lz=dx*Math.sin(t.rotation)+dz*Math.cos(t.rotation);
+    if(this.active&&Math.abs(lx)<1.4&&lz<.6&&lz>-.8){this.pause();this.dispose();location.href='poseidon.html';}
   }
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120){this.step(1/120);this.accumulator-=1/120;}}
     else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+2.5,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
-    this.world.update(this.time);this.renderer.render(this.world.scene,this.camera);this.frames++;
+    if(this.disposed)return;this.world.update(this.time);this.renderer.render(this.world.scene,this.camera);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
       let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';if(x>25&&x<51&&z>-2&&z<23)zone='Poseidon · Hall of the Tides';
@@ -58,5 +61,5 @@ export class CampEngine {
       if(this.active)this.audio.update(x,z,this.grounded&&Math.hypot(this.velocity.x,this.velocity.z)>.6,this.keys.has('ShiftLeft')||this.keys.has('ShiftRight'));
     }
   };
-  dispose(){cancelAnimationFrame(this.frame);this.removers.forEach(f=>f());this.resizeObserver.disconnect();this.audio.dispose();this.world.dispose();this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.removers.forEach(f=>f());this.resizeObserver.disconnect();this.audio.dispose();this.world.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

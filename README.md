@@ -4,13 +4,13 @@ A single-player, first-person browser exploration game, built with TypeScript, T
 
 ## Play
 
-After running `npm ci` and `npm run build`, open `asterion-sanctuary.html` in Chrome or Edge for the self-contained version. No server or installation is needed to play that file. The `dist` directory contains the deployable website; `npm run build` regenerates both versions.
+Open `asterion-sanctuary.html` in Chrome or Edge for the self-contained version. No server or installation is needed to play that file. The `dist` directory contains the deployable website; `npm run build` regenerates both versions.
 
 Click **Enter camp**. Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the mouse to look. If your browser embedding does not allow mouse capture, click and drag to look. **E** reads a nearby discovery, **M** opens the illustrated camp map, and **Esc** pauses.
 
 Settings include Low/Medium/High graphics, mouse sensitivity, ambient volume, and optional walking motion. Settings and six landmark discoveries are saved in local browser storage. Each visit starts at Arrival Ridge. The pause menu includes **Return to entrance**.
 
-The Wayfarer Hall, Poseidon's residential temple and the early Athena residence are open. Poseidon has a columned portico, twin reflecting pools, an open courtyard and furnished sleeping quarters. Other temple residences remain early designs. The lake is bounded; swimming is not implemented. Use **Visit Poseidon's temple** on the welcome screen to start at its entrance.
+The Wayfarer Hall, Poseidon's sacred temple and the early Athena residence are open. Poseidon has a columned portico, twin reflecting pools and a separate sacred interior page. Other temple residences remain early designs. The lake is bounded; swimming is not implemented. Use **Visit Poseidon's temple** on the welcome screen to start at its entrance.
 
 ## Development
 
@@ -44,3 +44,9 @@ Append `?debug=1` to show frame rate and player coordinates. The diagnostic buil
 
 All scenery and audio are generated locally by code. No remote asset CDN, image downloads, or audio requests are required during play. Asterion is an original setting inspired by ancient Greek mythology.
 
+
+## Sacred Poseidon temple
+
+Builds now produce `dist/poseidon.html` with its own entry bundle. Walking through the outdoor temple doorway opens this page; the welcome screen also offers direct entry. The interior contains a cult statue, offering table, twelve columns, coffered ceiling, votive vessels and ships, and an exterior altar. Sleeping quarters were removed. Use the menu or E near the exit to return to the sanctuary.
+
+The portable build produces two self-contained pages, `asterion-sanctuary.html` and `poseidon.html`; keep them together for navigation. Each page loads only its own scene. Settings are shared through local storage on HTTP hosting; file URL storage is browser-dependent. The temple releases GPU resources on page exit.

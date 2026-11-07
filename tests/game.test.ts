@@ -4,6 +4,7 @@ import { Capsule } from 'three/addons/math/Capsule.js';
 import { Octree } from 'three/addons/math/Octree.js';
 import { simulatePlayer, type PlayerState } from '../lib/game/physics';
 import { buildWorld } from '../lib/game/world';
+import { buildSacredTemple } from '../lib/game/sacred-temple';
 import { groundHeight, readSave, writeSave, defaults, poseidonTemple } from '../lib/game/data';
 const pass=(name:string)=>console.log('PASS '+name);
 const ctx=new Proxy({}, {get:()=>()=>{}});
@@ -37,4 +38,10 @@ const saves=new Map<string,string>([['half-blood-v1',JSON.stringify({settings:{.
 Object.assign(globalThis,{localStorage:{getItem:(key:string)=>saves.get(key)||null,setItem:(key:string,value:string)=>saves.set(key,value)}});
 assert.equal(readSave().settings.volume,.7);assert.deepEqual(readSave().discoveries,['cabins']);writeSave({...defaults,volume:.2},['house']);assert.equal(readSave().settings.volume,.2);assert.deepEqual(readSave().discoveries,['house']);pass('existing discoveries migrate and new sanctuary saves take precedence');
 world.dispose();console.log('All game checks passed.');
+const sacred=buildSacredTemple();player=p(0,16);player.keys.add('KeyW');step(player,sacred.octree,480);assert.ok(player.collider.start.z<0);assert.ok(player.grounded);pass('sacred hall central aisle is walkable');
+player=p(6.15,18);player.keys.add('KeyW');step(player,sacred.octree,240);assert.ok(player.collider.start.z>16.7);pass('sacred hall columns block movement');
+player=p(8,0);player.keys.add('KeyD');step(player,sacred.octree,240);assert.ok(player.collider.start.x<9);pass('sacred hall walls block movement');
+player=p(0,16);player.keys.add('KeyS');step(player,sacred.octree,150);assert.ok(player.collider.start.z>20);pass('sacred hall exit doorway reaches the forecourt');
+player=p(0,-9);player.keys.add('KeyW');step(player,sacred.octree,240);assert.ok(player.collider.start.z>-11);pass('statue pedestal blocks movement');
+sacred.dispose();
 

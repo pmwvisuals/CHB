@@ -17,7 +17,7 @@ export default function Camp(){
   },[]);
   useEffect(()=>{settingsRef.current=settings;engine.current?.applySettings(settings);if(ready)writeSave(settings,foundRef.current);},[settings,ready]);
   useEffect(()=>{const esc=(e:KeyboardEvent)=>{if(e.code==='Escape'&&screen!=='play'&&screen!=='welcome'){if(screen==='pause')return;setScreen(started?'pause':'welcome');}};window.addEventListener('keydown',esc);return()=>window.removeEventListener('keydown',esc);},[screen,started]);
-  const visitTemple=()=>{const e=engine.current;if(!e)return;const t=poseidonTemple;e.teleport(t.x+Math.sin(t.rotation)*17,t.z+Math.cos(t.rotation)*17);e.yaw=t.rotation;e.pitch=-.08;play();};
+  const visitTemple=()=>{engine.current?.pause();engine.current?.dispose();engine.current=null;location.href='poseidon.html';};
   const play=()=>{engine.current?.start();setStarted(true);setScreen('play');};
   const open=(next:Screen)=>{returnTo.current=screen==='play'?'pause':screen;engine.current?.pause();setScreen(next);};
   const close=()=>setScreen(started?'pause':'welcome');

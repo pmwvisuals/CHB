@@ -9,3 +9,9 @@ html=html.replace('href="/favicon.svg"',`href="data:image/svg+xml,${encodeURICom
 await writeFile('asterion-sanctuary.html',html);
 await writeFile('camp-half-blood.html',html);
 console.log('Portable game exported: asterion-sanctuary.html');
+const temple=await build({entryPoints:['temple.ts'],bundle:true,format:'iife',write:false,outfile:'.sites-runtime/temple.js',minify:true,target:'es2022'});
+const templeJS=temple.outputFiles.find(f=>f.path.endsWith('.js')).text.replaceAll('</script','<\\/script');
+const templeCSS=temple.outputFiles.find(f=>f.path.endsWith('.css')).text;
+let templeHTML=await readFile('poseidon-page.html','utf8');
+templeHTML=templeHTML.replace('href="./favicon.svg"',`href="data:image/svg+xml,${encodeURIComponent(favicon)}"`).replace('<link rel="stylesheet" href="./assets/temple.css">',()=>`<style>${templeCSS}</style>`).replace('<script type="module" src="./assets/temple.js"></script>',()=>`<script>${templeJS}</script>`).replace('href="./index.html?return=poseidon"','href="./asterion-sanctuary.html?return=poseidon"');
+await writeFile('poseidon.html',templeHTML);

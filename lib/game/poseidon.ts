@@ -103,27 +103,5 @@ export function buildPoseidonTemple(scene: T.Scene, collision: T.Group) {
     for(const z of [1.3,10.4]){cylinder(s*5,.6,z,.4,.85,material('#aa7955'),.55,true);for(let j=0;j<4;j++){const leaf=mesh(new T.IcosahedronGeometry(.42,1),material('#7e9470'),s*5+Math.sin(j*2)*.3,1.2+j*.16,z+Math.cos(j*2)*.2);leaf.scale.y=.7;}}
     box(s*6.1,.65,3.5,.65,.15,2.6,timber,true);box(s*6.4,1.1,3.5,.1,.8,2.6,timber);
   }
-  // Four beds, woven rugs, storage, lamps, shelves and a communal table.
-  for(const s of [-1,1])for(const z of [-3,-6.5]) {
-    box(s*4.8,.49,z,2,.65,2.7,timber,true);
-    box(s*4.8,.88,z,1.9,.2,2.55,linen);
-    box(s*4.8,1,z+.35,1.92,.07,1.8,blanket);
-    box(s*4.8,1.05,z-.85,1.4,.2,.55,linen);
-    box(s*4.8,1.08,z-1.3,2.1,1.1,.14,timber,true);
-    box(s*6,.55,z+1.25,.7,.75,.65,timber,true);
-    for(let k=0;k<3;k++)box(s*4.8-.6+k*.6,.32,z+1.4,.4,.08,.16,bronze);
-  }
-  box(0,.175,-3.4,5,.018,5.5,teal);
-  for(const s of [-1,1])box(s*2.3,.187,-3.4,.08,.01,5.2,bronze);
-  box(0,1,-5.4,2.3,.16,2.6,timber,true);
-  for(const x of [-.9,.9])for(const z of [-6.4,-4.4])box(x,.55,z,.13,.9,.13,timber);
-  for(const s of [-1,1])box(s*1.8,.65,-5.4,.65,.18,2.4,timber,true);
-  for(const x of [-.65,0,.65])cylinder(x,1.1,-5.3,.2,.03,edge);
-  box(0,1.13,-6,.9,.08,.5,linen);
-  for(const s of [-1,1]){box(s*3,1.8,-8.6,2.3,3,.4,timber,true);for(let row=0;row<4;row++){box(s*3,.5+row*.7,-8.3,2.3,.1,.6,timber);for(let j=0;j<6;j++)box(s*3-.8+j*.32,.78+row*.7,-8.2,.2,.42,.25,j%2?teal:linen);}}
-  const glow=new T.MeshStandardMaterial({color:'#ffe7ad',emissive:'#ffcb7d',emissiveIntensity:1.3});
-  for(const x of [-2.1,2.1])for(const z of [.4,-8.5]){box(x,2.5,z,.3,.55,.3,bronze);box(x,2.5,z+.17,.2,.35,.02,glow);}
-  const light=new T.PointLight('#ffddaa',12,15,2);light.position.set(0,4,-4);root.add(light);
-  label('A HOME BETWEEN EARTH AND SEA',0,3.4,-8.76,5.2);
   return { update(time:number){rings.forEach((r,i)=>{const phase=(time*.22+i%3/3)%1;r.scale.setScalar(.6+phase*3);(r.material as T.MeshBasicMaterial).opacity=(1-phase)*.3;});} };
 }
