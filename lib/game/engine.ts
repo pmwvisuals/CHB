@@ -16,7 +16,7 @@ export class CampEngine {
   constructor(private host:HTMLElement,settings:Settings,private events:Events){
     this.settings=settings;this.renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
     this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.03;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.renderer.shadowMap.needsUpdate=true;host.appendChild(this.renderer.domElement);
-    this.renderer.domElement.setAttribute('aria-label','First-person view of Camp Half-Blood');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();this.applySettings(settings);
+    this.renderer.domElement.setAttribute('aria-label','First-person view of Asterion Sanctuary');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();this.applySettings(settings);
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);this.resize();
     const listen=(target:EventTarget,name:string,fn:EventListener)=>{target.addEventListener(name,fn);this.removers.push(()=>target.removeEventListener(name,fn));};
     listen(window,'keydown',((e:KeyboardEvent)=>{if(!this.active)return;if(['Space','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','KeyM','KeyE','Escape'].includes(e.code))e.preventDefault();if(e.code==='Escape'){this.pause();this.events.pause();return;}if(e.code==='KeyM'&&!e.repeat){this.pause();this.events.map();return;}if(e.code==='KeyE'&&!e.repeat&&this.nearest){this.pause();this.events.inspect(this.nearest);return;}if(e.code==='Space'&&!e.repeat)this.jumpQueued=true;this.keys.add(e.code);}) as EventListener);
@@ -53,7 +53,7 @@ export class CampEngine {
     this.world.update(this.time);this.renderer.render(this.world.scene,this.camera);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
-      let zone='Camp Half-Blood';if(z>88)zone='Half-Blood Hill';else if(x>57)zone='Canoe Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Big House';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Cabin Green';
+      let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';if(x>25&&x<51&&z>-2&&z<23)zone='Poseidon · Hall of the Tides';
       this.events.hud({x,z,heading:((T.MathUtils.radToDeg(-this.yaw)%360)+360)%360,nearest:this.nearest,zone,fps:this.fps,grounded:this.grounded});
       if(this.active)this.audio.update(x,z,this.grounded&&Math.hypot(this.velocity.x,this.velocity.z)>.6,this.keys.has('ShiftLeft')||this.keys.has('ShiftRight'));
     }

@@ -6,5 +6,6 @@ const css=result.outputFiles.find(f=>f.path.endsWith('.css')).text;
 let html=await readFile('index.html','utf8');
 const favicon=await readFile('public/favicon.svg','utf8');
 html=html.replace('href="/favicon.svg"',`href="data:image/svg+xml,${encodeURIComponent(favicon)}"`).replace('<link rel="stylesheet" href="/assets/main.css"/>',`<style>${css}</style>`).replace('<script type="module" src="/assets/main.js"></script>',()=>`<script>${js}</script>`);
+await writeFile('asterion-sanctuary.html',html);
 await writeFile('camp-half-blood.html',html);
-console.log('Portable game exported: camp-half-blood.html');
+console.log('Portable game exported: asterion-sanctuary.html');

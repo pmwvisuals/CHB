@@ -4,7 +4,7 @@ import { Capsule } from 'three/addons/math/Capsule.js';
 import { Octree } from 'three/addons/math/Octree.js';
 import { simulatePlayer, type PlayerState } from '../lib/game/physics';
 import { buildWorld } from '../lib/game/world';
-import { groundHeight, readSave, defaults } from '../lib/game/data';
+import { groundHeight, readSave, writeSave, defaults, poseidonTemple } from '../lib/game/data';
 const pass=(name:string)=>console.log('PASS '+name);
 const ctx=new Proxy({}, {get:()=>()=>{}});
 Object.assign(globalThis,{document:{createElement:()=>({width:128,height:128,getContext:()=>ctx})}});
@@ -21,8 +21,20 @@ const renderRates=[30,60,144].map(rate=>{const s=p();s.keys.add('KeyD');let acc=
 const world=buildWorld();player=p(0,113,groundHeight(0,113));player.keys.add('KeyW');step(player,world.octree,2100);assert.ok(player.collider.start.z<36,`arrival blocked at ${player.collider.start.z}`);assert.ok(player.collider.start.y>-1);pass('arrival hill and path lead into camp');
 player=p(0,45,groundHeight(0,45));player.keys.add('KeyW');step(player,world.octree,1200);assert.ok(player.collider.start.z<5,`courtyard blocked at ${player.collider.start.z}`);pass('gap between cabins leads into courtyard');
 player=p(-55,62,groundHeight(-55,62));player.keys.add('KeyW');step(player,world.octree,360);assert.ok(player.collider.start.z<52&&player.collider.start.z>43,`house entry at ${player.collider.start.z}`);pass('Big House ground-floor doorway is enterable');
-for(const index of [2,5]){const a=index/12*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33;player=p(x*.75,z*.75,groundHeight(x*.75,z*.75));player.yaw=Math.atan2(-x,-z);player.keys.add('KeyW');step(player,world.octree,250);assert.ok(Math.hypot(player.collider.start.x-x,player.collider.start.z-z)<4,`cabin ${index} blocked`);pass(`${index===2?'Poseidon':'Athena'} cabin is enterable`);}
+for(const index of [5]){const a=index/12*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33;player=p(x*.75,z*.75,groundHeight(x*.75,z*.75));player.yaw=Math.atan2(-x,-z);player.keys.add('KeyW');step(player,world.octree,250);assert.ok(Math.hypot(player.collider.start.x-x,player.collider.start.z-z)<4,`cabin ${index} blocked`);pass(`${index===2?'Poseidon':'Athena'} cabin is enterable`);}
 player=p(55,20,groundHeight(55,20));player.yaw=-Math.PI/2;player.keys.add('KeyW');step(player,world.octree,900);assert.ok(player.collider.start.x<66);pass('lakeshore stops entry into deep water');
 Object.assign(globalThis,{localStorage:{getItem:()=>'{broken'}});assert.deepEqual(readSave().settings,defaults);pass('corrupt saved data safely uses defaults');
 Object.assign(globalThis,{localStorage:{getItem:()=>{throw new Error('unavailable');}}});assert.deepEqual(readSave().discoveries,[]);pass('unavailable storage does not block play');
+
+const templePoint=(x:number,z:number)=>({x:poseidonTemple.x+Math.cos(poseidonTemple.rotation)*x+Math.sin(poseidonTemple.rotation)*z,z:poseidonTemple.z-Math.sin(poseidonTemple.rotation)*x+Math.cos(poseidonTemple.rotation)*z});
+const localZ=(s:PlayerState)=>(s.collider.start.x-poseidonTemple.x)*Math.sin(poseidonTemple.rotation)+(s.collider.start.z-poseidonTemple.z)*Math.cos(poseidonTemple.rotation);
+let start=templePoint(0,17);player=p(start.x,start.z,groundHeight(start.x,start.z));player.yaw=poseidonTemple.rotation;player.keys.add('KeyW');step(player,world.octree,520);assert.ok(localZ(player)<-1&&localZ(player)>-4,`temple entry stopped at ${localZ(player)}`);pass('temple entrance, pool walkway and living hall form a continuous walkable route');
+player.keys.clear();player.keys.add('KeyS');step(player,world.octree,540);assert.ok(localZ(player)>15);pass('player can walk back out of the temple');
+start=templePoint(0,4);player=p(start.x,start.z,groundHeight(poseidonTemple.x,poseidonTemple.z)+.18);player.yaw=poseidonTemple.rotation;step(player,world.octree);player.jumpQueued=true;step(player,world.octree);assert.ok(player.grounded);assert.ok(localZ(player)>3.8&&localZ(player)<4.2);pass('jump lands on the courtyard floor');
+start=templePoint(6.15,13);player=p(start.x,start.z,groundHeight(poseidonTemple.x,poseidonTemple.z)+.18);player.yaw=poseidonTemple.rotation;player.keys.add('KeyW');let closestColumn=Infinity;for(let i=0;i<200;i++){step(player,world.octree,1);const c=templePoint(6.15,10);closestColumn=Math.min(closestColumn,Math.hypot(player.collider.start.x-c.x,player.collider.start.z-c.z));}assert.ok(closestColumn>.65,'Column clearance '+closestColumn);pass('portico columns block the player');
+start=templePoint(6, -4);player=p(start.x,start.z,groundHeight(poseidonTemple.x,poseidonTemple.z)+.18);player.yaw=poseidonTemple.rotation;player.keys.add('KeyD');step(player,world.octree,300);const localX=(player.collider.start.x-poseidonTemple.x)*Math.cos(poseidonTemple.rotation)-(player.collider.start.z-poseidonTemple.z)*Math.sin(poseidonTemple.rotation);assert.ok(localX<6.3);pass('living quarters walls block movement');
+const saves=new Map<string,string>([['half-blood-v1',JSON.stringify({settings:{...defaults,volume:.7},discoveries:['cabins']})]]);
+Object.assign(globalThis,{localStorage:{getItem:(key:string)=>saves.get(key)||null,setItem:(key:string,value:string)=>saves.set(key,value)}});
+assert.equal(readSave().settings.volume,.7);assert.deepEqual(readSave().discoveries,['cabins']);writeSave({...defaults,volume:.2},['house']);assert.equal(readSave().settings.volume,.2);assert.deepEqual(readSave().discoveries,['house']);pass('existing discoveries migrate and new sanctuary saves take precedence');
 world.dispose();console.log('All game checks passed.');
+

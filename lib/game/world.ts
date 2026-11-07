@@ -1,7 +1,8 @@
 import * as T from 'three';
 import { Octree } from 'three/addons/math/Octree.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { cabins, groundHeight as h, landmarks } from './data';
+import { temples, groundHeight as h, landmarks } from './data';
+import { buildPoseidonTemple } from './poseidon';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; update: (time: number) => void; dispose: () => void }
 export function buildWorld(): World {
@@ -76,7 +77,9 @@ export function buildWorld(): World {
     if(athena){box(g,0,2,-3.9,3.8,3,.35,wood,true);for(let r=0;r<4;r++)for(let j=0;j<10;j++)box(g,-1.65+j*.35,1+r*.58,-3.65,.23,.38,.3,mat(['#ae7e50','#586c64','#a3936b'][j%3]));}
     else {const rug=box(g,0,.16,.2,3,.02,3,mat('#457f83'));rug.castShadow=false; const s=text('THE SEA REMEMBERS',2.5);s.position.set(0,2.8,-3.76);g.add(s);}
   }
-  cabins.forEach(([name,color,roofColor,symbol],i)=>{
+  const poseidon = buildPoseidonTemple(scene, collision);
+  temples.forEach(([name,color,roofColor,symbol],i)=>{
+    if(i===2)return;
     const a=(i/12)*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33; const g=group(x,z,Math.atan2(-x,-z));const open=i===2||i===5;
     box(g,0,.08,0,9,.16,9.6,stone,true);box(g,-4.1,2.2,0,.3,4.4,8.4,mat(color),true);box(g,4.1,2.2,0,.3,4.4,8.4,mat(color),true);box(g,0,2.2,-4.1,8.4,4.4,.3,mat(color),true);
     for(const side of [-1,1]){box(g,side*2.65,2.2,4.1,3.1,4.4,.3,mat(color),true);windowAt(g,side*2.65,4.3);box(g,side*4.2,2.2,4.3,.2,4.5,.2,trim);}
@@ -105,7 +108,7 @@ export function buildWorld(): World {
   box(house,0,4.9,6,3.8,2.2,.35,blue,true);roof(house,16,13,6,'#657781');
   for(const x of [-8,-4,4,8]){box(house,x,1.9,8,.2,3.8,.2,trim,true);box(house,x,3.85,7, .3,.18,3,trim);}
   box(house,0,3.95,7,17,.2,3,mat('#637a7a'));for(const x of [-8,8])box(house,x,.8,7,.15,.1,2,trim);
-  const houseSign=text('THE BIG HOUSE',6);houseSign.position.set(0,4.8,6.3);house.add(houseSign);
+  const houseSign=text('WAYFARER HALL',6);houseSign.position.set(0,4.8,6.3);house.add(houseSign);
   box(house,-4, .65,-2,4,1.2,1.6,mat('#a6b08a'),true);box(house,-4,1.3,-2.7,4,.9,.2,mat('#657d6e'),true);
   box(house,0,.6,-1,2,.2,3,wood,true);for(const s of [-1,1])box(house,s*.8,.25,-1,.1,.5,2.5,wood);
   box(house,3,1.4,-5.5,5,2.8,.4,wood,true);for(let r=0;r<3;r++)for(let j=0;j<15;j++)box(house,.9+j*.3,.6+r*.7,-5.2,.2,.48,.3,mat(['#8b6a4a','#646f63','#a9946b'][j%3]));
@@ -145,16 +148,16 @@ export function buildWorld(): World {
   // Forest shrine, strawberry beds and entrance architecture.
   const shrine=group(-40,-108);box(shrine,0,.12,0,7,.24,6,stone,true);for(const x of [-2.7,2.7]){cyl(shrine,x,2.3,-1,.3,4.3,trim);box(shrine,x,2.3,-1,.5,4.3,.5,trim,true);}roof(shrine,7,4,4.4,'#939d8b');box(shrine,0,.6,-.6,2,1.2,1.2,stone,true);const shrineMark=text('REMEMBER THE GODS',3);shrineMark.position.set(0,3.7,.9);shrine.add(shrineMark);
   for(let row=0;row<7;row++){const g=group(-81+row*2.4,76);box(g,0,.08,0,1.5,.15,16,mat('#806344'));for(let j=0;j<16;j++){mesh(new T.DodecahedronGeometry(.4),mat('#536d38'),g,0,.4,-7.5+j);mesh(new T.IcosahedronGeometry(.12),mat('#b95343'),g,.25,.55,-7.5+j);}}
-  sign('STRAWBERRY FIELDS',-73,87,0,5);
+  sign('THE TERRACED GARDENS',-73,87,0,5);
   // Small human details give the paths and gathering spaces a sense of use.
   for(const [x,z] of [[-5,76],[7,58],[-26,40],[28,38],[57,22],[-38,-10],[-6,-43],[-25,-88]]){const g=group(x,z);box(g,0,1.55,0,.15,3.1,.15,wood,true);box(g,.3,3,0,.7,.1,.12,wood);lantern(g,.55,2.7,0);}
   for(const x of [-12,12]){const g=group(x,8);bench(g,0,0,4);for(const s of [-1,1]){cyl(g,s*2.7,.3,0,.48,.6,mat('#ab7855'));mesh(new T.DodecahedronGeometry(.5),mat('#b8a66d'),g,s*2.7,.85,0);}}
   const pathStones=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),mat('#b6ac8a'),650);const stoneDummy=new T.Object3D();let stoneCount=0;
   for(const path of paths)for(let i=2;i<path.points.length-2;i+=3)for(const side of [-1,1]){if(stoneCount>=650)break;const p=path.points[i],dir=path.points[i+1].clone().sub(path.points[i-1]).normalize();const x=p.x+dir.z*(path.width*.5+.12)*side,z=p.z-dir.x*(path.width*.5+.12)*side;stoneDummy.position.set(x,h(x,z)+.06,z);stoneDummy.scale.set(.16+rand()*.14,.08+rand()*.05,.15+rand()*.12);stoneDummy.rotation.y=rand()*6;stoneDummy.updateMatrix();pathStones.setMatrixAt(stoneCount++,stoneDummy.matrix);}pathStones.count=stoneCount;pathStones.receiveShadow=true;scene.add(pathStones);
-  const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('CAMP HALF-BLOOD',9);gs.position.set(0,6.3,.31);gate.add(gs);
+  const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('ASTERION SANCTUARY',9);gs.position.set(0,6.3,.31);gate.add(gs);
   // Paths are kept clear; all vegetation is deterministic and instanced.
   function nearPath(x:number,z:number,extra=0){return paths.some(p=>p.points.some((q,i)=>i%3===0&&Math.hypot(q.x-x,q.z-z)<p.width*.6+extra));}
-  function reserved(x:number,z:number){return Math.hypot(x,z)<43 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x+67,z+34)<20 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
+  function reserved(x:number,z:number){return Math.hypot(x-38,z-10)<17 || Math.hypot(x,z)<43 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x+67,z+34)<20 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
   const treePoints:{x:number;z:number;s:number;pine:boolean}[]=[];
   for(let i=0;i<1050;i++){const x=(rand()-.5)*295,z=(rand()-.5)*295;if(reserved(x,z)||nearPath(x,z,3))continue;if(z>-75&&Math.abs(x)<100&&rand()>.25)continue;treePoints.push({x,z,s:.75+rand()*.9,pine:rand()>.42});}
   treePoints.push({x:-12,z:110,s:2.4,pine:true});
@@ -180,6 +183,7 @@ export function buildWorld(): World {
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,flowers];
   return {scene,octree,water,fire,embers,sun,foliage,update(time){
+    poseidon.update(time);
     flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
     const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
     ripples.forEach((r,i)=>{r.position.y=.54+Math.sin(time*.7+i)*.008;r.rotation.z=Math.sin(time*.15+i)*.1;});

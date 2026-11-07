@@ -1,16 +1,16 @@
-# Camp Half-Blood
+# Asterion Sanctuary
 
-A single-player, first-person browser exploration game, built with TypeScript, Three.js, and React. The game runs entirely in your browser and builds into a static website.
+A single-player, first-person browser exploration game, built with TypeScript, Three.js, and React. The browser-only game is packaged as a static Sites deployment.
 
 ## Play
 
-After running `npm ci` and `npm run build`, open `camp-half-blood.html` in Chrome or Edge for the self-contained version. No server or installation is needed to play that file. The `dist` directory contains the deployable website; `npm run build` regenerates both versions.
+After running `npm ci` and `npm run build`, open `asterion-sanctuary.html` in Chrome or Edge for the self-contained version. No server or installation is needed to play that file. The `dist` directory contains the deployable website; `npm run build` regenerates both versions.
 
 Click **Enter camp**. Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the mouse to look. If your browser embedding does not allow mouse capture, click and drag to look. **E** reads a nearby discovery, **M** opens the illustrated camp map, and **Esc** pauses.
 
-Settings include Low/Medium/High graphics, mouse sensitivity, ambient volume, and optional walking motion. Settings and six landmark discoveries are saved in local browser storage. Each visit starts at Half-Blood Hill. The pause menu includes **Return to entrance**.
+Settings include Low/Medium/High graphics, mouse sensitivity, ambient volume, and optional walking motion. Settings and six landmark discoveries are saved in local browser storage. Each visit starts at Arrival Ridge. The pause menu includes **Return to entrance**.
 
-The Big House ground floor and the Poseidon and Athena cabins are furnished and open. The other cabins have closed doors. The lake is bounded; swimming is not implemented.
+The Wayfarer Hall, Poseidon's residential temple and the early Athena residence are open. Poseidon has a columned portico, twin reflecting pools, an open courtyard and furnished sleeping quarters. Other temple residences remain early designs. The lake is bounded; swimming is not implemented. Use **Visit Poseidon's temple** on the welcome screen to start at its entrance.
 
 ## Development
 
@@ -42,5 +42,5 @@ Architecture is kept separate from the website UI to support future application 
 
 Append `?debug=1` to show frame rate and player coordinates. The diagnostic build exposes `window.__camp` only with this flag for development inspection. It does not enable networking or access private data.
 
-All scenery and audio are generated locally by code. No remote asset CDN, image downloads, or audio requests are required during play. This is an unofficial Camp Half-Blood fan experience with an original camp layout.
+All scenery and audio are generated locally by code. No remote asset CDN, image downloads, or audio requests are required during play. Asterion is an original setting inspired by ancient Greek mythology.
 
