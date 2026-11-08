@@ -8,7 +8,7 @@ Extract every file in `asterion-playable.zip` to the same folder and open `aster
 
 Choose **Explore the twelve temples** on the welcome screen, or walk through a temple doorway in the sanctuary. Each temple also has a selector for visiting another. Use the menu or press **E** near the exit to return outside that temple.
 
-Use **WASD** to walk, **Shift** to sprint, **Space** to jump and the mouse to look. Click and drag to look if mouse capture is unavailable. **Esc** pauses. Outdoors, **M** opens the map and **E** reads nearby discoveries. Graphics quality, sensitivity and walking motion are adjustable. Settings use browser storage; storage sharing for local file URLs depends on the browser.
+Use **WASD** to walk, **Shift** to sprint, **Space** to jump and the mouse to look. Click and drag to look if mouse capture is unavailable. **Esc** pauses. Outdoors, **M** opens the map and **E** reads nearby discoveries. High graphics quality is always enabled. Sensitivity and walking motion are adjustable. Settings use browser storage; storage sharing for local file URLs depends on the browser.
 
 ## Twelve sacred interiors
 
@@ -68,7 +68,7 @@ The game has no accounts, multiplayer or swimming. Combat, quests and progressio
 
 ## Woodland realism sample
 
-Choose **Visit the woodland sample** on the welcome screen to arrive at the forest shrine approach. This first procedural art pass adds branching trees with individual leaves, curved wind-animated grass, mottled ground materials and irregular stones inside a roughly 58-metre-wide area. Grass uses spatial patches, distance culling and quality-dependent density. The FPS readout appears while exploring this area. Compare Medium and High on your own device before extending this detail over the map. The vegetation now includes a Blender/Sapling family of four trees, four bushes and four ground-cover assets, with full and reduced geometry. See VEGETATION.md for models and rebuild instructions. Browser visual review and GPU performance measurements remain pending because the local preview connection was unavailable.
+Choose **Visit the woodland sample** on the welcome screen to arrive at the forest shrine approach, or **Visit the camp gardens** for the smaller ornamental trees. The whole camp and expedition now share rolling terrain, worn paths, bare-earth clearings, clustered planting and weathered blocky rocks. Leaves follow their branch attachments with folded surfaces and species-specific silhouettes. Grass uses spatial patches, distance culling and distance-dependent density in the woodland. The vegetation includes a Blender/Sapling family of four trees, four bushes and four ground-cover assets, with full and reduced geometry. See VEGETATION.md for models and rebuild instructions. Browser visual review and GPU performance measurements remain pending because the local preview connection was unavailable.
 
 
 ## Version 1 development

@@ -1,6 +1,6 @@
 export type Quality = 'low' | 'medium' | 'high';
 export interface Settings { sensitivity: number; volume: number; quality: Quality; headBob: boolean }
-export const defaults: Settings = { sensitivity: 1, volume: .35, quality: 'medium', headBob: false };
+export const defaults: Settings = { sensitivity: 1, volume: .35, quality: 'high', headBob: false };
 export const landmarks = [
   { id: 'hill', name: 'Arrival Ridge', subtitle: 'Where your story begins', x: 0, z: 100, text: 'Asterion is a valley of craft, study and devotion to the ancient Greek gods. Travellers follow the ridge to find a home among its sacred temples.' },
   { id: 'house', name: 'The Wayfarer Hall', subtitle: 'A place to come home to', x: -55, z: 42, text: 'Travellers gather at the Wayfarer Hall to exchange maps and stories. Its open reading room offers a quiet place to plan your next walk.' },
@@ -17,13 +17,24 @@ export const temples = [
   ['Aphrodite', '#d9a6a1', '#976872', '♡'], ['Hermes', '#b99a6a', '#76613e', '☤'], ['Dionysus', '#ac9db4', '#6a536d', '❦'],
 ] as const;
 export function groundHeight(x: number, z: number) {
-  return 17 * Math.exp(-((x*x)/1800 + ((z-111)*(z-111))/430)) + .3 * Math.sin(x*.035) * Math.sin(z*.03);
+  const base=17*Math.exp(-(x*x/1800+(z-111)**2/430))+.3*Math.sin(x*.035)*Math.sin(z*.03);
+  const smooth=(a:number,b:number,t:number)=>{t=Math.max(0,Math.min(1,(t-a)/(b-a)));return t*t*(3-2*t);};
+  // Blend softly back to existing foundations, lake and arrival route.
+  let influence=smooth(42,54,Math.hypot(x,z));
+  for(const [cx,cz,r] of [[-55,50,17],[46,43,18],[-67,-34,20],[0,-62,18],[-40,-108,8],[-40,-121,7],[-76,77,16]])influence*=smooth(r,r+12,Math.hypot(x-cx,z-cz));
+  influence*=smooth(1,1.35,((x-91)/37)**2+(z/54)**2);
+  influence*=1-smooth(77,94,z)*(1-smooth(12,26,Math.abs(x)));
+  const hill=(cx:number,cz:number,height:number,r:number)=>height*Math.exp(-((x-cx)**2+(z-cz)**2)/(r*r));
+  const rolls=hill(-30,60,2.8,18)+hill(28,72,3.0,21)+hill(-101,4,3.5,24)+hill(15,-96,3.8,25)+hill(-59,-91,3.1,17)+hill(-20,-105,2.7,15)+hill(101,93,3.6,26)+.5*(1+Math.sin(x*.09)*Math.cos(z*.07));
+  // Low grassy knolls within the court, clear of the central walkway and temple steps.
+  const court=(hill(-13,-10,.65,6)+hill(13,11,.6,6))*smooth(3,7,Math.abs(x))*(1-smooth(18,24,Math.hypot(x,z)));
+  return base+rolls*influence+court;
 }
 export function readSave(): { settings: Settings; discoveries: string[] } {
   try {
     const v = JSON.parse(localStorage.getItem('asterion-v1') || localStorage.getItem('half-blood-v1') || '{}');
     const s = v.settings || {};
-    return { settings: { sensitivity: Number.isFinite(s.sensitivity) ? Math.max(.25, Math.min(2, s.sensitivity)) : 1, volume: Number.isFinite(s.volume) ? Math.max(0, Math.min(1, s.volume)) : .35, quality: ['low','medium','high'].includes(s.quality) ? s.quality : 'medium', headBob: s.headBob === true }, discoveries: Array.isArray(v.discoveries) ? v.discoveries.filter((id: unknown) => landmarks.some(l => l.id === id)) : [] };
+    return { settings: { sensitivity: Number.isFinite(s.sensitivity) ? Math.max(.25, Math.min(2, s.sensitivity)) : 1, volume: Number.isFinite(s.volume) ? Math.max(0, Math.min(1, s.volume)) : .35, quality: 'high', headBob: s.headBob === true }, discoveries: Array.isArray(v.discoveries) ? v.discoveries.filter((id: unknown) => landmarks.some(l => l.id === id)) : [] };
   } catch { return { settings: defaults, discoveries: [] }; }
 }
 export function writeSave(settings: Settings, discoveries: string[]) { try { localStorage.setItem('asterion-v1', JSON.stringify({settings, discoveries})); } catch {} }

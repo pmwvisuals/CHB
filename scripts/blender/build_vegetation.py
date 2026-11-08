@@ -23,18 +23,29 @@ coord=nodes.new('ShaderNodeTexCoord');links.new(coord.outputs['Generated'],mappi
 ramp=nodes.new('ShaderNodeValToRGB');ramp.color_ramp.elements[0].color=(.035,.025,.018,1);ramp.color_ramp.elements[1].color=(.28,.2,.13,1);links.new(tex.outputs['Fac'],ramp.inputs[0]);links.new(ramp.outputs[0],nodes.get('Principled BSDF').inputs['Base Color'])
 bump=nodes.new('ShaderNodeBump');bump.inputs['Strength'].default_value=.6;bump.inputs['Distance'].default_value=.09;links.new(tex.outputs['Fac'],bump.inputs['Height']);links.new(bump.outputs['Normal'],nodes.get('Principled BSDF').inputs['Normal'])
 materials={'bark':bark,'oak':mat('Oak - deep jade',(.075,.16,.055)),'fir':mat('Fir - black green',(.035,.105,.075)),'olive':mat('Olive - silver sage',(.32,.4,.22)),'blossom':mat('Blossom - fresh green',(.18,.31,.10)),'fern':mat('Fern - emerald',(.075,.23,.10)),'bramble':mat('Bramble - shaded green',(.095,.19,.065)),'laurel':mat('Laurel - polished green',(.12,.27,.11)),'myrtle':mat('Myrtle - blue green',(.11,.27,.20)),'pink':mat('Petal - pale blush',(.9,.47,.55)),'white':mat('Petal - ivory',(.92,.88,.65)),'gold':mat('Flower centers',(.76,.45,.06)),'grass':mat('Soft meadow',(.29,.4,.12)),'dry':mat('Forest litter',(.22,.12,.045))}
-# A textured twig atlas: twenty pointed leaves and a fine stem on transparency.
-SIZE=128
+# Four species-specific silhouettes with veins. No repeated oversized fern cards.
+SIZE=256
 rgba=np.zeros((SIZE,SIZE,4),dtype=np.float32)
-def stroke(a,b,width,color):
- yy,xx=np.mgrid[0:SIZE,0:SIZE];a=np.array(a);b=np.array(b);v=b-a;t=np.clip(((xx-a[0])*v[0]+(yy-a[1])*v[1])/(np.dot(v,v)+1e-5),0,1);dist=(xx-a[0]-t*v[0])**2+(yy-a[1]-t*v[1])**2;rgba[dist<width*width]=color
-stroke((64,8),(64,119),1.1,(.27,.23,.09,1))
-yy,xx=np.mgrid[0:SIZE,0:SIZE]
-for row in range(8):
- for side in [-1,1]:
-  cx=64+side*(19-row*.5);cy=22+row*12;ang=side*.63;dx=xx-cx;dy=yy-cy;u=dx*math.cos(ang)+dy*math.sin(ang);v=-dx*math.sin(ang)+dy*math.cos(ang);mask=(u/18)**2+(v/7)**2<1
-  shade=.75+.18*(1-v/7)+.05*np.sin(xx*1.4+yy*.8);rgba[mask,0]=shade[mask]*.63;rgba[mask,1]=shade[mask]*.85;rgba[mask,2]=shade[mask]*.42;rgba[mask,3]=1
-  stroke((64,cy-9),(cx,cy),.7,(.30,.36,.12,1));stroke((cx-12*math.cos(ang),cy-12*math.sin(ang)),(cx+12*math.cos(ang),cy+12*math.sin(ang)),.4,(.56,.63,.28,1))
+yy,xx=np.mgrid[0:128,0:128];u=(xx-63.5)/55;v=yy/127
+for tile in range(4):
+ tile_rgba=np.zeros((128,128,4),dtype=np.float32)
+ width=np.sin(np.clip((v-.06)/.88,0,1)*math.pi)**.72
+ if tile==0:width*=.78+.16*np.cos(v*math.pi*12) # lobed oak
+ if tile==1:width*=.35 # slender olive
+ if tile==2:width*=.73+.04*np.cos(v*math.pi*46) # serrated blossom
+ mask=(np.abs(u)<width)&(v>.06)&(v<.94)
+ if tile==3:
+  mask=(np.abs(u)<.018)&(v>.04)&(v<.96)
+  for j in range(14):
+   cy=.10+j*.055
+   for side in (-1,1):
+    along=(v-cy)-np.abs(u)*.15
+    mask|=(u*side>0)&(np.abs(u)<(.83-cy*.5))&(np.abs(along)<.012)
+ shade=.77+.14*np.cos(u*2)+.06*np.sin(xx*.7+yy*.4)
+ vein=(np.abs(u)<.012)|(np.abs((v-np.abs(u)*.25)*11-np.round((v-np.abs(u)*.25)*11))<.035)
+ shade+=vein*.12
+ tile_rgba[:,:,0]=shade*.79;tile_rgba[:,:,1]=shade*.88;tile_rgba[:,:,2]=shade*.65;tile_rgba[:,:,3]=mask
+ rgba[(tile//2)*128:(tile//2+1)*128,(tile%2)*128:(tile%2+1)*128]=tile_rgba
 leaf_image=bpy.data.images.new('Asterion leaf clusters',width=SIZE,height=SIZE,alpha=True);leaf_image.pixels.foreach_set(rgba.ravel());leaf_image.filepath_raw=str(OUT/'leaf-clusters.png');leaf_image.file_format='PNG';leaf_image.save();leaf_image.pack()
 for k,m in materials.items():
  if k!='bark':m.use_backface_culling=False
@@ -44,17 +55,36 @@ for k,m in materials.items():
   nt.links.new(image.outputs['Color'],tint.inputs[1]);nt.links.new(tint.outputs[0],nt.nodes.get('Principled BSDF').inputs['Base Color']);nt.links.new(image.outputs['Alpha'],nt.nodes.get('Principled BSDF').inputs['Alpha'])
   m.surface_render_method='DITHERED'
 
-def leafy_cards(ob,span):
- old=ob.data;points=[v.co.copy() for v in old.vertices];centers=random.sample(points,min(len(points),5000 if span>.4 else 1600));verts=[];faces=[]
- for center in centers:
-  for j in range(2):
-   a=random.random()*math.tau;u=Vector((math.cos(a),math.sin(a),random.uniform(-.3,.3)))*span;v=Vector((-math.sin(a)*.35,math.cos(a)*.35,random.uniform(.5,1)))*span;n=len(verts)
-   verts.extend([center-u-v,center+u-v,center+u+v,center-u+v]);faces.append((n,n+1,n+2,n+3))
- mesh=bpy.data.meshes.new('Leaf cluster cards');mesh.from_pydata(verts,[],faces);mesh.update();uv=mesh.uv_layers.new()
+def leafy_cards(ob,identifier):
+ # Preserve Sapling's actual petiole locations and branch-relative leaf orientations.
+ # A folded six-vertex surface follows each leaf, never a randomly crossed pair.
+ old=ob.data;polys=list(old.polygons);budget=8500 if identifier=='forest_oak' else 8000 if identifier=='forest_fir' else 5000 if identifier=='camp_olive' else 3600
+ rng=random.Random(902+sum(map(ord,identifier)));chosen=sorted(rng.sample(range(len(polys)),min(len(polys),budget)))
+ verts=[];faces=[];uvcoords=[]
+ tile=3 if identifier=='forest_fir' else 1 if identifier in ('camp_olive','camp_myrtle') else 2 if identifier=='camp_blossom' else 0
+ for i in chosen:
+  poly=polys[i]
+  if len(poly.vertices)!=4:continue
+  p0,p1,p2,p3=[old.vertices[n].co.copy() for n in poly.vertices]
+  base=(p0+p3)*.5;tip=(p1+p2)*.5;axis=tip-base
+  if axis.length<.0001:continue
+  axis.normalize();across=(p0-p3).normalized();normal=across.cross(axis).normalized()
+  target=(.48 if identifier=='forest_oak' else .62 if identifier=='forest_fir' else .22 if identifier=='camp_blossom' else .26 if identifier=='camp_olive' else .18)*rng.uniform(.75,1.22)
+  half=target*(.30 if tile!=3 else .44)
+  n=len(verts)
+  for j in range(3):
+   t=j/2;center=base+axis*target*t+normal*(math.sin(t*math.pi)*target*.09-target*.13*t*t)
+   for side in (-1,1):
+    verts.append(center+across*half*side+normal*target*.045*side*side)
+    uvcoords.append(((tile%2+(side+1)/2)*.5,(tile//2+t)*.5))
+  faces.extend([(n,n+1,n+3,n+2),(n+2,n+3,n+5,n+4)])
+ mesh=bpy.data.meshes.new('Branch-aligned folded leaves');mesh.from_pydata(verts,[],faces);mesh.update();uv=mesh.uv_layers.new()
  for poly in mesh.polygons:
-  for loop,co in zip(poly.loop_indices,[(0,0),(1,0),(1,1),(0,1)]):uv.data[loop].uv=co
+  poly.use_smooth=True
+  for loop in poly.loop_indices:uv.data[loop].uv=uvcoords[mesh.loops[loop].vertex_index]
  for m in old.materials:mesh.materials.append(m)
  ob.data=mesh;return ob
+
 
 def convert(ob,material):
  mesh=bpy.data.meshes.new_from_object(ob.evaluated_get(bpy.context.evaluated_depsgraph_get()))
@@ -67,7 +97,7 @@ def sapling(preset,height,seed,branches,leaves,leaf_size,**overrides):
  props=bpy.ops.curve.tree_add.get_rna_type().properties;values={k:v for k,v in values.items() if k in props}
  values.update(seed=seed,scale=height,scaleV=0.,levels=3,branches=branches,segSplits=(0.,0.,0.,0.),leaves=leaves,leafScale=leaf_size,bevelRes=0,resU=3,curveRes=(6,4,2,1),showLeaves=True,makeMesh=True,useRig=False,windAnim=False,leafFlutter=False,blossomRate=0.)
  if preset=='douglas_fir':values.update(length=(1.,.25,.4,.01))
- values.update(overrides);before=set(bpy.data.objects);result=bpy.ops.curve.tree_add(**values)
+ values.update(leafShape='rect',leafScaleX=.6);values.update(overrides);before=set(bpy.data.objects);result=bpy.ops.curve.tree_add(**values)
  if 'FINISHED' not in result:raise RuntimeError('Sapling generation failed')
  created=set(bpy.data.objects)-before;parts=[]
  for ob in created:
@@ -118,7 +148,7 @@ def pack(ob,ratio=1):
  if ratio<1 and ob.data.uv_layers.active:
   # Keep complete cards in distant foliage, rather than decimating each quad.
   import bmesh
-  bm=bmesh.new();bm.from_mesh(copy.data);bm.faces.ensure_lookup_table();bmesh.ops.delete(bm,geom=[f for i,f in enumerate(bm.faces) if i%3!=0],context='FACES');bm.to_mesh(copy.data);bm.free()
+  bm=bmesh.new();bm.from_mesh(copy.data);bm.faces.ensure_lookup_table();bmesh.ops.delete(bm,geom=[f for i,f in enumerate(bm.faces) if (i//2)%3!=0],context='FACES');bm.to_mesh(copy.data);bm.free()
  elif ratio<1 and len(copy.data.polygons)>3:
   dec=copy.modifiers.new('Distance simplification','DECIMATE');dec.ratio=ratio
  mesh=bpy.data.meshes.new_from_object(copy.evaluated_get(bpy.context.evaluated_depsgraph_get()));mesh.calc_loop_triangles()
@@ -140,7 +170,7 @@ def asset(identifier,name,zone,parts,created=None):
  originals=[];records=[]
  for ob,key in parts:
   if not len(ob.data.vertices) or not len(ob.data.polygons):continue
-  if key=='leaf':leafy_cards(ob,.55 if identifier=='forest_oak' else .48 if identifier=='forest_fir' else .22 if identifier.startswith('camp_') and identifier in ('camp_olive','camp_blossom') else .18)
+  if key=='leaf':leafy_cards(ob,identifier)
   if created is not None:ob=convert(ob,materials[key if key!='leaf' else identifier.split('_')[-1]])
   if key=='bark' and len(ob.data.polygons)>7000:
    dec=ob.modifiers.new('Game branch budget','DECIMATE');dec.ratio=7000/len(ob.data.polygons);bpy.context.view_layer.objects.active=ob;bpy.ops.object.modifier_apply(modifier=dec.name)
@@ -162,10 +192,10 @@ def asset(identifier,name,zone,parts,created=None):
  print('BUILT',identifier,round(height,1),sum(r['high']['triangles'] for r in records),flush=True)
 
 for identifier,name,zone,preset,height,seed,branches,leaves,leaf_size in [
- ('forest_oak','Ancient shadow oak','forest','black_oak',23,41,(0,26,38,3),35,.24),
- ('forest_fir','Towering dusk fir','forest','douglas_fir',28,62,(0,110,12,3),35,.16),
- ('camp_olive','Silver courtyard olive','camp','black_tupelo',7,25,(0,25,15,3),35,.16),
- ('camp_blossom','Blush sanctuary tree','camp','hill_cherry',6,14,(0,25,18,3),30,.17)]:
+ ('forest_oak','Ancient shadow oak','forest','black_oak',23,41,(0,26,38,3),60,.24),
+ ('forest_fir','Towering dusk fir','forest','douglas_fir',28,62,(0,110,12,3),60,.16),
+ ('camp_olive','Silver courtyard olive','camp','black_tupelo',7,25,(0,25,15,3),50,.16),
+ ('camp_blossom','Blush sanctuary tree','camp','hill_cherry',6,14,(0,25,18,3),50,.17)]:
  created,parts=sapling(preset,height,seed,branches,leaves,leaf_size)
  converted=[(convert(o,materials[identifier.split('_')[-1]] if key=='leaf' else bark),key) for o,key in parts]
  if identifier=='camp_blossom':converted.append((blossoms(next(o for o,k in converted if k=='leaf'),300,.10,materials['pink']),'pink'))
@@ -182,12 +212,13 @@ for identifier,name,zone,style in [('forest_bracken','Low bracken','forest','fer
  ob=groundcover(name,style);parts=[(ob,'fern' if style=='fern' else 'dry' if style=='litter' else 'grass')]
  if identifier=='camp_flowers':parts.append((blossoms(ob,16,.06,materials['white']),'white'))
  asset(identifier,name,zone,parts)
+for stale in DATA.parent.glob('part[0-9][0-9].ts'):stale.unlink()
 payload=json.dumps(catalog,separators=(',',':'));names=[];imports=[]
 for i,start in enumerate(range(0,len(payload),350000)):
  name='part'+str(i).zfill(2);names.append(name);imports.append("import "+name+" from './"+name+"';")
  (DATA.parent/(name+'.ts')).write_text('export default '+json.dumps(payload[start:start+350000])+';\n',encoding='utf8')
 types='export interface PlantMesh {v:string;i:string;uv:string;scale:number;wide:boolean;triangles:number}\nexport interface PlantAsset {name:string;zone:string;height:number;parts:{material:string;high:PlantMesh;low:PlantMesh}[]}\n'
-DATA.write_text('\n'.join(imports)+'\n'+types+'export const leafAtlas='+json.dumps(base64.b64encode(zlib.compress((np.clip(rgba,0,1)*255).astype(np.uint8).tobytes(),9)).decode())+';\nexport const vegetationAssets=JSON.parse(['+','.join(names)+'].join("")) as Record<'+'|'.join(json.dumps(k) for k in catalog)+',PlantAsset>;\n',encoding='utf8')
+DATA.write_text('\n'.join(imports)+'\n'+types+'export const leafAtlasSize='+str(SIZE)+';\nexport const leafAtlas='+json.dumps(base64.b64encode(zlib.compress((np.clip(rgba,0,1)*255).astype(np.uint8).tobytes(),9)).decode())+';\nexport const vegetationAssets=JSON.parse(['+','.join(names)+'].join("")) as Record<'+'|'.join(json.dumps(k) for k in catalog)+',PlantAsset>;\n',encoding='utf8')
 (OUT/'catalog.json').write_text(json.dumps({k:{'name':v['name'],'zone':v['zone'],'height':v['height'],'triangles':sum(p['high']['triangles'] for p in v['parts'])} for k,v in catalog.items()},indent=2))
 # A studio contact sheet for checking every generated asset.
 world=bpy.context.scene.world or bpy.data.worlds.new('World');bpy.context.scene.world=world;world.use_nodes=True;world.node_tree.nodes.get('Background').inputs[0].default_value=(.16,.2,.19,1);world.node_tree.nodes.get('Background').inputs[1].default_value=.6

@@ -2,9 +2,10 @@ import * as T from 'three';
 import { Octree } from 'three/addons/math/Octree.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { temples, groundHeight as h, landmarks } from './data';
-import { buildWoodland, woodlandGround, inWoodland } from './woodland';
+import { buildWoodland, inWoodland } from './woodland';
 import type { Settings } from './data';
 import { meadowGrass, plantCollection, type PlantPlacement } from './vegetation';
+import { terrainGeometry,groundMaterial,trailMaterial,groundHabitat,weatheredRockGeometry,weatheredRockMaterial } from './landscape';
 import { buildPoseidonTemple } from './poseidon';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
@@ -39,11 +40,8 @@ export function buildWorld(): World {
     const cap=mesh(new T.ConeGeometry(.3,.25,4),brass,parent,x,y+.36,z); cap.rotation.y=Math.PI/4;
   }
   // Broad, softly rolling landscape with a raised arrival hill.
-  const terrain = new T.PlaneGeometry(320,320,120,120); terrain.rotateX(-Math.PI/2);
-  const pos=terrain.attributes.position; const colors=[];
-  for(let i=0;i<pos.count;i++) { const x=pos.getX(i),z=pos.getZ(i); pos.setY(i,h(x,z)); const c=new T.Color().setHSL(.235+rand()*.035,.30+rand()*.12,.32+rand()*.055); c.convertSRGBToLinear(); colors.push(c.r,c.g,c.b); }
-  terrain.setAttribute('color',new T.Float32BufferAttribute(colors,3)); terrain.computeVertexNormals();
-  const ground = mesh(terrain,woodlandGround(),scene); ground.castShadow=false;
+  const terrain=terrainGeometry();
+  const ground=mesh(terrain,groundMaterial(),scene);ground.name='Rolling sanctuary terrain';ground.castShadow=false;
   collision.add(new T.Mesh(terrain));
   const hemi=new T.HemisphereLight('#d7ecf4','#6f7142',2.1); scene.add(hemi);
   const sun=new T.DirectionalLight('#ffdda2',3.1); sun.position.set(-80,115,65); sun.castShadow=true;
@@ -55,9 +53,9 @@ export function buildWorld(): World {
   const cloudMat=new T.MeshBasicMaterial({color:'#fff0d7',transparent:true,opacity:.38,depthWrite:false});
   for(let i=0;i<24;i++){const c=mesh(new T.SphereGeometry(1,8,5),cloudMat,scene,(rand()-.5)*550,85+rand()*50,(rand()-.5)*500);c.scale.set(20+rand()*40,2+rand()*3,6+rand()*10);c.castShadow=false;}
   const paths: { points:T.Vector3[]; width:number }[]=[];
-  function path(coords:number[][],width=3.5){const curve=new T.CatmullRomCurve3(coords.map(([x,z])=>new T.Vector3(x,0,z)));const points=curve.getPoints(100);paths.push({points,width});const verts:number[]=[],indices:number[]=[];
-    points.forEach((p,i)=>{const dir=points[Math.min(i+1,100)].clone().sub(points[Math.max(i-1,0)]).normalize();for(const s of [-1,1]){const x=p.x+dir.z*width*.5*s,z=p.z-dir.x*width*.5*s;verts.push(x,h(x,z)+.06,z);}if(i<100){const a=i*2;indices.push(a,a+2,a+1,a+1,a+2,a+3);}});
-    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setIndex(indices);geo.computeVertexNormals();mesh(geo,mat('#c9b48a'),scene).castShadow=false;
+  function path(coords:number[][],width=3.5){const curve=new T.CatmullRomCurve3(coords.map(([x,z])=>new T.Vector3(x,0,z)));const points=curve.getPoints(100);paths.push({points,width});const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
+    points.forEach((p,i)=>{const dir=points[Math.min(i+1,100)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72*(1+.055*Math.sin(i*.47));const x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,h(x,z)+.065,z);uvs.push(j/4,i/100);}if(i<100)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
+    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();mesh(geo,trailMaterial(),scene).castShadow=false;
   }
   path([[0,122],[0,96],[8,76],[3,53],[0,0]],5);
   path([[-56,48],[-34,42],[0,32],[48,40],[61,22],[64,5]],4);
@@ -66,7 +64,8 @@ export function buildWorld(): World {
   path([[-40,-108],[-67,-95],[-84,-62],[-68,-35]],2.3);
   path([[-55,48],[-77,61],[-78,85],[-43,83],[0,96]],2.4);
   function circleGround(x:number,z:number,r:number,color:string){ const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);const p=geo.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,h(x+p.getX(i),z+p.getZ(i))+.075);const m=mesh(geo,mat(color),scene,x,0,z);m.castShadow=false;return m; }
-  circleGround(0,0,23,'#b3ae79'); circleGround(0,0,17.5,'#829658');
+  // The communal green shares the living terrain, rather than two flat coloured discs.
+  path(Array.from({length:17},(_,i)=>[Math.sin(i/16*Math.PI*2)*20.5,Math.cos(i/16*Math.PI*2)*20.5]),2.2);
   // Twelve individually decorated cabins face the communal green.
   function roof(g:T.Object3D,w:number,d:number,y:number,color:string){const rise=2.1,len=Math.hypot(w/2,rise); for(const side of [-1,1]){const r=box(g,side*w/4,y+rise/2,0,len+.4,.24,d+1.1,mat(color));r.rotation.z=-side*Math.atan2(rise,w/2);
     for(let j=0;j<8;j++){const rib=box(g,side*w/4,y+rise/2+.13,-d/2+j*d/7,len+.4,.045,.055,mat('#514e43'));rib.rotation.z=r.rotation.z;}}
@@ -155,7 +154,7 @@ export function buildWorld(): World {
   // Small human details give the paths and gathering spaces a sense of use.
   for(const [x,z] of [[-5,76],[7,58],[-26,40],[28,38],[57,22],[-38,-10],[-6,-43],[-25,-88]]){const g=group(x,z);box(g,0,1.55,0,.15,3.1,.15,wood,true);box(g,.3,3,0,.7,.1,.12,wood);lantern(g,.55,2.7,0);}
   for(const x of [-12,12]){const g=group(x,8);bench(g,0,0,4);for(const s of [-1,1]){cyl(g,s*2.7,.3,0,.48,.6,mat('#ab7855'));mesh(new T.DodecahedronGeometry(.5),mat('#b8a66d'),g,s*2.7,.85,0);}}
-  const pathStones=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),mat('#b6ac8a'),650);const stoneDummy=new T.Object3D();let stoneCount=0;
+  const pathStones=new T.InstancedMesh(weatheredRockGeometry(1),weatheredRockMaterial(),650);const stoneDummy=new T.Object3D();let stoneCount=0;
   for(const path of paths)for(let i=2;i<path.points.length-2;i+=3)for(const side of [-1,1]){if(stoneCount>=650)break;const p=path.points[i],dir=path.points[i+1].clone().sub(path.points[i-1]).normalize();const x=p.x+dir.z*(path.width*.5+.12)*side,z=p.z-dir.x*(path.width*.5+.12)*side;stoneDummy.position.set(x,h(x,z)+.06,z);stoneDummy.scale.set(.16+rand()*.14,.08+rand()*.05,.15+rand()*.12);stoneDummy.rotation.y=rand()*6;stoneDummy.updateMatrix();pathStones.setMatrixAt(stoneCount++,stoneDummy.matrix);}pathStones.count=stoneCount;pathStones.receiveShadow=true;scene.add(pathStones);
   const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('ASTERION SANCTUARY',9);gs.position.set(0,6.3,.31);gate.add(gs);
   // Paths are kept clear; all vegetation is deterministic and instanced.
@@ -168,14 +167,14 @@ export function buildWorld(): World {
   }
   // A deliberate ornamental grove inside the sanctuary, clear of entrances and paths.
   for(const [i,[x,z]] of [[-15,15],[15,15],[-15,-15],[15,-15],[-23,59],[-31,64],[22,62],[31,65]].entries()){if(nearPath(x,z,3))continue;plants.push({id:i%2?'camp_blossom':'camp_olive',x,y:h(x,z),z,scale:.8,rotation:i*1.7});const c=new T.Mesh(new T.CylinderGeometry(.25,.4,4,8));c.position.set(x,h(x,z)+2,z);collision.add(c);}
-  for(let i=0;i<450;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(inWoodland(x,z)||nearPath(x,z,.8))continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z)&&!(Math.hypot(x,z)>18&&Math.hypot(x,z)<23))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
+  for(let i=0;i<2600;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(inWoodland(x,z)||nearPath(x,z,.8)||rand()>groundHabitat(x,z).bush*.85)continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z)&&!(Math.hypot(x,z)>18&&Math.hypot(x,z)<23))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
   const planting=plantCollection(scene,plants);
   const dummy=new T.Object3D();
   const meadow=meadowGrass();const grass=new T.InstancedMesh(meadow.geometry,meadow.material,6000);let gi=0;
   const flowerGeo=new T.IcosahedronGeometry(.12,0),flowers=new T.InstancedMesh(flowerGeo,mat('#e7d6a0'),1800);let fi=0;
-  for(let i=0;i<16000&&gi<6000;i++){const x=(rand()-.5)*270,z=(rand()-.5)*270;if(inWoodland(x,z)||reserved(x,z)||nearPath(x,z,.3))continue;dummy.position.set(x,h(x,z)+.01,z);dummy.rotation.set(0,rand()*6,(rand()-.5)*.4);dummy.scale.setScalar(.6+rand());dummy.updateMatrix();grass.setMatrixAt(gi++,dummy.matrix);if(fi<1800&&rand()<.23){dummy.position.y+=.36;dummy.scale.setScalar(.7+rand());dummy.updateMatrix();flowers.setMatrixAt(fi++,dummy.matrix);flowers.setColorAt(fi-1,new T.Color(['#e9d2a3','#e5e0ca','#b399bb'][fi%3]));}}
-  grass.count=gi;flowers.count=fi;scene.add(grass,flowers);
-  const rocks=new T.InstancedMesh(new T.DodecahedronGeometry(1,0),mat('#9b9c88'),180);for(let i=0;i<180;i++){const a=rand()*Math.PI*2;let x=91+Math.cos(a)*(33+rand()*3),z=Math.sin(a)*(49+rand()*3);if(i>85){x=(rand()-.5)*290;z=(rand()-.5)*290;if(reserved(x,z)||nearPath(x,z,1)){i--;continue;}}dummy.position.set(x,h(x,z)+.2,z);dummy.rotation.set(rand(),rand()*6,rand());dummy.scale.set(.5+rand()*1.3,.4+rand()*.7,.5+rand());dummy.updateMatrix();rocks.setMatrixAt(i,dummy.matrix);}rocks.castShadow=true;rocks.receiveShadow=true;scene.add(rocks);
+  for(let i=0;i<45000&&gi<6000;i++){const x=(rand()-.5)*270,z=(rand()-.5)*270;if(inWoodland(x,z)||nearPath(x,z,.6)||(reserved(x,z)&&Math.hypot(x,z)>17.5)||rand()>groundHabitat(x,z).grass*.8)continue;dummy.position.set(x,h(x,z)+.01,z);dummy.rotation.set(0,rand()*6,(rand()-.5)*.4);dummy.scale.setScalar(.6+rand());dummy.updateMatrix();grass.setMatrixAt(gi++,dummy.matrix);if(fi<1800&&rand()<.23){dummy.position.y+=.36;dummy.scale.setScalar(.7+rand());dummy.updateMatrix();flowers.setMatrixAt(fi++,dummy.matrix);flowers.setColorAt(fi-1,new T.Color(['#e9d2a3','#e5e0ca','#b399bb'][fi%3]));}}
+  grass.count=gi;grass.receiveShadow=true;flowers.count=fi;scene.add(grass,flowers);
+  const rocks=new T.InstancedMesh(weatheredRockGeometry(),weatheredRockMaterial(),180);for(let i=0;i<180;i++){const a=rand()*Math.PI*2;let x=91+Math.cos(a)*(33+rand()*3),z=Math.sin(a)*(49+rand()*3);if(i>85){x=(rand()-.5)*290;z=(rand()-.5)*290;if(reserved(x,z)||nearPath(x,z,1)){i--;continue;}}dummy.position.set(x,h(x,z)+.12,z);dummy.rotation.set((rand()-.5)*.3,rand()*6,(rand()-.5)*.25);dummy.scale.set(.5+rand()*1.3,.5+rand()*.9,.5+rand());dummy.updateMatrix();rocks.setMatrixAt(i,dummy.matrix);const solid=new T.Mesh(rocks.geometry);solid.matrixAutoUpdate=false;solid.matrix.copy(dummy.matrix);collision.add(solid);}rocks.castShadow=true;rocks.receiveShadow=true;scene.add(rocks);
   const reedGeo=new T.CylinderGeometry(.025,.04,1.8,4),reeds=new T.InstancedMesh(reedGeo,mat('#798951'),300);for(let i=0;i<300;i++){const a=rand()*Math.PI*2;dummy.position.set(91+Math.cos(a)*(32+rand()),1,Math.sin(a)*(48+rand()));dummy.scale.setScalar(.7+rand()*.6);dummy.rotation.set(.1,0,(rand()-.5)*.2);dummy.updateMatrix();reeds.setMatrixAt(i,dummy.matrix);}scene.add(reeds);
   const woodland=buildWoodland(scene,collision,(x,z,pad)=>reserved(x,z)||nearPath(x,z,pad)||(Math.abs(x+40)<2+pad&&z>-108&&z<-92));
   // Discovery plaques sit at the shared map coordinates.

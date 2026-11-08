@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {Group,Mesh,Vector3} from 'three';
+import {Octree} from 'three/addons/math/Octree.js';
+import {Capsule} from 'three/addons/math/Capsule.js';
+import {groundHeight} from '../lib/game/data';
+import {terrainGeometry,groundHabitat,weatheredRockGeometry} from '../lib/game/landscape';
+import {simulatePlayer} from '../lib/game/physics';
+const terrain=terrainGeometry(),positions=terrain.getAttribute('position');
+for(let i=0;i<positions.count;i+=19)assert.ok(Math.abs(positions.getY(i)-groundHeight(positions.getX(i),positions.getZ(i)))<.00001);
+let bare=0,dense=0;for(let x=-130;x<130;x+=3)for(let z=-130;z<130;z+=3){const a=groundHabitat(x,z);if(a.grass<.08)bare++;if(a.bush>.5)dense++;}assert.ok(bare>300&&dense>300,'both bare ground and dense thickets must exist');
+assert.ok(groundHeight(-30,60)>1.4&&groundHeight(-59,-91)>1.5,'small hills must have meaningful relief');
+const root=new Group();root.add(new Mesh(terrain));root.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(root);
+const x=-30,z=72,y=groundHeight(x,z),p={keys:new Set(['KeyW']),yaw:0,grounded:false,jumpQueued:false,velocity:new Vector3(),collider:new Capsule(new Vector3(x,y+.33,z),new Vector3(x,y+1.63,z),.32)};
+for(let i=0;i<600;i++)simulatePlayer(p,octree,1/120);
+assert.ok(p.collider.start.z<52&&p.grounded,'walk up and down the new hill without sticking or falling');
+p.keys.clear();p.jumpQueued=true;for(let i=0;i<240;i++)simulatePlayer(p,octree,1/120);assert.ok(p.grounded,'jump lands on sloping terrain');
+const rock=weatheredRockGeometry();assert.ok(rock.getAttribute('color').count===rock.getAttribute('position').count);assert.ok(Array.from(rock.getAttribute('position').array).every(Number.isFinite));assert.ok(rock.getAttribute('position').count<1500,'shared weathered rock stays small enough to instance');
+terrain.dispose();rock.dispose();console.log('PASS landscape relief, matching collision surface, natural clearings, hill walking/jumping and rock geometry budget');

@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { unzlibSync } from 'three/addons/libs/fflate.module.js';
-import { vegetationAssets,leafAtlas } from './generated/vegetation';
+import { vegetationAssets,leafAtlas,leafAtlasSize } from './generated/vegetation';
 export type PlantId=keyof typeof vegetationAssets;
 export interface PlantPlacement {id:PlantId;x:number;y:number;z:number;scale:number;rotation:number}
 function bytes(s:string){const binary=atob(s);return unzlibSync(Uint8Array.from(binary,c=>c.charCodeAt(0)));}
@@ -12,7 +12,7 @@ export function unpackPlant(p:Packed){
 }
 export function plantCollection(scene:T.Scene,placements:PlantPlacement[]){
  const geometries=new Map<string,T.BufferGeometry>(),materials=new Map<string,T.MeshStandardMaterial>(),depths:T.MeshDepthMaterial[]=[];
- const atlas=new T.DataTexture(bytes(leafAtlas),128,128);atlas.colorSpace=T.SRGBColorSpace;atlas.magFilter=T.LinearFilter;atlas.minFilter=T.LinearMipmapLinearFilter;atlas.generateMipmaps=true;atlas.anisotropy=4;atlas.needsUpdate=true;
+ const atlas=new T.DataTexture(bytes(leafAtlas),leafAtlasSize,leafAtlasSize);atlas.colorSpace=T.SRGBColorSpace;atlas.magFilter=T.LinearFilter;atlas.minFilter=T.LinearMipmapLinearFilter;atlas.generateMipmaps=true;atlas.anisotropy=8;atlas.needsUpdate=true;
  const pixels=new Uint8Array(128*256*4);for(let y=0;y<256;y++)for(let x=0;x<128;x++){const grain=Math.sin(x*.4+Math.sin(y*.07)*1.8)*.5+.5,crack=Math.pow(grain,8),n=Math.sin(x*17.3+y*71.7)*.5+.5,i=(y*128+x)*4,v=.43+.16*n-.27*crack;pixels[i]=v*255;pixels[i+1]=v*211;pixels[i+2]=v*169;pixels[i+3]=255;}
  const bark=new T.DataTexture(pixels,128,256);bark.colorSpace=T.SRGBColorSpace;bark.wrapS=bark.wrapT=T.RepeatWrapping;bark.magFilter=T.LinearFilter;bark.minFilter=T.LinearMipmapLinearFilter;bark.generateMipmaps=true;bark.anisotropy=4;bark.needsUpdate=true;
  const time={value:0};
@@ -20,10 +20,10 @@ export function plantCollection(scene:T.Scene,placements:PlantPlacement[]){
   if(key==='bark'){m.bumpMap=bark;m.bumpScale=.12;}
   if(leafy){m.onBeforeCompile=s=>{s.uniforms.plantTime=time;s.vertexShader='uniform float plantTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
    #ifdef USE_INSTANCING
-   float strength=clamp(position.y*.006,0.,.12);vec3 root=instanceMatrix[3].xyz;
+   float strength=clamp(position.y*.0015,0.,.025)*sin(uv.y*6.2831853)*sin(uv.y*6.2831853);vec3 root=instanceMatrix[3].xyz;
    transformed.x+=sin(plantTime*1.3+position.y*.5+root.x*.2)*strength;
    transformed.z+=cos(plantTime*.9+root.z*.3)*strength*.6;
-   #endif`);};m.customProgramCacheKey=()=> 'asterion-leaf-wind-v1';}
+   #endif`);};m.customProgramCacheKey=()=> 'asterion-leaf-wind-v2';}
   materials.set(name,m);return m;
  }
  const cells=new Map<string,PlantPlacement[]>();for(const p of placements){const key=`${p.id}:${Math.floor(p.x/24)}:${Math.floor(p.z/24)}`;const list=cells.get(key)||[];list.push(p);cells.set(key,list);}
