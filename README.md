@@ -2,7 +2,7 @@
 
 A single-player first-person browser game inspired by ancient Greek mythology, built with TypeScript, Three.js and React. All scenery is generated locally by code; no external art or audio downloads are required during play.
 
-The twelve temple exteriors now have fluted colonnades, carved deity emblems, tiled pediments and ceremonial approaches. A new Great Hall stands at the center with four walk-through porticoes. Choose **Visit the Great Hall** to inspect it. See [TEMPLE-EXTERIORS.md](TEMPLE-EXTERIORS.md) for the building designs and validation.
+The twelve temples now occupy distinct landscapes across the map, each with its own decorative grounds. The Great Hall anchors the central camp, and Wayfarer Hall has a new guild-house exterior and beacon tower. Press **M** and select a temple marker to visit its grounds. See [TEMPLE-EXTERIORS.md](TEMPLE-EXTERIORS.md) for designs and validation.
 
 ## Play
 

@@ -1,8 +1,9 @@
 import * as T from 'three';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { buildWorld } from './world';
-import { groundHeight, landmarks, poseidonTemple, type Settings } from './data';
+import { groundHeight, outdoorWalkHeight, landmarks, type Settings } from './data';
 import { findTemple, templeAtEntrance, templeReturnPoint } from './temple-catalog';
+import {templeSites} from './sanctuary-layout';
 import { CampAudio } from './audio';
 import { simulatePlayer } from './physics';
 
@@ -36,7 +37,7 @@ export class CampEngine {
     }
   }
   reset(){this.teleport(0,113);this.yaw=0;this.pitch=-.14;}
-  teleport(x:number,z:number){const y=groundHeight(x,z)+.12;this.collider.start.set(x,y+.32,z);this.collider.end.set(x,y+1.62,z);this.velocity.set(0,0,0);this.grounded=false;this.syncCamera();}
+  teleport(x:number,z:number){const y=outdoorWalkHeight(x,z)+.12;this.collider.start.set(x,y+.32,z);this.collider.end.set(x,y+1.62,z);this.velocity.set(0,0,0);this.grounded=false;this.syncCamera();}
   private lock(){try{const result=this.renderer.domElement.requestPointerLock();if(result)void result.catch(()=>{});}catch{/* Click-drag looking remains available when embedding blocks pointer lock. */}}
   start(){this.active=true;this.started=true;this.keys.clear();this.previous=performance.now();this.accumulator=0;this.audio.start(this.settings.volume);this.audio.volume(this.settings.volume);this.lock();}
   pause(){this.active=false;this.keys.clear();this.jumpQueued=false;this.velocity.set(0,0,0);this.dragging=false;this.audio.pause();if(document.pointerLockElement)document.exitPointerLock();}
@@ -56,7 +57,7 @@ export class CampEngine {
     if(this.disposed)return;this.world.update(this.time,this.camera.position);this.renderer.render(this.world.scene,this.camera);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
-      let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';if(x>25&&x<51&&z>-2&&z<23)zone='Poseidon · Hall of the Tides';
+      let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';for(const [id,site] of Object.entries(templeSites))if(Math.hypot(x-site.x,z-site.z)<28)zone=site.region;
       this.events.hud({x,z,heading:((T.MathUtils.radToDeg(-this.yaw)%360)+360)%360,nearest:this.nearest,zone,fps:this.fps,grounded:this.grounded});
       if(this.active)this.audio.update(x,z,this.grounded&&Math.hypot(this.velocity.x,this.velocity.z)>.6,this.keys.has('ShiftLeft')||this.keys.has('ShiftRight'));
     }

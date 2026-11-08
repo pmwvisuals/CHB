@@ -1,3 +1,4 @@
+import {sitePlacement} from './sanctuary-layout.ts';
 export const templeCatalog = [
  {id:'zeus',name:'Zeus',title:'The Thunder Hall',epithet:'Keeper of the Sky',description:'Ivory pillars, thunderbolts and the outstretched wings of an eagle.',symbol:'ϟ',stone:'#b9c0c4',ivory:'#ece9dd',accent:'#253c65',metal:'#c7a754',statue:'#9c8d62',light:'#c9e3ff',offering:'DEDICATIONS TO THE SKY',female:false,beard:true},
  {id:'hera',name:'Hera',title:'The Royal Sanctuary',epithet:'Queen of Olympus',description:'Peacock fans, a crowned goddess and a sanctuary dressed in royal plum.',symbol:'♛',stone:'#d2c0b7',ivory:'#f0e3cd',accent:'#4d284c',metal:'#cba35a',statue:'#d7c9a5',light:'#ffe4d1',offering:'WREATHS OF DEVOTION',female:true,beard:false},
@@ -15,7 +16,7 @@ export const templeCatalog = [
 export type TempleId=typeof templeCatalog[number]['id'];
 export type TempleTheme=typeof templeCatalog[number];
 export function findTemple(id:string|null|undefined){return templeCatalog.find(t=>t.id===id);}
-export function templePlacement(id:TempleId){const index=templeCatalog.findIndex(t=>t.id===id),a=index/12*Math.PI*2+Math.PI/12,r=id==='poseidon'?39:33;return {x:Math.sin(a)*r,z:Math.cos(a)*r,rotation:Math.atan2(-Math.sin(a),-Math.cos(a)),threshold:id==='poseidon'?.6:4.5};}
+export const templePlacement=sitePlacement;
 export function templeLocal(id:TempleId,x:number,z:number){const p=templePlacement(id),dx=x-p.x,dz=z-p.z;return {x:dx*Math.cos(p.rotation)-dz*Math.sin(p.rotation),z:dx*Math.sin(p.rotation)+dz*Math.cos(p.rotation)};}
 export function templeAtEntrance(x:number,z:number){return templeCatalog.find(t=>{const p=templePlacement(t.id),local=templeLocal(t.id,x,z);return Math.abs(local.x)<.85&&local.z<p.threshold&&local.z>p.threshold-1.4;});}
-export function templeReturnPoint(id:TempleId){const p=templePlacement(id),distance=11;return {x:p.x+Math.sin(p.rotation)*distance,z:p.z+Math.cos(p.rotation)*distance,yaw:p.rotation+Math.PI};}
+export function templeReturnPoint(id:TempleId){const p=templePlacement(id),distance=16;return {x:p.x+Math.sin(p.rotation)*distance,z:p.z+Math.cos(p.rotation)*distance,yaw:p.rotation+Math.PI};}

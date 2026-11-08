@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import {templeSites} from './sanctuary-layout';
 import { groundHeight } from './data';
 
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
@@ -17,9 +18,10 @@ export function groundColor(x:number,z:number){
  const a=groundHabitat(x,z),fine=landNoise(x*.4,z*.4),c=new T.Color('#82725b');
  c.lerp(new T.Color('#665643'),a.forest*.7).lerp(new T.Color('#717854'),a.grass*.85);
  c.lerp(new T.Color('#496044'),a.forest*a.grass*.6);
- return c.multiplyScalar(.86+fine*.25);
+ const forge=1-Math.min(1,Math.hypot(x-templeSites.hephaestus.x,z-templeSites.hephaestus.z)/31),ridge=1-Math.min(1,Math.hypot(x-templeSites.zeus.x,z-templeSites.zeus.z)/31);
+ c.lerp(new T.Color('#4d4843'),forge*.9).lerp(new T.Color('#a39d8b'),ridge*.65);return c.multiplyScalar(.86+fine*.25);
 }
-export function terrainGeometry(width=320,depth=320,cx=0,cz=0){
+export function terrainGeometry(width=500,depth=500,cx=0,cz=0){
  const g=new T.PlaneGeometry(width,depth,Math.ceil(width/1.6),Math.ceil(depth/1.6));g.rotateX(-Math.PI/2);g.translate(cx,0,cz);
  const p=g.getAttribute('position'),colors=[];
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,groundHeight(x,z));const c=groundColor(x,z);colors.push(c.r,c.g,c.b);}

@@ -2,9 +2,10 @@ import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { groundHeight } from './data';
 import { templeCatalog,templePlacement,type TempleTheme } from './temple-catalog';
+import {addTempleGrounds} from './temple-grounds';
 
 /** Meter-scale sacred architecture, assembled once and batched by material. */
-function architecture(scene:T.Scene,collision:T.Group,name:string,x:number,z:number,rotation=0){
+export function architecture(scene:T.Scene,collision:T.Group,name:string,x:number,z:number,rotation=0){
  const root=new T.Group();root.name=name;root.position.set(x,groundHeight(x,z),z);root.rotation.y=rotation;scene.add(root);
  const cube=new T.BoxGeometry(1,1,1),cache=new Map<string,T.MeshStandardMaterial>();
  const grain=new Uint8Array(128*128*4);
@@ -36,11 +37,12 @@ function architecture(scene:T.Scene,collision:T.Group,name:string,x:number,z:num
   const old=new Set<T.BufferGeometry>();for(const list of batches.values())for(const o of list)old.add(o.geometry);old.add(cube);for(const g of old)if(!live.has(g))g.dispose();
   return root;
  }
- return {root,mat,mesh,box,cylinder,sphere,line,label,column,ramp,finish};
+ return {root,mat,mesh,box,cylinder,sphere,line,label,column,ramp,finish,solid};
 }
+export type Architecture=ReturnType<typeof architecture>;
 
 export function buildTempleExteriors(scene:T.Scene,collision:T.Group){
- const roots:T.Group[]=[];
+ const roots:T.Group[]=[],time={value:0};
  for(const theme of templeCatalog){const p=templePlacement(theme.id),a=architecture(scene,collision,`${theme.name} temple exterior`,p.x,p.z,p.rotation);const {box,cylinder,sphere,line,mesh,mat}=a;
   const stone=mat(theme.stone),ivory=mat(theme.ivory),accent=mat(theme.accent),metal=mat(theme.metal,true),roof=mat(theme.id==='poseidon'?'#527d79':theme.id==='artemis'?'#526979':theme.id==='hephaestus'?'#4b4540':theme.id==='hera'?'#665067':theme.id==='aphrodite'?'#b1817d':theme.id==='athena'?'#697b70':'#9b7053');
   const order=['hera','aphrodite','dionysus'].includes(theme.id)?'corinthian':['poseidon','athena','hermes','artemis'].includes(theme.id)?'ionic':'doric';
@@ -95,9 +97,9 @@ export function buildTempleExteriors(scene:T.Scene,collision:T.Group){
   if(theme.id==='poseidon')for(const side of [-1,1]){box(side*2.9,.50,3.0,2.0,.10,3.5,accent);box(side*2.9,.57,3.0,1.75,.025,3.25,mat('#519b9b',true));}
   if(theme.id==='ares')for(const side of [-1,1]){const cloth=box(side*4.65,4.7,6.55,.72,2.8,.07,accent);cloth.rotation.z=side*.03;emblem(a,theme,side*4.65,4.8,6.65,.30);}
   if(theme.id==='hephaestus')for(const side of [-1,1]){box(side*3.15,7.8,-4.6,.9,3.5,.9,stone);box(side*3.15,9.6,-4.6,1.1,.25,1.1,metal);}
-  roots.push(a.finish());
+  addTempleGrounds(a,theme,time);roots.push(a.finish());
  }
- return {roots,update(_time:number){}};
+ return {roots,update(t:number){time.value=t;}};
 }
 
 function emblem(a:ReturnType<typeof architecture>,theme:TempleTheme,x:number,y:number,z:number,s:number){

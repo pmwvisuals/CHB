@@ -6,7 +6,7 @@ import { simulatePlayer, type PlayerState } from '../lib/game/physics';
 import { buildWorld } from '../lib/game/world';
 import { buildSacredTemple } from '../lib/game/sacred-temple';
 import { templeCatalog, templeAtEntrance, templePlacement, templeLocal, templeReturnPoint, findTemple } from '../lib/game/temple-catalog';
-import { groundHeight, readSave, writeSave, defaults } from '../lib/game/data';
+import { groundHeight, outdoorWalkHeight, readSave, writeSave, defaults } from '../lib/game/data';
 const pass=(name:string)=>console.log('PASS '+name);
 const ctx=new Proxy({}, {get:()=>()=>{}});
 Object.assign(globalThis,{document:{createElement:()=>({width:128,height:128,getContext:()=>ctx})}});
@@ -30,8 +30,10 @@ Object.assign(globalThis,{localStorage:{getItem:()=>{throw new Error('unavailabl
 const saves=new Map<string,string>([['half-blood-v1',JSON.stringify({settings:{...defaults,volume:.7},discoveries:['cabins']})]]);
 Object.assign(globalThis,{localStorage:{getItem:(key:string)=>saves.get(key)||null,setItem:(key:string,value:string)=>saves.set(key,value)}});
 assert.equal(readSave().settings.volume,.7);assert.deepEqual(readSave().discoveries,['cabins']);writeSave({...defaults,volume:.2},['house']);assert.equal(readSave().settings.volume,.2);assert.deepEqual(readSave().discoveries,['house']);pass('existing discoveries migrate and new sanctuary saves take precedence');
-for(const theme of templeCatalog){const t=templePlacement(theme.id),r=templeReturnPoint(theme.id);assert.equal(templeAtEntrance(r.x,r.z),undefined,`${theme.id}: returning must not immediately re-enter`);player=p(r.x,r.z,groundHeight(r.x,r.z));player.yaw=t.rotation;player.keys.add('KeyW');let reached=false;for(let i=0;i<400;i++){step(player,world.octree,1);if(templeAtEntrance(player.collider.start.x,player.collider.start.z)?.id===theme.id){reached=true;break;}}assert.ok(reached,`${theme.id} outdoor doorway blocked at ${JSON.stringify(templeLocal(theme.id,player.collider.start.x,player.collider.start.z))}`);}
+for(const theme of templeCatalog){const t=templePlacement(theme.id),r=templeReturnPoint(theme.id);assert.equal(templeAtEntrance(r.x,r.z),undefined,`${theme.id}: returning must not immediately re-enter`);player=p(r.x,r.z,outdoorWalkHeight(r.x,r.z));player.yaw=t.rotation;player.keys.add('KeyW');let reached=false;for(let i=0;i<650;i++){step(player,world.octree,1);if(templeAtEntrance(player.collider.start.x,player.collider.start.z)?.id===theme.id){reached=true;break;}}assert.ok(reached,`${theme.id} outdoor doorway blocked at ${JSON.stringify(templeLocal(theme.id,player.collider.start.x,player.collider.start.z))}`);}
 pass('all twelve outdoor entrances are reachable and return points avoid redirect loops');
+player=p(58,5,outdoorWalkHeight(58,5));player.yaw=-Math.PI/2;player.keys.add('KeyW');let islandReached=false;for(let i=0;i<1300;i++){step(player,world.octree,1);if(templeAtEntrance(player.collider.start.x,player.collider.start.z)?.id==='poseidon'){islandReached=true;break;}}assert.ok(islandReached,`Poseidon causeway blocked at ${player.collider.start.x},${player.collider.start.z}`);player.keys.clear();player.keys.add('KeyS');step(player,world.octree,1200);assert.ok(player.collider.start.x<60,'causeway is walkable back to shore');pass('Poseidon island is reachable from shore and the causeway works in both directions');
+player=p(-49,49,groundHeight(-55,50)+.5);player.keys.add('KeyD');step(player,world.octree,240);assert.ok(player.collider.start.x<-46.6,'Wayfarer Hall sidewall collision');pass('Wayfarer Hall retains an accessible doorway and solid side walls');
 assert.equal(findTemple('unknown'),undefined);assert.equal(new Set(templeCatalog.map(t=>t.id)).size,12);pass('temple routes are unique and unknown names are rejected');
 world.dispose();
 const sacred=buildSacredTemple();player=p(0,16);player.keys.add('KeyW');step(player,sacred.octree,480);assert.ok(player.collider.start.z<0);assert.ok(player.grounded);pass('sacred hall central aisle is walkable');

@@ -6,13 +6,14 @@ import {buildTempleExteriors,buildGreatHall} from '../lib/game/temple-exteriors'
 import {templeCatalog,templePlacement,templeAtEntrance} from '../lib/game/temple-catalog';
 import {groundHeight} from '../lib/game/data';
 import {simulatePlayer} from '../lib/game/physics';
-const scene=new Scene(),collision=new Group();const ground=new Mesh(new BoxGeometry(180,1,180));ground.position.y=-.5;collision.add(ground);
+import {terrainGeometry} from '../lib/game/landscape';
+const scene=new Scene(),collision=new Group();collision.add(new Mesh(terrainGeometry()));
 const temples=buildTempleExteriors(scene,collision),hall=buildGreatHall(scene,collision);collision.updateMatrixWorld(true);const tree=new Octree().fromGraphNode(collision);
 const player=(x:number,z:number,yaw:number,y=0)=>({keys:new Set(['KeyW']),yaw,grounded:false,jumpQueued:false,velocity:new Vector3(),collider:new Capsule(new Vector3(x,y+.33,z),new Vector3(x,y+1.63,z),.32)});
 const walk=(p:ReturnType<typeof player>,frames=360)=>{for(let i=0;i<frames;i++)simulatePlayer(p,tree,1/120);};
 assert.equal(temples.roots.length,12);
-for(const theme of templeCatalog){const place=templePlacement(theme.id),p=player(place.x+Math.sin(place.rotation)*12,place.z+Math.cos(place.rotation)*12,place.rotation,groundHeight(place.x,place.z));let reached=false;for(let i=0;i<400;i++){simulatePlayer(p,tree,1/120);if(templeAtEntrance(p.collider.start.x,p.collider.start.z)?.id===theme.id){reached=true;break;}}assert.ok(reached,`${theme.id} ramp and portico approach`);
- const root=temples.roots.find(r=>r.userData.templeId===theme.id)!;let meshes=0,triangles=0;root.traverse(o=>{if(o instanceof Mesh){meshes++;triangles+=(o.geometry.index?.count||o.geometry.getAttribute('position').count)/3;assert.ok(Array.from(o.geometry.getAttribute('position').array).every(Number.isFinite));}});assert.ok(meshes<=18,`${theme.id} batch count ${meshes}`);assert.ok(triangles<65000,`${theme.id} triangle budget ${triangles}`);
+for(const theme of templeCatalog){const place=templePlacement(theme.id),p=player(place.x+Math.sin(place.rotation)*(theme.id==='poseidon'?12:16),place.z+Math.cos(place.rotation)*(theme.id==='poseidon'?12:16),place.rotation,groundHeight(place.x,place.z));let reached=false;for(let i=0;i<650;i++){simulatePlayer(p,tree,1/120);if(templeAtEntrance(p.collider.start.x,p.collider.start.z)?.id===theme.id){reached=true;break;}}assert.ok(reached,`${theme.id} ramp and portico approach ${JSON.stringify({p:p.collider.start,place})}`);
+ const root=temples.roots.find(r=>r.userData.templeId===theme.id)!;let meshes=0,triangles=0;root.traverse(o=>{if(o instanceof Mesh){meshes++;triangles+=(o.geometry.index?.count||o.geometry.getAttribute('position').count)/3;assert.ok(Array.from(o.geometry.getAttribute('position').array).every(Number.isFinite));}});assert.ok(meshes<=28,`${theme.id} batch count ${meshes}`);assert.ok(triangles<100000,`${theme.id} triangle budget ${triangles}`);
  const bounds=new Box3().setFromObject(root),size=bounds.getSize(new Vector3());assert.ok(size.y>9,`${theme.id} monumental height`);
  // Actual wall collision, clear of the portal's threshold.
  const lx=2.0,lz=-3.5,x=place.x+Math.cos(place.rotation)*lx+Math.sin(place.rotation)*lz,z=place.z-Math.sin(place.rotation)*lx+Math.cos(place.rotation)*lz;

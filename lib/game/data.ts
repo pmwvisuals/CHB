@@ -1,15 +1,16 @@
+import {templeSites,sitePlacement} from './sanctuary-layout';
 export type Quality = 'low' | 'medium' | 'high';
 export interface Settings { sensitivity: number; volume: number; quality: Quality; headBob: boolean }
 export const defaults: Settings = { sensitivity: 1, volume: .35, quality: 'high', headBob: false };
 export const landmarks = [
   { id: 'hill', name: 'Arrival Ridge', subtitle: 'Where your story begins', x: 0, z: 100, text: 'Asterion is a valley of craft, study and devotion to the ancient Greek gods. Travellers follow the ridge to find a home among its sacred temples.' },
   { id: 'house', name: 'The Wayfarer Hall', subtitle: 'A place to come home to', x: -55, z: 42, text: 'Travellers gather at the Wayfarer Hall to exchange maps and stories. Its open reading room offers a quiet place to plan your next walk.' },
-  { id: 'cabins', name: 'The Temple Courts', subtitle: 'Twelve gods around the Great Hall', x: 0, z: 0, text: 'The Great Hall stands at the heart of twelve sacred temples, with four porticoes opening onto the surrounding courts. Twelve sacred halls honor the Olympian gods. Walk through any temple doorway to explore its statue, offerings and ceremonial architecture. Each hall opens on its own page.' },
+  { id: 'cabins', name: 'The Temple Courts', subtitle: 'The heart of the sanctuary', x: 0, z: 0, text: 'The Great Hall anchors the camp. Twelve sacred temples stand in distinct landscapes across the sanctuary, from a lake island to forest clearings and a volcanic terrace. Walk through any temple doorway to explore its statue, offerings and ceremonial architecture. Each hall opens on its own page.' },
   { id: 'lake', name: 'The Mirror Lake', subtitle: 'Still waters, old stories', x: 64, z: 5, text: 'Reeds whisper along the water and canoes wait by the dock. Take a moment at the end of the pier; even heroes need somewhere quiet.' },
   { id: 'fire', name: 'The Amphitheatre', subtitle: 'An ember of belonging', x: 0, z: -62, text: 'When training ends, residents gather around these flames. For now, listen to the fire and watch the sparks drift into the evening.' },
   { id: 'shrine', name: 'The Forgotten Shrine', subtitle: 'Some paths reward curiosity', x: -40, z: -108, text: 'A small marble shrine rests beneath the forest canopy. Someone has left flowers here. You have found the quietest corner of the sanctuary.' },
 ] as const;
-export const poseidonTemple = { x: Math.sin(5*Math.PI/12)*39, z: Math.cos(5*Math.PI/12)*39, rotation: -7*Math.PI/12 };
+export const poseidonTemple=sitePlacement('poseidon');
 export const temples = [
   ['Zeus', '#d7cbb0', '#55647a', 'ϟ'], ['Hera', '#e9cda8', '#a27560', '♛'], ['Poseidon', '#78ada7', '#376f73', 'Ψ'],
   ['Demeter', '#b5bd72', '#6e7847', '❧'], ['Ares', '#a76149', '#593d39', '⚔'], ['Athena', '#b6b59e', '#6b7565', '◈'],
@@ -28,8 +29,14 @@ export function groundHeight(x: number, z: number) {
   const rolls=hill(-30,60,2.8,18)+hill(28,72,3.0,21)+hill(-101,4,3.5,24)+hill(15,-96,3.8,25)+hill(-59,-91,3.1,17)+hill(-20,-105,2.7,15)+hill(101,93,3.6,26)+.5*(1+Math.sin(x*.09)*Math.cos(z*.07));
   // Low grassy knolls within the court, clear of the central walkway and temple steps.
   const court=(hill(-13,-10,.65,6)+hill(13,11,.6,6))*smooth(3,7,Math.abs(x))*(1-smooth(18,24,Math.hypot(x,z)));
-  return base+rolls*influence+court;
+  let elevation=base+rolls*influence+court;
+  // Broad, gentle approaches flatten into the individual temple terraces.
+  for(const [id,s] of Object.entries(templeSites)){if(id==='poseidon')continue;const r=Math.hypot(x-s.x,z-s.z),blend=1-smooth(19,51,r);elevation=elevation*(1-blend)+s.height*blend;}
+  const lake=((x-91)/31)**2+(z/47)**2,lakeBlend=1-smooth(.78,1.08,lake);elevation=elevation*(1-lakeBlend)-1.4*lakeBlend;
+  const island=1-smooth(13.5,17,Math.hypot(x-templeSites.poseidon.x,z-templeSites.poseidon.z));elevation=elevation*(1-island)+templeSites.poseidon.height*island;
+  return elevation;
 }
+export function outdoorWalkHeight(x:number,z:number){if(Math.abs(z-5)<1.8&&x>=55&&x<=84.7)return x<64?(groundHeight(55,5)+.05)*(1-(x-55)/9)+1.15*(x-55)/9:1.15;return groundHeight(x,z);}
 export function readSave(): { settings: Settings; discoveries: string[] } {
   try {
     const v = JSON.parse(localStorage.getItem('asterion-v1') || localStorage.getItem('half-blood-v1') || '{}');
