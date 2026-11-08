@@ -2,6 +2,7 @@ import * as T from 'three';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { buildWorld } from './world';
 import { groundHeight, landmarks, poseidonTemple, type Settings } from './data';
+import { findTemple, templeAtEntrance, templeReturnPoint } from './temple-catalog';
 import { CampAudio } from './audio';
 import { simulatePlayer } from './physics';
 
@@ -16,7 +17,7 @@ export class CampEngine {
   constructor(private host:HTMLElement,settings:Settings,private events:Events){
     this.settings=settings;this.renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
     this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.03;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.shadowMap.autoUpdate=false;this.renderer.shadowMap.needsUpdate=true;host.appendChild(this.renderer.domElement);
-    this.renderer.domElement.setAttribute('aria-label','First-person view of Asterion Sanctuary');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();if(new URLSearchParams(location.search).get('return')==='poseidon'){const t=poseidonTemple;this.teleport(t.x+Math.sin(t.rotation)*5,t.z+Math.cos(t.rotation)*5);this.yaw=t.rotation+Math.PI;this.started=true;}this.applySettings(settings);
+    this.renderer.domElement.setAttribute('aria-label','First-person view of Asterion Sanctuary');this.world=buildWorld();this.camera.rotation.order='YXZ';this.reset();const returning=findTemple(new URLSearchParams(location.search).get('return'));if(returning){const p=templeReturnPoint(returning.id);this.teleport(p.x,p.z);this.yaw=p.yaw;this.started=true;}this.applySettings(settings);
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(host);this.resize();
     const listen=(target:EventTarget,name:string,fn:EventListener)=>{target.addEventListener(name,fn);this.removers.push(()=>target.removeEventListener(name,fn));};
     listen(window,'keydown',((e:KeyboardEvent)=>{if(!this.active)return;if(['Space','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight','KeyM','KeyE','Escape'].includes(e.code))e.preventDefault();if(e.code==='Escape'){this.pause();this.events.pause();return;}if(e.code==='KeyM'&&!e.repeat){this.pause();this.events.map();return;}if(e.code==='KeyE'&&!e.repeat&&this.nearest){this.pause();this.events.inspect(this.nearest);return;}if(e.code==='Space'&&!e.repeat)this.jumpQueued=true;this.keys.add(e.code);}) as EventListener);
@@ -46,9 +47,8 @@ export class CampEngine {
     simulatePlayer(this,this.world.octree,dt);
     if(this.collider.end.y<-20||!Number.isFinite(this.collider.end.y))this.reset();
     this.syncCamera();
-    const t=poseidonTemple,dx=this.collider.start.x-t.x,dz=this.collider.start.z-t.z;
-    const lx=dx*Math.cos(t.rotation)-dz*Math.sin(t.rotation),lz=dx*Math.sin(t.rotation)+dz*Math.cos(t.rotation);
-    if(this.active&&Math.abs(lx)<1.4&&lz<.6&&lz>-.8){this.pause();this.dispose();location.href='poseidon.html';}
+    const entry=templeAtEntrance(this.collider.start.x,this.collider.start.z);
+    if(this.active&&entry){this.pause();this.dispose();location.href=`${entry.id}.html`;}
   }
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120){this.step(1/120);this.accumulator-=1/120;}}

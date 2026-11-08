@@ -5,6 +5,7 @@ import { Octree } from 'three/addons/math/Octree.js';
 import { simulatePlayer, type PlayerState } from '../lib/game/physics';
 import { buildWorld } from '../lib/game/world';
 import { buildSacredTemple } from '../lib/game/sacred-temple';
+import { templeCatalog, templeAtEntrance, templePlacement, templeLocal, templeReturnPoint, findTemple } from '../lib/game/temple-catalog';
 import { groundHeight, readSave, writeSave, defaults, poseidonTemple } from '../lib/game/data';
 const pass=(name:string)=>console.log('PASS '+name);
 const ctx=new Proxy({}, {get:()=>()=>{}});
@@ -37,11 +38,24 @@ start=templePoint(6, -4);player=p(start.x,start.z,groundHeight(poseidonTemple.x,
 const saves=new Map<string,string>([['half-blood-v1',JSON.stringify({settings:{...defaults,volume:.7},discoveries:['cabins']})]]);
 Object.assign(globalThis,{localStorage:{getItem:(key:string)=>saves.get(key)||null,setItem:(key:string,value:string)=>saves.set(key,value)}});
 assert.equal(readSave().settings.volume,.7);assert.deepEqual(readSave().discoveries,['cabins']);writeSave({...defaults,volume:.2},['house']);assert.equal(readSave().settings.volume,.2);assert.deepEqual(readSave().discoveries,['house']);pass('existing discoveries migrate and new sanctuary saves take precedence');
-world.dispose();console.log('All game checks passed.');
+for(const theme of templeCatalog){const t=templePlacement(theme.id),r=templeReturnPoint(theme.id);assert.equal(templeAtEntrance(r.x,r.z),undefined,`${theme.id}: returning must not immediately re-enter`);player=p(r.x,r.z,groundHeight(r.x,r.z));player.yaw=t.rotation;player.keys.add('KeyW');let reached=false;for(let i=0;i<400;i++){step(player,world.octree,1);if(templeAtEntrance(player.collider.start.x,player.collider.start.z)?.id===theme.id){reached=true;break;}}assert.ok(reached,`${theme.id} outdoor doorway blocked at ${JSON.stringify(templeLocal(theme.id,player.collider.start.x,player.collider.start.z))}`);}
+pass('all twelve outdoor entrances are reachable and return points avoid redirect loops');
+assert.equal(findTemple('unknown'),undefined);assert.equal(new Set(templeCatalog.map(t=>t.id)).size,12);pass('temple routes are unique and unknown names are rejected');
+world.dispose();
 const sacred=buildSacredTemple();player=p(0,16);player.keys.add('KeyW');step(player,sacred.octree,480);assert.ok(player.collider.start.z<0);assert.ok(player.grounded);pass('sacred hall central aisle is walkable');
 player=p(6.15,18);player.keys.add('KeyW');step(player,sacred.octree,240);assert.ok(player.collider.start.z>16.7);pass('sacred hall columns block movement');
 player=p(8,0);player.keys.add('KeyD');step(player,sacred.octree,240);assert.ok(player.collider.start.x<9);pass('sacred hall walls block movement');
 player=p(0,16);player.keys.add('KeyS');step(player,sacred.octree,150);assert.ok(player.collider.start.z>20);pass('sacred hall exit doorway reaches the forecourt');
 player=p(0,-9);player.keys.add('KeyW');step(player,sacred.octree,240);assert.ok(player.collider.start.z>-11);pass('statue pedestal blocks movement');
 sacred.dispose();
+for(const theme of templeCatalog){
+ const hall=buildSacredTemple(theme.id);assert.equal(hall.scene.userData.templeId,theme.id);
+ player=p(0,16);player.keys.add('KeyW');step(player,hall.octree,480);assert.ok(player.collider.start.z<0&&player.grounded,`${theme.id} central aisle`);
+ player=p(0,16);player.keys.add('KeyS');step(player,hall.octree,150);assert.ok(player.collider.start.z>20,`${theme.id} exit`);
+ player=p(6.15,18);player.keys.add('KeyW');step(player,hall.octree,240);assert.ok(player.collider.start.z>16.7,`${theme.id} column`);
+ let meshes=0,triangles=0;hall.scene.traverse(o=>{if(o instanceof Mesh&&o.visible){meshes++;triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;}});
+ assert.ok(meshes<100,`${theme.id}: ${meshes} meshes exceeds draw-call budget`);assert.ok(triangles<350000,`${theme.id}: ${triangles} triangles exceeds geometry budget`);
+ hall.update(1);hall.update(2);hall.dispose();pass(`${theme.name}: entrance, exit, collisions, animation and scene budget (${meshes} meshes, ${Math.round(triangles)} triangles)`);
+}
+console.log('All game checks passed.');
 

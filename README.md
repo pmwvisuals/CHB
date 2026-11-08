@@ -1,52 +1,67 @@
 # Asterion Sanctuary
 
-A single-player, first-person browser exploration game, built with TypeScript, Three.js, and React. The browser-only game is packaged as a static Sites deployment.
+A single-player first-person browser game inspired by ancient Greek mythology, built with TypeScript, Three.js and React. All scenery is generated locally by code; no external art or audio downloads are required during play.
 
 ## Play
 
-Open `asterion-sanctuary.html` in Chrome or Edge for the self-contained version. No server or installation is needed to play that file. The `dist` directory contains the deployable website; `npm run build` regenerates both versions.
+Extract every file in `asterion-playable.zip` to the same folder and open `asterion-sanctuary.html` in Chrome or Edge. The package contains the sanctuary and twelve separate temple pages. Keep all thirteen pages together so navigation works.
 
-Click **Enter camp**. Use **WASD** to walk, **Shift** to sprint, **Space** to jump, and the mouse to look. If your browser embedding does not allow mouse capture, click and drag to look. **E** reads a nearby discovery, **M** opens the illustrated camp map, and **Esc** pauses.
+Choose **Explore the twelve temples** on the welcome screen, or walk through a temple doorway in the sanctuary. Each temple also has a selector for visiting another. Use the menu or press **E** near the exit to return outside that temple.
 
-Settings include Low/Medium/High graphics, mouse sensitivity, ambient volume, and optional walking motion. Settings and six landmark discoveries are saved in local browser storage. Each visit starts at Arrival Ridge. The pause menu includes **Return to entrance**.
+Use **WASD** to walk, **Shift** to sprint, **Space** to jump and the mouse to look. Click and drag to look if mouse capture is unavailable. **Esc** pauses. Outdoors, **M** opens the map and **E** reads nearby discoveries. Graphics quality, sensitivity and walking motion are adjustable. Settings use browser storage; storage sharing for local file URLs depends on the browser.
 
-The Wayfarer Hall, Poseidon's sacred temple and the early Athena residence are open. Poseidon has a columned portico, twin reflecting pools and a separate sacred interior page. Other temple residences remain early designs. The lake is bounded; swimming is not implemented. Use **Visit Poseidon's temple** on the welcome screen to start at its entrance.
+## Twelve sacred interiors
+
+Each page instantiates one hall, with a deity statue, offering table, columned approach, coffered ceiling, votive displays and forecourt altar. These are original stylized interpretations, not archaeological reconstructions. There are no sleeping chambers or lounges.
+
+| Temple | Sacred decoration |
+| --- | --- |
+| Zeus | Thunderbolt relief, eagle, ivory stone and blue standards |
+| Hera | Crowned statue, peacock fans, plum and gold |
+| Poseidon | Bronze statue and trident, wave relief and ship offerings |
+| Demeter | Wheat sheaves, leafy decoration and harvest colors |
+| Ares | Helmet, spear, shields and crimson standards |
+| Athena | Owl shield, olive branches and pale marble |
+| Apollo | Lyres, laurel and a monumental sunburst |
+| Artemis | Bow, silver crescent, stars and sacred deer |
+| Hephaestus | Hammer, anvils, forge glow and basalt piers |
+| Aphrodite | Scallop shell, doves, roses and pearl-colored sculpture |
+| Hermes | Caduceus, winged sandals and compass rings |
+| Dionysus | Thyrsus, vines, grapes and theater masks |
+
+Temple pages share rendering code but create only the selected scene. Static decoration is batched by material to reduce draw calls, and temple GPU resources are released on page exit. Separate pages reduce active scene memory; they do not remove the assets' download or disk-storage cost. Performance still depends on the device and browser.
 
 ## Development
 
-Requires Node.js 22.15 or newer and npm (Node.js 24 recommended).
+Requires Node.js 22.18 or newer; Node.js 24 is recommended.
 
-```
+```sh
 npm ci
 npm run dev
 ```
 
-```
-node node_modules/typescript/bin/tsc --noEmit --incremental false
-node scripts/test-game.mjs
+Open the local HTTP address printed by the development server.
+
+```sh
+npm run typecheck
+npm test
 npm run build
+node scripts/check-pages.mjs
 ```
 
-## Structure
+`dist/` contains the deployable static website. The build also generates the thirteen self-contained HTML pages at the project root. Serve `dist/` through any static HTTP host; preserve its assets directory and all temple HTML files.
 
-- `components/camp/Camp.tsx`: entry screen, HUD, map, journal, pause menu, settings.
-- `lib/game/world.ts`: deterministic terrain, architecture, foliage, collision scene and animation.
-- `lib/game/engine.ts`: rendering, input, lifecycle and fixed-timestep simulation.
-- `lib/game/physics.ts`: capsule controller and collision response, shared with tests.
-- `lib/game/data.ts`: landmarks, cabin palette, terrain height and resilient persistence.
-- `lib/game/audio.ts`: synthesized ambient sound and footsteps; starts only on user interaction.
+## Source map
 
-Architecture is kept separate from the website UI to support future application packaging. There are no player accounts, networking, cloud saves, combat, powers, or NPC quests in this first release.
+- `components/camp/Camp.tsx`: welcome screen, temple selector, HUD, map and menus.
+- `lib/game/world.ts`: outdoor architecture, terrain, foliage and collision scene.
+- `lib/game/engine.ts`: outdoor rendering, controls and doorway navigation.
+- `lib/game/temple-catalog.ts`: deity themes, entry locations and return points.
+- `lib/game/sacred-temple.ts`: shared sacred architecture and Poseidon's sculpture.
+- `lib/game/deity-art.ts`: eleven deity sculptures, attributes and decoration.
+- `temple.ts`: isolated interior runtime and resource lifecycle.
+- `scripts/temple-pages.mjs`: themed HTML generation.
+- `lib/game/physics.ts`: capsule movement and collision response.
+- `tests/game.test.ts`: movement, portal, collision and geometry-budget checks.
 
-## Diagnostics
-
-Append `?debug=1` to show frame rate and player coordinates. The diagnostic build exposes `window.__camp` only with this flag for development inspection. It does not enable networking or access private data.
-
-All scenery and audio are generated locally by code. No remote asset CDN, image downloads, or audio requests are required during play. Asterion is an original setting inspired by ancient Greek mythology.
-
-
-## Sacred Poseidon temple
-
-Builds now produce `dist/poseidon.html` with its own entry bundle. Walking through the outdoor temple doorway opens this page; the welcome screen also offers direct entry. The interior contains a cult statue, offering table, twelve columns, coffered ceiling, votive vessels and ships, and an exterior altar. Sleeping quarters were removed. Use the menu or E near the exit to return to the sanctuary.
-
-The portable build produces two self-contained pages, `asterion-sanctuary.html` and `poseidon.html`; keep them together for navigation. Each page loads only its own scene. Settings are shared through local storage on HTTP hosting; file URL storage is browser-dependent. The temple releases GPU resources on page exit.
+The game has no accounts, multiplayer, combat, powers, NPC quests or swimming. Temple ambient audio is not implemented. Append `?debug=1` outdoors for frame-rate and position diagnostics.

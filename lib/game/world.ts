@@ -80,7 +80,7 @@ export function buildWorld(): World {
   const poseidon = buildPoseidonTemple(scene, collision);
   temples.forEach(([name,color,roofColor,symbol],i)=>{
     if(i===2)return;
-    const a=(i/12)*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33; const g=group(x,z,Math.atan2(-x,-z));const open=i===2||i===5;
+    const a=(i/12)*Math.PI*2+Math.PI/12;const x=Math.sin(a)*33,z=Math.cos(a)*33; const g=group(x,z,Math.atan2(-x,-z));const open=true;
     box(g,0,.08,0,9,.16,9.6,stone,true);box(g,-4.1,2.2,0,.3,4.4,8.4,mat(color),true);box(g,4.1,2.2,0,.3,4.4,8.4,mat(color),true);box(g,0,2.2,-4.1,8.4,4.4,.3,mat(color),true);
     for(const side of [-1,1]){box(g,side*2.65,2.2,4.1,3.1,4.4,.3,mat(color),true);windowAt(g,side*2.65,4.3);box(g,side*4.2,2.2,4.3,.2,4.5,.2,trim);}
     box(g,0,3.95,4.1,2.2,.9,.3,mat(color),true);if(!open)box(g,0,1.65,4.16,2.1,3.3,.2,wood,true);
@@ -98,7 +98,7 @@ export function buildWorld(): World {
     if(i===10){box(g,-5.6,1.5,-1,2.7,3,4,mat(color),true);box(g,-5.6,3.1,-1,3,.2,4.5,mat(roofColor));const parcel=box(g,3.3,.4,5.1,.65,.7,.7,mat('#ac8b58'));box(g,3.3,.76,5.1,.12,.03,.72,trim);}
     lantern(g,-1.35,2.6,4.4);lantern(g,1.35,2.6,4.4);bench(g,-2.6,5.4,2);
     for(const side of [-1,1]){cyl(g,side*4.8,.45,4.5,.5,.8,mat('#a87853'));mesh(new T.DodecahedronGeometry(.65),mat(i===9?'#c08eaf':'#6d8849'),g,side*4.8,1.1,4.5);}
-    if(open)furnish(g,i===5);
+    // Detailed sacred interiors are loaded on their own pages.
     path([[x*.76,z*.76],[x*.58,z*.58]],2);
   });
   // Big House: porch, open ground floor, reading room and staircase silhouette.

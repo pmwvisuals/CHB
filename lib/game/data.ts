@@ -2,9 +2,9 @@ export type Quality = 'low' | 'medium' | 'high';
 export interface Settings { sensitivity: number; volume: number; quality: Quality; headBob: boolean }
 export const defaults: Settings = { sensitivity: 1, volume: .35, quality: 'medium', headBob: false };
 export const landmarks = [
-  { id: 'hill', name: 'Arrival Ridge', subtitle: 'Where your story begins', x: 0, z: 100, text: 'Asterion is a valley of craft, study and devotion to the ancient Greek gods. Travellers follow the ridge to find a home among its residential temples.' },
+  { id: 'hill', name: 'Arrival Ridge', subtitle: 'Where your story begins', x: 0, z: 100, text: 'Asterion is a valley of craft, study and devotion to the ancient Greek gods. Travellers follow the ridge to find a home among its sacred temples.' },
   { id: 'house', name: 'The Wayfarer Hall', subtitle: 'A place to come home to', x: -55, z: 42, text: 'Travellers gather at the Wayfarer Hall to exchange maps and stories. Its open reading room offers a quiet place to plan your next walk.' },
-  { id: 'cabins', name: 'The Temple Courts', subtitle: 'Find where you belong', x: 0, z: 0, text: 'Follow the eastern path to Poseidon’s Hall of the Tides: an open colonnade and a monumental sacred hall on its own page. The other temple residences are early designs, awaiting their own transformation.' },
+  { id: 'cabins', name: 'The Temple Courts', subtitle: 'Find where you belong', x: 0, z: 0, text: 'Twelve sacred halls honor the Olympian gods. Walk through any temple doorway to explore its statue, offerings and ceremonial architecture. Each hall opens on its own page.' },
   { id: 'lake', name: 'The Mirror Lake', subtitle: 'Still waters, old stories', x: 64, z: 5, text: 'Reeds whisper along the water and canoes wait by the dock. Take a moment at the end of the pier; even heroes need somewhere quiet.' },
   { id: 'fire', name: 'The Amphitheatre', subtitle: 'An ember of belonging', x: 0, z: -62, text: 'When training ends, residents gather around these flames. For now, listen to the fire and watch the sparks drift into the evening.' },
   { id: 'shrine', name: 'The Forgotten Shrine', subtitle: 'Some paths reward curiosity', x: -40, z: -108, text: 'A small marble shrine rests beneath the forest canopy. Someone has left flowers here. You have found the quietest corner of the sanctuary.' },
