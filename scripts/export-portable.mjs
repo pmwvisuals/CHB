@@ -21,3 +21,8 @@ templeHTML=templeHTML.replaceAll('./index.html?return=', './asterion-sanctuary.h
 await writeFile(`${theme.id}.html`,templeHTML);
 }
 console.log('Exported all twelve standalone temple pages.');
+
+const forest=await build({entryPoints:['forest.ts'],bundle:true,format:'iife',write:false,outfile:'.sites-runtime/forest.js',minify:true,target:'es2022'});
+let forestHTML=await readFile('forest-page.html','utf8');
+forestHTML=forestHTML.replace('<link rel="stylesheet" href="./assets/forest.css">',()=>'<style>'+forest.outputFiles.find(f=>f.path.endsWith('.css')).text+'</style>').replace('<script type="module" src="./assets/forest.js"></script>',()=>'<script>'+forest.outputFiles.find(f=>f.path.endsWith('.js')).text.replaceAll('</script','<\\/script')+'</script>');
+await writeFile('forest.html',forestHTML);

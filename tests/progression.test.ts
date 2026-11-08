@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {newProfile,acceptQuest,beginExpedition,rewardEnemy,finishExpedition,claimQuest,claimGift,buy,saveProfile,readProfile,validateProfile,importProfile,saveWarning} from '../lib/game/progression';
+const saves=new Map<string,string>();Object.assign(globalThis,{localStorage:{getItem:(k:string)=>saves.get(k)||null,setItem:(k:string,v:string)=>saves.set(k,v)}});
+const p=newProfile();assert.equal(claimQuest(p),false);assert.equal(acceptQuest(p),true);assert.equal(acceptQuest(p),false);
+let r=beginExpedition(p);r.supplies=true;p.supplies=true;assert.equal(claimQuest(p),false);r.coins=20;finishExpedition(p);assert.equal(p.coins,20);assert.equal(claimQuest(p),true);assert.equal(p.quest,1);assert.equal(claimQuest(p),false);assert.equal(claimGift(p),true);assert.equal(claimGift(p),false);
+assert.equal(acceptQuest(p),true);r=beginExpedition(p);for(const e of r.enemies.slice(0,3)){e.hp=0;assert.equal(rewardEnemy(p,e),true);assert.equal(rewardEnemy(p,e),false);}assert.equal(p.kills,3);assert.ok(saveProfile(p));const restored=readProfile();assert.equal(restored.run!.enemies[0].phase,'dead');assert.equal(restored.run!.coins,r.coins);assert.equal(beginExpedition(restored).id,r.id);
+const xp=p.xp,bank=p.coins,carried=r.coins;finishExpedition(p,true);assert.equal(p.xp,xp);assert.equal(p.coins,bank+Math.floor(carried*.75));assert.equal(claimQuest(p),true);assert.equal(p.quest,2);
+p.coins=200;assert.ok(buy(p,'sword'));assert.ok(buy(p,'sword'));assert.equal(buy(p,'sword'),false);assert.equal(p.sword,2);p.potions=9;assert.equal(buy(p,'potion'),false);
+assert.throws(()=>validateProfile({...p,xp:NaN}));assert.throws(()=>importProfile('{bad}'));assert.throws(()=>validateProfile({...p,version:2}));assert.deepEqual(importProfile(JSON.stringify(p)),{...p,revision:p.revision+1});
+Object.assign(globalThis,{localStorage:{getItem:()=>null,setItem:()=>{throw Error('quota');}}});assert.equal(saveProfile(p),false);assert.ok(saveWarning().length>0);
+console.log('PASS expedition rewards, quest sequence, duplicate claims, purchases, resume, defeat, import and storage failure');

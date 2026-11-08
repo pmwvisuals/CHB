@@ -5,3 +5,4 @@ registerHooks({resolve(specifier,context,nextResolve){
   return nextResolve(specifier,context);
 }});
 await import('../tests/game.test.ts');
+await import('../tests/progression.test.ts');

@@ -4,7 +4,7 @@ A single-player first-person browser game inspired by ancient Greek mythology, b
 
 ## Play
 
-Extract every file in `asterion-playable.zip` to the same folder and open `asterion-sanctuary.html` in Chrome or Edge. The package contains the sanctuary and twelve separate temple pages. Keep all thirteen pages together so navigation works.
+Extract every file in `asterion-playable.zip` to the same folder and open `asterion-sanctuary.html` in Chrome or Edge. The package contains the sanctuary and twelve separate temple pages plus the development forest expedition. Keep all fourteen pages together so navigation works.
 
 Choose **Explore the twelve temples** on the welcome screen, or walk through a temple doorway in the sanctuary. Each temple also has a selector for visiting another. Use the menu or press **E** near the exit to return outside that temple.
 
@@ -49,7 +49,7 @@ npm run build
 node scripts/check-pages.mjs
 ```
 
-`dist/` contains the deployable static website. The build also generates the thirteen self-contained HTML pages at the project root. Serve `dist/` through any static HTTP host; preserve its assets directory and all temple HTML files.
+`dist/` contains the deployable static website. The build also generates fourteen self-contained HTML pages at the project root. Serve `dist/` through any static HTTP host; preserve its assets directory and all temple HTML files.
 
 ## Source map
 
@@ -64,8 +64,14 @@ node scripts/check-pages.mjs
 - `lib/game/physics.ts`: capsule movement and collision response.
 - `tests/game.test.ts`: movement, portal, collision and geometry-budget checks.
 
-The game has no accounts, multiplayer, combat, powers, NPC quests or swimming. Temple ambient audio is not implemented. Append `?debug=1` outdoors for frame-rate and position diagnostics.
+The game has no accounts, multiplayer or swimming. Combat, quests and progression are in development; see V1-STATUS.md. Temple ambient audio is not implemented. Append `?debug=1` outdoors for frame-rate and position diagnostics.
 
 ## Woodland realism sample
 
 Choose **Visit the woodland sample** on the welcome screen to arrive at the forest shrine approach. This first procedural art pass adds branching trees with individual leaves, curved wind-animated grass, mottled ground materials and irregular stones inside a roughly 58-metre-wide area. Grass uses spatial patches, distance culling and quality-dependent density. The FPS readout appears while exploring this area. Compare Medium and High on your own device before extending this detail over the map. These assets are code-generated, not scanned models; there are no new asset downloads or rigged vegetation. Browser visual review and GPU performance measurements remain pending because the local preview connection was unavailable.
+
+
+## Version 1 development
+
+Choose **Quests & expeditions** from the welcome screen or pause menu. This opens the quest board, supplies and progress controls; the separate forest page is an early combat implementation. Finished art and browser gameplay verification remain pending. See V1-STATUS.md for completed and remaining work.
+
