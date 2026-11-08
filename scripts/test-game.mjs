@@ -6,3 +6,4 @@ registerHooks({resolve(specifier,context,nextResolve){
 }});
 await import('../tests/game.test.ts');
 await import('../tests/progression.test.ts');
+await import('../tests/vegetation.test.ts');
