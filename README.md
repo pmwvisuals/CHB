@@ -2,6 +2,8 @@
 
 A single-player first-person browser game inspired by ancient Greek mythology, built with TypeScript, Three.js and React. All scenery is generated locally by code; no external art or audio downloads are required during play.
 
+The twelve temple exteriors now have fluted colonnades, carved deity emblems, tiled pediments and ceremonial approaches. A new Great Hall stands at the center with four walk-through porticoes. Choose **Visit the Great Hall** to inspect it. See [TEMPLE-EXTERIORS.md](TEMPLE-EXTERIORS.md) for the building designs and validation.
+
 ## Play
 
 Extract every file in `asterion-playable.zip` to the same folder and open `asterion-sanctuary.html` in Chrome or Edge. The package contains the sanctuary and twelve separate temple pages plus the development forest expedition. Keep all fourteen pages together so navigation works.
