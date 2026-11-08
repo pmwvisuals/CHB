@@ -40,7 +40,7 @@ export class CampEngine {
   private lock(){try{const result=this.renderer.domElement.requestPointerLock();if(result)void result.catch(()=>{});}catch{/* Click-drag looking remains available when embedding blocks pointer lock. */}}
   start(){this.active=true;this.started=true;this.keys.clear();this.previous=performance.now();this.accumulator=0;this.audio.start(this.settings.volume);this.audio.volume(this.settings.volume);this.lock();}
   pause(){this.active=false;this.keys.clear();this.jumpQueued=false;this.velocity.set(0,0,0);this.dragging=false;this.audio.pause();if(document.pointerLockElement)document.exitPointerLock();}
-  applySettings(settings:Settings){this.settings=settings;const q=settings.quality;this.renderer.setPixelRatio(Math.min(devicePixelRatio,q==='low'?1:q==='medium'?1.4:1.8));this.renderer.shadowMap.enabled=q!=='low';this.world.sun.shadow.mapSize.setScalar(q==='high'?2048:1024);this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;this.renderer.shadowMap.needsUpdate=true;this.world.foliage[0].visible=q!=='low';this.audio.volume(settings.volume);this.resize();}
+  applySettings(settings:Settings){this.settings=settings;const q=settings.quality;this.renderer.setPixelRatio(Math.min(devicePixelRatio,q==='low'?1:q==='medium'?1.4:1.8));this.renderer.shadowMap.enabled=q!=='low';this.world.sun.shadow.mapSize.setScalar(q==='high'?2048:1024);this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;this.renderer.shadowMap.needsUpdate=true;this.world.foliage[0].visible=q!=='low';this.world.setQuality(q);this.audio.volume(settings.volume);this.resize();}
   private resize(){const w=this.host.clientWidth,h=this.host.clientHeight;this.renderer.setSize(w,h);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
   private syncCamera(){this.camera.position.copy(this.collider.end);if(this.settings.headBob&&this.grounded&&this.velocity.lengthSq()>.5)this.camera.position.y+=Math.sin(this.time*12)*.035;this.camera.rotation.set(this.pitch,this.yaw,0);}
   step(dt:number){
@@ -53,7 +53,7 @@ export class CampEngine {
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120){this.step(1/120);this.accumulator-=1/120;}}
     else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+2.5,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
-    if(this.disposed)return;this.world.update(this.time);this.renderer.render(this.world.scene,this.camera);this.frames++;
+    if(this.disposed)return;this.world.update(this.time,this.camera.position);this.renderer.render(this.world.scene,this.camera);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
       let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';if(x>25&&x<51&&z>-2&&z<23)zone='Poseidon · Hall of the Tides';

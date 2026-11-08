@@ -57,5 +57,15 @@ for(const theme of templeCatalog){
  assert.ok(meshes<100,`${theme.id}: ${meshes} meshes exceeds draw-call budget`);assert.ok(triangles<350000,`${theme.id}: ${triangles} triangles exceeds geometry budget`);
  hall.update(1);hall.update(2);hall.dispose();pass(`${theme.name}: entrance, exit, collisions, animation and scene budget (${meshes} meshes, ${Math.round(triangles)} triangles)`);
 }
+const sample=buildWorld();
+assert.ok(sample.scene.userData.woodland.trees>=16);
+assert.ok(sample.scene.userData.woodland.grassClumps>3000);
+player=p(-40,-96,groundHeight(-40,-96));player.keys.add('KeyW');step(player,sample.octree,160);
+assert.ok(player.collider.start.z<-101&&player.grounded,'woodland approach must remain walkable');
+const patches: any[]=[];sample.scene.traverse(o=>{if(o.name==='Woodland grass patch')patches.push(o);});
+sample.setQuality('high');sample.update(1,new Vector3(-40,2,-96));const high=patches.reduce((n,o)=>n+(o.visible?o.count:0),0);
+sample.setQuality('low');sample.update(2,new Vector3(-40,2,-96));const low=patches.reduce((n,o)=>n+(o.visible?o.count:0),0);assert.ok(low<high*.5&&low>0);
+sample.update(3,new Vector3(100,2,100));assert.ok(patches.every(o=>!o.visible));
+console.log('Woodland scene:',sample.scene.userData.woodland);sample.dispose();pass('woodland path, scene density, quality scaling and distant culling');
 console.log('All game checks passed.');
 

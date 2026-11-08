@@ -65,3 +65,7 @@ node scripts/check-pages.mjs
 - `tests/game.test.ts`: movement, portal, collision and geometry-budget checks.
 
 The game has no accounts, multiplayer, combat, powers, NPC quests or swimming. Temple ambient audio is not implemented. Append `?debug=1` outdoors for frame-rate and position diagnostics.
+
+## Woodland realism sample
+
+Choose **Visit the woodland sample** on the welcome screen to arrive at the forest shrine approach. This first procedural art pass adds branching trees with individual leaves, curved wind-animated grass, mottled ground materials and irregular stones inside a roughly 58-metre-wide area. Grass uses spatial patches, distance culling and quality-dependent density. The FPS readout appears while exploring this area. Compare Medium and High on your own device before extending this detail over the map. These assets are code-generated, not scanned models; there are no new asset downloads or rigged vegetation. Browser visual review and GPU performance measurements remain pending because the local preview connection was unavailable.
