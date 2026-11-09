@@ -19,9 +19,9 @@ export function groundHabitat(x:number,z:number){
  return {grass,bush,forest,patch};
 }
 export function groundColor(x:number,z:number){
- const a=groundHabitat(x,z),fine=landNoise(x*.4,z*.4),c=new T.Color('#a18a68');
- const green=new T.Color('#698546').lerp(new T.Color('#4c693d'),a.forest*.7);
- green.lerp(new T.Color('#7c9151'),landNoise(x*.045,z*.045)*.32);c.lerp(green,a.grass);
+ const a=groundHabitat(x,z),fine=landNoise(x*.4,z*.4),broad=landNoise(x*.035+8,z*.035-3),c=new T.Color('#8b7556');
+ const green=new T.Color('#315b32').lerp(new T.Color('#1d3e2a'),a.forest*.72);
+ green.lerp(new T.Color('#486d39'),broad*.42);c.lerp(green,a.grass);
  const forge=1-Math.min(1,Math.hypot(x-templeSites.hephaestus.x,z-templeSites.hephaestus.z)/31);
  c.lerp(new T.Color('#524b43'),forge*.9);return c.multiplyScalar((.91+fine*.15)*(1-forestShade(x,z)*.48));
 }
@@ -55,16 +55,22 @@ export function groundMaterial(){
   s.vertexShader='attribute vec2 groundCover; varying vec3 soilPoint; varying vec2 coverWeights;\n'+s.vertexShader;
   s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nsoilPoint=position;coverWeights=groundCover;');
   s.fragmentShader=`varying vec3 soilPoint;varying vec2 coverWeights;uniform sampler2D soilDetail;
-   vec2 coverUV(float tile,vec2 offset){vec2 uv=fract(soilPoint.xz*.5+offset);return vec2((uv.x*.996+.002)*.5+tile*.5,uv.y*.996+.002);}
-   vec4 coverSample(sampler2D tex){return mix(texture2D(tex,coverUV(0.,vec2(0.))),texture2D(tex,coverUV(1.,vec2(.31,.47))),coverWeights.y);}
+   vec2 coverUV(float tile,vec2 uv){uv=fract(uv);return vec2((uv.x*.996+.002)*.5+tile*.5,uv.y*.996+.002);}
+   vec4 coverSample(sampler2D tex){
+    float tile=step(.48,coverWeights.y);vec2 p=soilPoint.xz;
+    vec2 a=p*.47;vec2 b=mat2(.819,.574,-.574,.819)*p*.283+vec2(.37,.19);
+    float blend=.34+.32*sin(p.x*.071+sin(p.y*.053));
+    return mix(texture2D(tex,coverUV(tile,a)),texture2D(tex,coverUV(tile,b)),blend);
+   }
   `+s.fragmentShader;
   s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec3 coverGrain=coverSample(map).rgb/mix(vec3(.25,.32,.105),vec3(.17,.25,.085),coverWeights.y);
    vec3 soilGrain=texture2D(soilDetail,soilPoint.xz*.46).rgb;
-   diffuseColor.rgb*=mix(soilGrain,clamp(coverGrain,vec3(.4),vec3(1.65)),coverWeights.x);`);
+   float gardenMottle=.82+.24*texture2D(soilDetail,soilPoint.xz*.037+vec2(.13,.61)).r;
+   diffuseColor.rgb*=mix(soilGrain,clamp(coverGrain*gardenMottle,vec3(.34),vec3(1.45)),coverWeights.x);`);
   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','float roughnessFactor = roughness * mix(.96,coverSample(roughnessMap).g,coverWeights.x);');
   s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',T.ShaderChunk.normal_fragment_maps.replaceAll('texture2D( normalMap, vNormalMapUv ).xyz','mix(vec3(.5,.5,1.),coverSample(normalMap).xyz,coverWeights.x)'));
  };
- m.customProgramCacheKey=()=> 'asterion-blender-cover-v1';
+ m.customProgramCacheKey=()=> 'asterion-garden-cover-v2';
  // The soil sampler is an extra shader uniform, so release it explicitly.
  const dispose=m.dispose.bind(m);m.dispose=()=>{soil.dispose();dispose();};return m;
 }

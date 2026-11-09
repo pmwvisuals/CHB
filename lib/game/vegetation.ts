@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { unzlibSync } from 'three/addons/libs/fflate.module.js';
 import { vegetationAssets,leafAtlas,leafAtlasSize } from './generated/vegetation';
+import {gardenGrassAssets} from './generated/garden-grass';
 export type PlantId=keyof typeof vegetationAssets;
 export interface PlantPlacement {id:PlantId;x:number;y:number;z:number;scale:number;rotation:number}
 function bytes(s:string){const binary=atob(s);return unzlibSync(Uint8Array.from(binary,c=>c.charCodeAt(0)));}
@@ -43,12 +44,15 @@ export function plantCollection(scene:T.Scene,placements:PlantPlacement[],option
  let quality='medium';return {setQuality(q:string){quality=q;},update(t:number,camera?:T.Vector3){time.value=t;if(!camera)return;for(const b of batches){const distance=Math.hypot(camera.x-b.center.x,camera.z-b.center.z),near=quality==='high'?55:quality==='medium'?34:0,range=b.ground?(quality==='low'?24:55):(options.range||180);const visible=distance<range;const detailed=distance<near;b.high.visible=visible&&detailed;b.low.visible=visible&&!detailed;}},dispose(){depths.forEach(d=>d.dispose());},stats:{plants:placements.length,cells:cells.size,types:[...new Set(placements.map(p=>p.id))]}};
 }
 
-export function meadowGrass(){
- const geometry=unpackPlant(vegetationAssets.camp_grass.parts[0].high),time={value:0};
- const material=new T.MeshStandardMaterial({color:'#9baf6b',roughness:.95,side:T.DoubleSide});
+export function gardenGrass(){
+ const geometry=(kind:keyof typeof gardenGrassAssets)=>{const source=gardenGrassAssets[kind],raw=bytes(source.p),colors=bytes(source.c),indices=bytes(source.i),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(raw.buffer),3));g.setAttribute('color',new T.BufferAttribute(new Float32Array(colors.buffer),3));g.setIndex(new T.BufferAttribute(new Uint16Array(indices.buffer),1));g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();return g;};
+ const garden=geometry('garden'),wisps=geometry('wisps'),time={value:0};
+ const material=new T.MeshStandardMaterial({color:'#b8cdb4',vertexColors:true,roughness:.88,side:T.DoubleSide});
  material.onBeforeCompile=s=>{s.uniforms.meadowTime=time;s.vertexShader='uniform float meadowTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
  #ifdef USE_INSTANCING
- transformed.x+=sin(meadowTime*1.5+instanceMatrix[3].x*.4+instanceMatrix[3].z*.3)*position.y*position.y*.22;
- #endif`);};material.customProgramCacheKey=()=> 'asterion-meadow-v1';
- return {geometry,material,update(t:number){time.value=t;}};
+ float gardenWind=sin(meadowTime*1.45+instanceMatrix[3].x*.37+instanceMatrix[3].z*.29);
+ transformed.x+=gardenWind*position.y*position.y*.15;
+ transformed.z+=sin(meadowTime*.83+instanceMatrix[3].z*.41)*position.y*position.y*.08;
+ #endif`);};material.customProgramCacheKey=()=> 'asterion-garden-grass-v2';
+ return {garden,wisps,material,update(t:number){time.value=t;}};
 }

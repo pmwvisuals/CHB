@@ -11,10 +11,10 @@ import {terrainGeometry,groundHabitat,groundMaterial,weatheredRockGeometry} from
 import {simulatePlayer} from '../lib/game/physics';
 const terrain=terrainGeometry(),positions=terrain.getAttribute('position');
 for(let i=0;i<positions.count;i+=19)assert.ok(Math.abs(positions.getY(i)-groundHeight(positions.getX(i),positions.getZ(i)))<.00001);
-let green=0,flat=0,steep=0,exposed=0;
-for(let x=-130;x<130;x+=3)for(let z=-130;z<130;z+=3){const slope=terrainSlope(x,z),cover=surfaceCover(x,z);if(slope<.2&&roadCover(x,z)<.1&&x<50){flat++;if(cover>.8)green++;}if(slope>.6){steep++;if(cover<.01)exposed++;}}
-assert.ok(green/flat>.9,'gentle ground is predominantly grass');assert.ok(steep>10&&exposed===steep,'steep faces stay bare');
-assert.equal(slopeCover(.7),0);assert.equal(slopeCover(.1),1);assert.ok(roadCover(0,60)>.9&&surfaceCover(0,60)<.1,'arrival road stays bare');assert.ok(surfaceCover(123,0)<.1,'lake shore stays sandy');
+let green=0,flat=0;
+for(let x=-130;x<130;x+=3)for(let z=-130;z<130;z+=3){const slope=terrainSlope(x,z),cover=surfaceCover(x,z);if(slope<.45&& roadCover(x,z)<.1&&x<50){flat++;if(cover>.8)green++;}}
+assert.ok(green/flat>.9,'gentle ground and rounded hills are predominantly grass');
+assert.equal(slopeCover(1.3),0);assert.equal(slopeCover(.45),1);assert.ok(surfaceCover(-30,60)>.9&&surfaceCover(-59,-91)>.9,'named sanctuary hills stay green');assert.ok(roadCover(0,60)>.9&&surfaceCover(0,60)<.1,'arrival road stays bare');assert.ok(surfaceCover(123,0)<.1,'lake shore stays sandy');
 assert.equal(terrain.getAttribute('groundCover').count,positions.count);
 for(const packed of Object.values(groundCover.maps)){const raw=unzlibSync(Uint8Array.from(atob(packed),c=>c.charCodeAt(0)));assert.equal(raw.length,groundCover.width*groundCover.height*3);}
 const material=groundMaterial(),shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};
@@ -27,4 +27,4 @@ for(let i=0;i<600;i++)simulatePlayer(p,octree,1/120);
 assert.ok(p.collider.start.z<52&&Math.abs(p.collider.start.y-.32-groundHeight(p.collider.start.x,p.collider.start.z))<.12,'hill walking follows the terrain without sticking or falling');
 p.keys.clear();for(let i=0;i<120;i++)simulatePlayer(p,octree,1/120);assert.ok(p.grounded,'player settles on the hillside');p.jumpQueued=true;for(let i=0;i<240;i++)simulatePlayer(p,octree,1/120);assert.ok(p.grounded,'jump lands on sloping terrain');
 const rock=weatheredRockGeometry();assert.ok(rock.getAttribute('color').count===rock.getAttribute('position').count);assert.ok(Array.from(rock.getAttribute('position').array).every(Number.isFinite));assert.ok(rock.getAttribute('position').count<1500,'shared weathered rock stays small enough to instance');
-terrain.dispose();rock.dispose();console.log('PASS landscape relief, matching collision surface, grass coverage, exposed slopes/roads, packed PBR maps, shader integration, hill walking/jumping and rock geometry budget');
+terrain.dispose();rock.dispose();console.log('PASS landscape relief, matching collision surface, dark garden cover on hills, exposed cliffs/roads, packed PBR maps, shader integration, hill walking/jumping and rock geometry budget');
