@@ -1,3 +1,4 @@
+import {campRoutes,routePoints,gardenCourts} from '@/lib/game/camp-layout';
 import {templeCatalog} from '@/lib/game/temple-catalog';
 import {templeSites,templeTrails,sitePoint,type SiteId} from '@/lib/game/sanctuary-layout';
 import {landmarks} from '@/lib/game/data';
@@ -8,7 +9,8 @@ export default function SanctuaryMap({x,z,selected,onSelect,onVisit}:{x:number;z
   <path d="M75 210Q180 95 360 80L565 105L575 310Q470 260 400 230Q180 300 75 420Z" fill="#8ea181"/>
   <ellipse cx={map(91)} cy={map(0)} rx={31*1.12} ry={47*1.12} fill="#80aaa8" stroke="#5b8583"/>
   {Object.entries(templeTrails).map(([id,points])=>{const end=sitePoint(id as SiteId,0,16);return <polyline key={id} points={[...points,[end.x,end.z]].map(([px,pz])=>`${map(px)},${map(pz)}`).join(' ')} fill="none" stroke="#ae966d" strokeWidth="3" strokeLinecap="round"/>;})}
-  <path d={`M${map(0)} ${map(113)}L${map(0)} ${map(90)}L${map(8)} ${map(76)}L${map(0)} ${map(15)} M${map(-55)} ${map(62)}L${map(-35)} ${map(42)}L${map(0)} ${map(32)}L${map(46)} ${map(43)} M${map(-67)} ${map(-34)}L${map(-30)} ${map(0)}L${map(60)} ${map(5)} M${map(0)} ${map(-25)}L${map(0)} ${map(-62)}L${map(-40)} ${map(-108)}`} fill="none" stroke="#ae966d" strokeWidth="5"/>
+  {gardenCourts.map((g,i)=><ellipse key={'garden'+i} cx={map(g.x)} cy={map(g.z)} rx={g.rx*1.12} ry={g.rz*1.12} fill="#7b9270"/>)}
+  {campRoutes.map(r=><polyline key={r.name} points={routePoints(r.points).map(p=>`${map(p.x)},${map(p.z)}`).join(' ')} fill="none" stroke="#ae966d" strokeWidth={r.width} strokeLinecap="round"><title>{r.name}</title></polyline>)}
   {templeCatalog.map(t=>{const site=templeSites[t.id],px=map(site.x),pz=map(site.z);return <g key={t.id} role="button" tabIndex={0} className="map-marker" aria-label={`Visit ${t.name} at ${site.region}`} onClick={()=>onVisit(t.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onVisit(t.id);}}}>
    <title>{t.name} · {site.region} — visit temple grounds</title><circle cx={px} cy={pz} r="15" fill={t.accent} stroke="#efe5c6" strokeWidth="2"/>
    <path d={`M${px-8} ${pz-4}L${px} ${pz-10}L${px+8} ${pz-4}Z M${px-6} ${pz-2}v9m6-9v9m6-9v9 M${px-9} ${pz+8}h18`} stroke="#efe5c6" fill="none" strokeWidth="1.5"/>

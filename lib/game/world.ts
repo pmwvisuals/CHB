@@ -9,6 +9,8 @@ import { terrainGeometry,groundMaterial,trailMaterial,groundHabitat,weatheredRoc
 import { buildTempleExteriors,buildGreatHall } from './temple-exteriors';
 import { templeCatalog,templePlacement } from './temple-catalog';
 import {sanctuaryExtent,templeTrails,insideTempleGrounds,templeSites,sitePoint} from './sanctuary-layout';
+import {campRoutes,routePoints,inGardenCourt} from './camp-layout';
+import {buildCampGardens} from './camp-gardens';
 import {buildWayfarerHall} from './wayfarer';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
@@ -56,19 +58,14 @@ export function buildWorld(): World {
   const cloudMat=new T.MeshBasicMaterial({color:'#fff0d7',transparent:true,opacity:.38,depthWrite:false});
   for(let i=0;i<24;i++){const c=mesh(new T.SphereGeometry(1,8,5),cloudMat,scene,(rand()-.5)*550,85+rand()*50,(rand()-.5)*500);c.scale.set(20+rand()*40,2+rand()*3,6+rand()*10);c.castShadow=false;}
   const paths: { points:T.Vector3[]; width:number }[]=[];
-  function path(coords:number[][],width=3.5){const curve=new T.CatmullRomCurve3(coords.map(([x,z])=>new T.Vector3(x,0,z)));const points=curve.getPoints(100);paths.push({points,width});const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
-    points.forEach((p,i)=>{const dir=points[Math.min(i+1,100)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72*(1+.055*Math.sin(i*.47));const x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,h(x,z)+.065,z);uvs.push(j/4,i/100);}if(i<100)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
+  function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
+    points.forEach((p,i)=>{const dir=points[Math.min(i+1,points.length-1)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72*(1+.055*Math.sin(i*.47));const x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,h(x,z)+.065,z);uvs.push(j/4,i/(points.length-1));}if(i<points.length-1)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
     const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();mesh(geo,trailMaterial(),scene).castShadow=false;
   }
-  path([[0,122],[0,96],[8,76],[3,53],[0,0]],5);
-  path([[-56,48],[-34,42],[0,32],[48,40],[61,22],[64,5]],4);
-  path([[-68,-35],[-50,-25],[-30,0],[0,0],[30,0],[62,5]],4);
-  path([[0,0],[0,-35],[0,-62],[-18,-79],[-40,-108]],3.5);
-  path([[-40,-108],[-67,-95],[-84,-62],[-68,-35]],2.3);
-  path([[-55,48],[-77,61],[-78,85],[-43,83],[0,96]],2.4);
+  for(const route of campRoutes)path(route.points,route.width);
   function circleGround(x:number,z:number,r:number,color:string){ const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);const p=geo.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,h(x+p.getX(i),z+p.getZ(i))+.075);const m=mesh(geo,mat(color),scene,x,0,z);m.castShadow=false;return m; }
   // The communal green shares the living terrain, rather than two flat coloured discs.
-  path(Array.from({length:17},(_,i)=>[Math.sin(i/16*Math.PI*2)*20.5,Math.cos(i/16*Math.PI*2)*20.5]),2.2);
+
   // Twelve individually decorated cabins face the communal green.
   function roof(g:T.Object3D,w:number,d:number,y:number,color:string){const rise=2.1,len=Math.hypot(w/2,rise); for(const side of [-1,1]){const r=box(g,side*w/4,y+rise/2,0,len+.4,.24,d+1.1,mat(color));r.rotation.z=-side*Math.atan2(rise,w/2);
     for(let j=0;j<8;j++){const rib=box(g,side*w/4,y+rise/2+.13,-d/2+j*d/7,len+.4,.045,.055,mat('#514e43'));rib.rotation.z=r.rotation.z;}}
@@ -77,7 +74,7 @@ export function buildWorld(): World {
   function windowAt(g:T.Object3D,x:number,z:number,dy=0){box(g,x,2.2+dy,z,1.45,1.65,.12,trim);box(g,x,2.2+dy,z+.08,1.2,1.4,.08,mat('#6d9e9e',.25));box(g,x,2.2+dy,z+.14,.06,1.4,.07,trim);box(g,x,2.2+dy,z+.14,1.2,.06,.07,trim);box(g,x,1.3+dy,z+.2,1.75,.15,.55,wood);}
   function bench(g:T.Object3D,x:number,z:number,w=3){box(g,x,.65,z,w,.18,.7,wood,true);for(const s of [-1,1])box(g,x+s*(w/2-.25),.3,z,.15,.6,.55,wood);}
   const templeExteriors=buildTempleExteriors(scene,collision);buildGreatHall(scene,collision);
-  templeCatalog.forEach(theme=>{const endpoint=sitePoint(theme.id,0,16);path([...templeTrails[theme.id],[endpoint.x,endpoint.z]],2.8);});
+  templeCatalog.filter(theme=>theme.id!=='poseidon').forEach(theme=>{const endpoint=sitePoint(theme.id,0,16);path([...templeTrails[theme.id],[endpoint.x,endpoint.z]],2.8);});
   buildWayfarerHall(scene,collision);
   // Dining pavilion with columns, garlands and communal tables.
   const pavilion=group(46,43);box(pavilion,0,.08,0,20,.16,16,stone,true);
@@ -119,20 +116,18 @@ export function buildWorld(): World {
   sign('THE TERRACED GARDENS',-73,87,0,5);
   // Small human details give the paths and gathering spaces a sense of use.
   for(const [x,z] of [[-5,76],[7,58],[-26,40],[28,38],[57,22],[-38,-10],[-6,-43],[-25,-88]]){const g=group(x,z);box(g,0,1.55,0,.15,3.1,.15,wood,true);box(g,.3,3,0,.7,.1,.12,wood);lantern(g,.55,2.7,0);}
-  for(const x of [-12,12]){const g=group(x,8);bench(g,0,0,4);for(const s of [-1,1]){cyl(g,s*2.7,.3,0,.48,.6,mat('#ab7855'));mesh(new T.DodecahedronGeometry(.5),mat('#b8a66d'),g,s*2.7,.85,0);}}
+  for(const x of [-16,16]){const g=group(x,8);bench(g,0,0,4);for(const s of [-1,1]){cyl(g,s*2.7,.3,0,.48,.6,mat('#ab7855'));mesh(new T.DodecahedronGeometry(.5),mat('#b8a66d'),g,s*2.7,.85,0);}}
   const pathStones=new T.InstancedMesh(weatheredRockGeometry(1),weatheredRockMaterial(),650);const stoneDummy=new T.Object3D();let stoneCount=0;
-  for(const path of paths)for(let i=2;i<path.points.length-2;i+=3)for(const side of [-1,1]){if(stoneCount>=650)break;const p=path.points[i],dir=path.points[i+1].clone().sub(path.points[i-1]).normalize();const x=p.x+dir.z*(path.width*.5+.12)*side,z=p.z-dir.x*(path.width*.5+.12)*side;stoneDummy.position.set(x,h(x,z)+.06,z);stoneDummy.scale.set(.16+rand()*.14,.08+rand()*.05,.15+rand()*.12);stoneDummy.rotation.y=rand()*6;stoneDummy.updateMatrix();pathStones.setMatrixAt(stoneCount++,stoneDummy.matrix);}pathStones.count=stoneCount;pathStones.receiveShadow=true;scene.add(pathStones);
+  for(const path of paths)for(let i=2;i<path.points.length-2;i+=3)for(const side of [-1,1]){if(stoneCount>=650)break;const p=path.points[i],dir=path.points[i+1].clone().sub(path.points[i-1]).normalize();const x=p.x+dir.z*(path.width*.72+.12)*side,z=p.z-dir.x*(path.width*.72+.12)*side;stoneDummy.position.set(x,h(x,z)+.06,z);stoneDummy.scale.set(.16+rand()*.14,.08+rand()*.05,.15+rand()*.12);stoneDummy.rotation.y=rand()*6;stoneDummy.updateMatrix();pathStones.setMatrixAt(stoneCount++,stoneDummy.matrix);}pathStones.count=stoneCount;pathStones.receiveShadow=true;scene.add(pathStones);
   const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('ASTERION SANCTUARY',9);gs.position.set(0,6.3,.31);gate.add(gs);
   // Paths are kept clear; all vegetation is deterministic and instanced.
-  function nearPath(x:number,z:number,extra=0){return paths.some(p=>p.points.some((q,i)=>i%3===0&&Math.hypot(q.x-x,q.z-z)<p.width*.6+extra));}
-  function reserved(x:number,z:number){return insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x+67,z+34)<20 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
-  const plants:PlantPlacement[]=[],planted:{x:number;z:number}[]=[];
-  for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(inWoodland(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
+  function nearPath(x:number,z:number,extra=0){return paths.some(p=>p.points.some(q=>Math.hypot(q.x-x,q.z-z)<p.width*.75+extra));}
+  function reserved(x:number,z:number){return inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x+67,z+34)<20 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
+  const plants:PlantPlacement[]=buildCampGardens(scene,collision),planted:{x:number;z:number}[]=[];
+  for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(inWoodland(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(Math.abs(x)<40&&z>-35&&z<95)continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
    const forest=z<-65||Math.abs(x)>105,scale=forest?.65+rand()*.4:.65+rand()*.25;planted.push({x,z});plants.push({id:forest?(i%2?'forest_oak':'forest_fir'):(i%2?'camp_olive':'camp_blossom'),x,y:h(x,z),z,scale,rotation:rand()*6.28});
    const c=new T.Mesh(new T.CylinderGeometry(forest?.65:.2,forest?.9:.35,forest?12:4,8));c.position.set(x,h(x,z)+(forest?6:2),z);collision.add(c);
   }
-  // A deliberate ornamental grove inside the sanctuary, clear of entrances and paths.
-  for(const [i,[x,z]] of [[-15,15],[15,15],[-15,-15],[15,-15],[-23,59],[-31,64],[22,62],[31,65]].entries()){if(nearPath(x,z,3)||Math.hypot(x,z)<20)continue;plants.push({id:i%2?'camp_blossom':'camp_olive',x,y:h(x,z),z,scale:.8,rotation:i*1.7});const c=new T.Mesh(new T.CylinderGeometry(.25,.4,4,8));c.position.set(x,h(x,z)+2,z);collision.add(c);}
   for(let i=0;i<2600;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(inWoodland(x,z)||nearPath(x,z,.8)||rand()>groundHabitat(x,z).bush*.85)continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
   for(const theme of templeCatalog){const p=templePlacement(theme.id);for(const side of [-1,1]){const lx=side*5.4,lz=9.2,x=p.x+Math.cos(p.rotation)*lx+Math.sin(p.rotation)*lz,z=p.z-Math.sin(p.rotation)*lx+Math.cos(p.rotation)*lz;plants.push({id:theme.id==='aphrodite'||theme.id==='hera'?'camp_myrtle':'camp_laurel',x,y:h(x,z),z,scale:.28,rotation:p.rotation});}}
   for(const id of ['ares','artemis','dionysus'] as const){const site=templeSites[id];for(let i=0;i<48;i++){const angle=i*2.399,r=24+(i%5)*4,x=site.x+Math.sin(angle)*r,z=site.z+Math.cos(angle)*r;if(nearPath(x,z,3)||insideTempleGrounds(x,z,2))continue;plants.push({id:i%2?'forest_oak':'forest_fir',x,y:h(x,z),z,scale:.75+(i%4)*.07,rotation:angle});const c=new T.Mesh(new T.CylinderGeometry(.6,.8,12,8));c.position.set(x,h(x,z)+6,z);collision.add(c);}}
