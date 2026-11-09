@@ -14,7 +14,8 @@ function walk(x:number,z:number,tx:number,tz:number){const p=player(x,z);p.keys.
 walk(-67,-12,-67,-34);walk(-91,-32,-67,-32);walk(-82,-34,-82,-38);
 const dock=walk(51,-18,72,-18);assert.ok(Math.abs(dock.collider.start.y-.32-1.12)<.1,'dock deck is grounded at its declared spawn height');walk(72,-18,51,-18);walk(65,28,65,35);
 const rail=player(70,-18);rail.keys.add('KeyS');for(let i=0;i<400;i++)simulatePlayer(rail,tree,1/120);assert.ok(rail.collider.start.z<-16.2,'dock rail prevents walking into the water');
-const shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};(lake.water.material as any).onBeforeCompile(shader,{});assert.ok(shader.fragmentShader.includes('vec2 ripple')&&shader.fragmentShader.includes('caustic'));
+const shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};(lake.water.material as any).onBeforeCompile(shader,{});assert.ok(shader.fragmentShader.includes('vec2 ripple')&&shader.fragmentShader.includes('lakeFresnel'));
+assert.equal((lake.water.material as any).transparent,false);assert.equal((lake.water.material as any).opacity,1);assert.equal((lake.water.material as any).transmission,0);
 assert.ok(landmarks.some(l=>l.id==='training'));training.update(1);training.update(2);lake.update(1);lake.update(2);
 scene.traverse(o=>{if(o instanceof Mesh){for(const value of o.geometry.getAttribute('position').array)assert.ok(Number.isFinite(value));o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});tree.clear();collision.clear();scene.clear();
 console.log('PASS training ground entrances, equipment pavilion, dock ramp/rails, return walk, lakeside pavilion and animated water integration');

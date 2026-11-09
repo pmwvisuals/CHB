@@ -2,19 +2,39 @@ import * as T from 'three';
 import {groundHeight} from './data';
 import {dock,dockWalkHeight} from './landmark-layout';
 import {landmarkKit} from './landmark-kit';
+import {easternSunDirection,cloudBanks,cloudCenter,cloudFootprintSource} from './atmosphere-layout';
 
 export function buildLakeside(scene:T.Scene,collision:T.Group){
  const k=landmarkKit(scene,collision),{box,mesh,group,cylinder,beam,stone,ivory,wood,darkWood,bronze}=k;
  let seed=1917;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
  const time={value:0},lakeGeo=new T.CircleGeometry(1,128);lakeGeo.rotateX(-Math.PI/2);
- const colors:number[]=[],p=lakeGeo.getAttribute('position');for(let i=0;i<p.count;i++){const radius=Math.hypot(p.getX(i),p.getZ(i)),c=new T.Color('#205e62').lerp(new T.Color('#5d9990'),radius**3);colors.push(c.r,c.g,c.b);}lakeGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));
- const waterMat=new T.MeshStandardMaterial({vertexColors:true,color:'#ffffff',roughness:.22,metalness:.13,transparent:true,opacity:.89});
- waterMat.onBeforeCompile=s=>{s.uniforms.lakeTime=time;s.vertexShader='varying vec3 lakePoint;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\nlakePoint=(modelMatrix*vec4(transformed,1.)).xyz;');s.fragmentShader='varying vec3 lakePoint;uniform float lakeTime;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
-  vec2 ripple=vec2(sin(lakePoint.x*1.7+lakePoint.z*.8+lakeTime*.7),cos(lakePoint.z*1.4-lakePoint.x*.6+lakeTime*.5));
-  normal=normalize(normal+mat3(viewMatrix)*vec3(ripple.x,0.,ripple.y)*.065);`);s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
-  float caustic=pow(.5+.5*sin(lakePoint.x*1.1+sin(lakePoint.z*.8+lakeTime*.35)),12.);
-  diffuseColor.rgb*=.96+caustic*.10;`);};waterMat.customProgramCacheKey=()=> 'mirror-lake-ripples-v1';
- const water=mesh(lakeGeo,waterMat,scene,91,.5,0);water.name='Mirror Lake · layered teal water';water.scale.set(31,1,47);water.castShadow=false;
+ const colors:number[]=[],p=lakeGeo.getAttribute('position');for(let i=0;i<p.count;i++){const radius=Math.hypot(p.getX(i),p.getZ(i)),c=new T.Color('#104d89').lerp(new T.Color('#287aaf'),radius**3);colors.push(c.r,c.g,c.b);}lakeGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));
+ const reflectionClouds=cloudBanks.map((_,i)=>cloudCenter(i,0));
+ const waterMat=new T.MeshPhysicalMaterial({vertexColors:true,color:'#ffffff',roughness:.17,metalness:0,ior:1.333,clearcoat:.35,clearcoatRoughness:.20,transparent:false,opacity:1,transmission:0,depthWrite:true});
+ waterMat.onBeforeCompile=s=>{s.uniforms.lakeTime=time;s.uniforms.lakeSunDirection={value:easternSunDirection};s.uniforms.lakeCloudCenters={value:reflectionClouds};s.uniforms.lakeCloudSizes={value:cloudBanks.map(c=>c.size)};
+  s.vertexShader='varying vec3 lakePoint;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\nlakePoint=(modelMatrix*vec4(transformed,1.)).xyz;');
+  s.fragmentShader=`varying vec3 lakePoint;uniform float lakeTime;uniform vec3 lakeSunDirection;uniform vec3 lakeCloudCenters[4];uniform vec3 lakeCloudSizes[4];${cloudFootprintSource('lakeCloudMask')}\n`+s.fragmentShader;
+  s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_begin>',`#include <normal_fragment_begin>
+   vec2 ripple=vec2(sin(dot(lakePoint.xz,vec2(.61,.37))+lakeTime*.52),cos(dot(lakePoint.xz,vec2(-.29,.73))-lakeTime*.43))*.065;
+   ripple+=vec2(sin(dot(lakePoint.xz,vec2(2.1,-1.3))-lakeTime*.82),cos(dot(lakePoint.xz,vec2(1.7,2.3))+lakeTime*.71))*.026;
+   ripple+=vec2(sin(lakePoint.z*7.1+lakePoint.x*4.3+lakeTime),cos(lakePoint.x*6.3-lakePoint.z*5.7-lakeTime*.93))*.009;
+   normal=normalize(normal+mat3(viewMatrix)*vec3(ripple.x,0.,ripple.y));`);
+  s.fragmentShader=s.fragmentShader.replace('#include <clearcoat_normal_fragment_maps>',`#include <clearcoat_normal_fragment_maps>
+   #ifdef USE_CLEARCOAT
+    clearcoatNormal=normal;
+   #endif`);
+  s.fragmentShader=s.fragmentShader.replace('#include <opaque_fragment>',`
+   vec3 lakeView=normalize(cameraPosition-lakePoint),lakeNormal=inverseTransformDirection(normal,viewMatrix);
+   vec3 lakeRay=reflect(-lakeView,lakeNormal);float lakeFresnel=.02+.98*pow(1.-max(dot(lakeView,lakeNormal),0.),5.);
+   vec3 lakeSky=mix(vec3(.42,.57,.76),vec3(.075,.25,.55),pow(max(lakeRay.y,0.),.45));
+   float lakeCloudCover=0.;
+   if(lakeRay.y>.015)for(int i=0;i<4;i++){float travel=(lakeCloudCenters[i].y-lakePoint.y)/lakeRay.y;vec3 hit=lakePoint+lakeRay*travel;vec2 q=(hit.xz-lakeCloudCenters[i].xz)/lakeCloudSizes[i].xz;lakeCloudCover=max(lakeCloudCover,lakeCloudMask(q));}
+   lakeSky=mix(lakeSky,vec3(.77,.82,.87),lakeCloudCover*.80);
+   float lakeGlint=pow(max(dot(lakeRay,lakeSunDirection),0.),1800.)*(1.-lakeCloudCover*.8);
+   outgoingLight=mix(outgoingLight,lakeSky,.08+lakeFresnel*.68)+vec3(1.,.91,.76)*lakeGlint*.48;
+   #include <opaque_fragment>`);
+ };waterMat.customProgramCacheKey=()=> 'opaque-blue-lake-reflections-v2';
+ const water=mesh(lakeGeo,waterMat,scene,91,.5,0);water.name='Mirror Lake · opaque blue reflective water';water.scale.set(31,1,47);water.castShadow=false;
  const bed=mesh(lakeGeo.clone(),k.mat('#536f5f'),scene,91,-1.3,0);bed.scale.set(31,1,47);bed.castShadow=false;
  // Low timber dock, a shallow approach ramp, and a rail around its outer edge.
  const deck=group('Lakeside · mooring dock',0,0,0,0);
@@ -65,5 +85,5 @@ export function buildLakeside(scene:T.Scene,collision:T.Group){
   const leaf=new T.Shape();leaf.moveTo(0,0);for(let j=0;j<=30;j++){const t=.15+j/30*(Math.PI*2-.3);leaf.lineTo(Math.cos(t)*.3,Math.sin(t)*.3);}leaf.lineTo(0,0);const geo=new T.ShapeGeometry(leaf);geo.rotateX(-Math.PI/2);const pad=mesh(geo,k.mat('#3d6948'),scene,x,.518,z);pad.rotation.y=rand()*6;pad.castShadow=false;
  }
  scene.userData.lakeside={dock:true,mooredCanoes:2,boatShelter:true,viewingPavilion:true,shoreSeats:3};
- return {water,update(t:number){time.value=t;boats.forEach((g,i)=>{g.position.y=.62+Math.sin(t*.65+i)*.025;g.rotation.z=Math.sin(t*.5+i)*.012;});}};
+ return {water,update(t:number){time.value=t;reflectionClouds.forEach((center,i)=>cloudCenter(i,t,center));boats.forEach((g,i)=>{g.position.y=.62+Math.sin(t*.65+i)*.025;g.rotation.z=Math.sin(t*.5+i)*.012;});}};
 }

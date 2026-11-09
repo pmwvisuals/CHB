@@ -1,5 +1,5 @@
 """Render the actual runtime geometry for the two completed main landmarks."""
-import bpy,json,sys
+import bpy,json,sys,math
 from pathlib import Path
 from mathutils import Matrix,Vector
 root=Path(sys.argv[sys.argv.index('--')+1]);out=root/'assets-source/landmarks'
@@ -23,8 +23,8 @@ for o in data['objects']:
  if key not in bound:
   mesh=meshes[o['geometry']].copy();mesh.materials.clear();mesh.materials.append(materials[o['material']]);bound[key]=mesh
  ob=bpy.data.objects.new(o['name'],bound[key]);bpy.context.collection.objects.link(ob);ob.matrix_world=convert@Matrix([o['matrix'][i::4] for i in range(4)])
-world=bpy.data.worlds.new('Soft daylight');world.use_nodes=True;world.node_tree.nodes.get('Background').inputs[0].default_value=(.54,.65,.71,1);world.node_tree.nodes.get('Background').inputs[1].default_value=.7;bpy.context.scene.world=world
-bpy.ops.object.light_add(type='SUN');bpy.context.object.rotation_euler=(.5,-.6,-.7);bpy.context.object.data.energy=2.5;bpy.context.object.data.angle=.13
+world=bpy.data.worlds.new('Eastern daylight');world.use_nodes=True;nt=world.node_tree;sky=nt.nodes.new('ShaderNodeTexSky');sky.sky_type='PREETHAM';sky.sun_direction=Vector((1,0,.64)).normalized();sky.turbidity=3.6;nt.links.new(sky.outputs['Color'],nt.nodes.get('Background').inputs['Color']);nt.nodes.get('Background').inputs[1].default_value=.24;bpy.context.scene.world=world
+bpy.ops.object.light_add(type='SUN');bpy.context.object.rotation_euler=(Vector((-1,0,-.64))).to_track_quat('-Z','Y').to_euler();bpy.context.object.data.energy=2.9;bpy.context.object.data.angle=.0093
 bpy.ops.object.camera_add();camera=bpy.context.object;camera.data.lens=42;camera.data.clip_end=1000;bpy.context.scene.camera=camera
 scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=24;scene.render.resolution_x=1400;scene.render.resolution_y=950;scene.render.resolution_percentage=100
 for name,eye,look in [('training-ground',(-35,27,-3),(-67,0,-34)),('lakeside',(25,25,-44),(61,1,-6))]:

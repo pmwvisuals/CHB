@@ -11,3 +11,4 @@ await import('../tests/landscape.test.ts');
 await import('../tests/exteriors.test.ts');
 await import('../tests/forest-border.test.ts');
 await import('../tests/main-landmarks.test.ts');
+await import('../tests/atmosphere.test.ts');

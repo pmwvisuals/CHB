@@ -16,10 +16,11 @@ import {buildWayfarerHall} from './wayfarer';
 import {buildTrainingGround} from './training-ground';
 import {buildLakeside} from './lakeside';
 import {inMainLandmark} from './landmark-layout';
+import {buildAtmosphere} from './atmosphere';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
 export function buildWorld(): World {
-  const scene = new T.Scene(); scene.background = new T.Color('#b8d5d5'); scene.fog = new T.FogExp2('#8fa99d', .0013);
+  const scene = new T.Scene(); scene.background = new T.Color('#9dbed8'); scene.fog = new T.FogExp2('#9bafba', .0013);
   const collision = new T.Group();
   let seed = 721;
   const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -54,15 +55,9 @@ export function buildWorld(): World {
   collision.add(new T.Mesh(terrain));
   // Scenery outside the playable square needs terrain, but no collision octree.
   for(const [w,d,x,z] of [[700,100,0,300],[700,100,0,-300],[100,500,300,0],[100,500,-300,0]]){const outer=mesh(terrainGeometry(w,d,x,z,5),ground.material,scene);outer.castShadow=false;}
-  const hemi=new T.HemisphereLight('#d7ecf4','#6f7142',2.1); scene.add(hemi);
-  const sun=new T.DirectionalLight('#ffdda2',3.1); sun.position.set(-80,115,65); sun.castShadow=true;
-  sun.shadow.mapSize.set(2048,2048); Object.assign(sun.shadow.camera,{left:-100,right:100,top:100,bottom:-100,near:1,far:300}); sun.shadow.bias=-.0004; sun.shadow.normalBias=.06; scene.add(sun);
-  // Sky gradient and distant forested ridgelines.
-  const sky=mesh(new T.SphereGeometry(480,32,16),new T.ShaderMaterial({side:T.BackSide,depthWrite:false,uniforms:{top:{value:new T.Color('#77b9d1')},bottom:{value:new T.Color('#c4d5c1')}},vertexShader:'varying vec3 v; void main(){v=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:'varying vec3 v; uniform vec3 top;uniform vec3 bottom;void main(){gl_FragColor=vec4(mix(bottom,top,smoothstep(-.04,.75,normalize(v).y)),1.);}'}),scene); sky.castShadow=false;
-  const disc=mesh(new T.SphereGeometry(12,24,16),new T.MeshBasicMaterial({color:'#fff2c6',fog:false}),scene,-230,205,-250); disc.castShadow=false;
-
-  const cloudMat=new T.MeshBasicMaterial({color:'#fff0d7',transparent:true,opacity:.38,depthWrite:false});
-  for(let i=0;i<24;i++){const c=mesh(new T.SphereGeometry(1,8,5),cloudMat,scene,(rand()-.5)*550,85+rand()*50,(rand()-.5)*500);c.scale.set(20+rand()*40,2+rand()*3,6+rand()*10);c.castShadow=false;}
+  const atmosphere=buildAtmosphere(scene),sun=atmosphere.sun;
+  // Preserve the accepted, seeded camp planting when replacing the old clouds.
+  for(let i=0;i<144;i++)rand();
   const paths: { points:T.Vector3[]; width:number }[]=[];
   function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
     points.forEach((p,i)=>{const dir=points[Math.min(i+1,points.length-1)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72*(1+.055*Math.sin(i*.47));const x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,h(x,z)+.065,z);uvs.push(j/4,i/(points.length-1));}if(i<points.length-1)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
@@ -94,8 +89,8 @@ export function buildWorld(): World {
   {const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([55,h(55,5)+.05,3.2,55,h(55,5)+.05,6.8,64,1.15,3.2,64,1.15,6.8],3));g.setIndex([0,1,2,1,3,2]);g.computeVertexNormals();mesh(g,stone,scene);collision.add(new T.Mesh(g));}
   for(let i=0;i<38;i++){const x=64+i*.55,g=new T.Group();g.position.set(x,1.09,5);scene.add(g);box(g,0,0,0,.57,.12,3.6,stone,true);if(i%5===0)for(const side of [-1,1]){box(g,0,.65,side*1.8,.22,1.3,.22,trim,true);}}
   for(let i=0;i<44;i++){const angle=i/44*Math.PI*2,x=94+Math.cos(angle)*14.5,z=5+Math.sin(angle)*14.5;if(x<84&&Math.abs(z-5)<3)continue;const c=new T.Mesh(new T.BoxGeometry(2.3,3,2.3));c.position.set(x,2,z);collision.add(c);}
-  const rippleMat=new T.MeshBasicMaterial({color:'#d5e5cc',transparent:true,opacity:.045,side:T.DoubleSide});const ripples:T.Mesh[]=[];
-  for(let i=0;i<28;i++){const x=91+(rand()-.5)*40,z=(rand()-.5)*68;const m=mesh(new T.RingGeometry(.9,1,32),rippleMat,scene,x,.52,z);m.rotation.x=-Math.PI/2;m.scale.set(1+rand()*3,.4+rand(),1);m.castShadow=false;ripples.push(m);}
+  // Surface waves are shaded continuously; preserve the old decal random stream.
+  for(let i=0;i<112;i++)rand();
   // Amphitheatre seating and animated fire.
   circleGround(0,-62,15,'#ada58a');const fire=group(0,-62);
   for(let i=0;i<15;i++){const a=i/15*Math.PI*2;mesh(new T.DodecahedronGeometry(.55),stone,fire,Math.sin(a)*2,.25,Math.cos(a)*2);}
@@ -157,14 +152,14 @@ export function buildWorld(): World {
   scene.traverse(o=>{if(!(o instanceof T.Mesh)||o instanceof T.InstancedMesh||!(o.material instanceof T.MeshStandardMaterial)||o.material.transparent||o===water)return;const key=o.material.uuid+Object.keys(o.geometry.attributes).sort().join(',');if(!batches.has(key))batches.set(key,{material:o.material,meshes:[]});batches.get(key)!.meshes.push(o);});
   for(const batch of batches.values()){if(batch.meshes.length<3)continue;const pieces=batch.meshes.map(m=>{const geo=m.geometry.clone().applyMatrix4(m.matrixWorld);return geo.index?geo.toNonIndexed():geo;});const merged=mergeGeometries(pieces,false);if(merged){const m=new T.Mesh(merged,batch.material);m.castShadow=true;m.receiveShadow=true;scene.add(m);batch.meshes.forEach(m=>m.removeFromParent());}pieces.forEach(g=>g.dispose());}
   forestAtmosphere(scene);
+  atmosphere.applyCloudShadows();
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps,flowers];
   return {scene,octree,water,fire,embers,sun,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
-    trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);
+    atmosphere.update(time,camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);
     flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
     const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
-    ripples.forEach((r,i)=>{r.position.y=.54+Math.sin(time*.7+i)*.008;r.rotation.z=Math.sin(time*.15+i)*.1;});
-    (water.material as T.MeshStandardMaterial).roughness=.22+Math.sin(time*.4)*.02;
+    (water.material as T.MeshStandardMaterial).roughness=.17+Math.sin(time*.4)*.012;
     meadow.update(time);
   },dispose(){forestBorder.dispose();woodland.dispose();planting.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};
 }

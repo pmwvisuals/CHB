@@ -5,15 +5,17 @@ import { buildWoodland,woodlandGround } from './lib/game/woodland';
 import { terrainGeometry } from './lib/game/landscape';
 import { groundHeight as h,readSave } from './lib/game/data';
 import { simulatePlayer } from './lib/game/physics';
+import {buildAtmosphere} from './lib/game/atmosphere';
+import {easternSunDirection} from './lib/game/atmosphere-layout';
 import { readProfile,saveProfile,saveWarning,beginExpedition,finishExpedition,rewardEnemy,level,quests } from './lib/game/progression';
 import './app/forest.css';
 const profile=readProfile(),run=beginExpedition(profile),settings=readSave().settings;
 const $=(id:string)=>document.getElementById(id)!;const menu=$('menu');let active=false,disposed=false,drag=false,pitch=-.1,attack=0,dodge=0,dodgeCooldown=0,messageTime=0,saveTime=0,clock=0,frame=0;
 const scene=new T.Scene();scene.background=new T.Color('#738578');scene.fog=new T.FogExp2('#afbdac',.015);const collision=new T.Group();
 const renderer=new T.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;$('scene').appendChild(renderer.domElement);
-const camera=new T.PerspectiveCamera(68,1,.1,170);camera.rotation.order='YXZ';scene.add(camera);
+const camera=new T.PerspectiveCamera(68,1,.1,650);camera.rotation.order='YXZ';scene.add(camera);
 const terrain=terrainGeometry(76,76,-40,-96);const ground=new T.Mesh(terrain,woodlandGround());ground.receiveShadow=true;scene.add(ground);collision.add(new T.Mesh(terrain));
-scene.add(new T.HemisphereLight('#d8e9da','#514733',1.35));const sun=new T.DirectionalLight('#ffe2ad',2.2);sun.position.set(-60,50,-60);sun.target.position.set(-40,0,-96);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:1,far:120});sun.shadow.normalBias=.05;scene.add(sun,sun.target);
+const atmosphere=buildAtmosphere(scene),sun=atmosphere.sun;atmosphere.ambient.intensity=1.2;sun.target.position.set(-40,0,-96);sun.position.copy(sun.target.position).addScaledVector(easternSunDirection,350);Object.assign(sun.shadow.camera,{left:-50,right:50,top:50,bottom:-50});
 const material=(color:string)=>new T.MeshStandardMaterial({color,roughness:.85});const stone=material('#afa991'),gold=material('#c9a45c'),wood=material('#705338');
 function box(x:number,z:number,y:number,w:number,ht:number,depth:number,mat:T.Material,solid=false){const mesh=new T.Mesh(new T.BoxGeometry(w,ht,depth),mat);mesh.position.set(x,h(x,z)+y,z);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);if(solid){const proxy=new T.Mesh(mesh.geometry);proxy.position.copy(mesh.position);collision.add(proxy);}return mesh;}
 const important=[[-40,-73],[-31,-92],[-40,-118],[-29,-88],[-54,-88],[-25,-109],[-54,-112],[-40,-115]];
@@ -57,7 +59,7 @@ function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);c
  creatures.forEach((g,i)=>{const e=run.enemies[i];g.visible=e.phase!=='dead';g.position.set(e.x,h(e.x,e.z),e.z);g.rotation.y=Math.atan2(run.x-e.x,run.z-e.z)+Math.PI;g.scale.setScalar(e.phase==='windup'?1.12:1);g.traverse(o=>{if(o instanceof T.Mesh&&o.material instanceof T.MeshStandardMaterial){o.material.emissive.set(run.insight>0?'#405b79':e.phase==='windup'?'#803219':'#000000');}});});satchel.visible=!run.supplies;chest.visible=!run.chest;woodland.update(clock,camera.position);
  $('hud').textContent=`FOREST EDGE · Lv ${level(profile)} | HP ${Math.ceil(run.hp)} / 100 | Stamina ${Math.ceil(run.stamina)} | Carried ${run.coins} coins · ${run.materials} materials | Potions ${profile.potions} | Insight ${profile.quest<2?'locked':run.cooldown>0?Math.ceil(run.cooldown)+'s':'ready'}`;
  messageTime-=active?dt:0;if(messageTime<=0)$('message').textContent=Math.hypot(run.x+40,run.z+69)<4?'E · Return to sanctuary':Math.hypot(run.x+31,run.z+92)<3&&!run.supplies?'E · Recover supplies':Math.hypot(run.x+40,run.z+118)<3&&!run.chest?'E · Open shrine chest':profile.accepted?quests[profile.quest]?.title||'Explore the forest':'Accept a quest at the sanctuary';
- renderer.render(scene,camera);
+ atmosphere.update(clock,camera.position);renderer.render(scene,camera);
 }
 function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);listeners.forEach(f=>f());const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);const map=(m as T.MeshStandardMaterial).map;if(map)textures.add(map);}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});woodland.dispose();geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();}
-pause();frame=requestAnimationFrame(loop);
+atmosphere.applyCloudShadows();pause();frame=requestAnimationFrame(loop);

@@ -4,7 +4,7 @@ This art pass completes only these two main landmarks. Both remain part of the s
 
 The training yard has a terrain-following sand surface, bronze sparring-circle inlays, three archery lanes and straw targets, embedded arrows, three leather-and-straw dummies, a two-gate timber boundary, animated entrance banners, seating, and a shaded equipment pavilion with spears, shields and water jars. The western gate preserves the routes to the remote temples.
 
-Mirror Lake has a darker teal surface with animated ripple normals and subtle light patterns. A ramp leads onto a railed timber dock beside two hollow, moored canoes. The open boat shelter contains paddles, supplies and a bench. New shore paths connect the dock and open marble viewing pavilion; seating, lanterns, lilies and grounded reeds complete the banks. Poseidon's causeway and island access remain intact.
+Mirror Lake has an opaque blue surface with animated ripple normals, sky/cloud reflections and eastern sunlight highlights. A ramp leads onto a railed timber dock beside two hollow, moored canoes. The open boat shelter contains paddles, supplies and a bench. New shore paths connect the dock and open marble viewing pavilion; seating, lanterns, lilies and grounded reeds complete the banks. Poseidon's causeway and island access remain intact.
 
 The training ground is a discoverable map landmark. Counts use the landmark catalog rather than a hard-coded total. Existing discovery saves remain compatible.
 
