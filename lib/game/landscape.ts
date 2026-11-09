@@ -1,3 +1,4 @@
+import {forestShade} from './forest-border-layout';
 import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {templeSites} from './sanctuary-layout';
@@ -22,10 +23,10 @@ export function groundColor(x:number,z:number){
  const green=new T.Color('#698546').lerp(new T.Color('#4c693d'),a.forest*.7);
  green.lerp(new T.Color('#7c9151'),landNoise(x*.045,z*.045)*.32);c.lerp(green,a.grass);
  const forge=1-Math.min(1,Math.hypot(x-templeSites.hephaestus.x,z-templeSites.hephaestus.z)/31);
- c.lerp(new T.Color('#524b43'),forge*.9);return c.multiplyScalar(.91+fine*.15);
+ c.lerp(new T.Color('#524b43'),forge*.9);return c.multiplyScalar((.91+fine*.15)*(1-forestShade(x,z)*.48));
 }
-export function terrainGeometry(width=500,depth=500,cx=0,cz=0){
- const g=new T.PlaneGeometry(width,depth,Math.ceil(width/1.6),Math.ceil(depth/1.6));g.rotateX(-Math.PI/2);g.translate(cx,0,cz);
+export function terrainGeometry(width=500,depth=500,cx=0,cz=0,spacing=1.6){
+ const g=new T.PlaneGeometry(width,depth,Math.ceil(width/spacing),Math.ceil(depth/spacing));g.rotateX(-Math.PI/2);g.translate(cx,0,cz);
  const p=g.getAttribute('position'),colors=[],cover=[];
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,groundHeight(x,z));const c=groundColor(x,z);colors.push(c.r,c.g,c.b);const habitat=groundHabitat(x,z);cover.push(habitat.grass,habitat.forest*(.45+.35*landNoise(x*.08,z*.08)));}
  g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('groundCover',new T.Float32BufferAttribute(cover,2));g.computeVertexNormals();return g;

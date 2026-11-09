@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {Scene,Group,Mesh,InstancedMesh,Vector3,ShaderLib,MeshStandardMaterial} from 'three';
+import {forestBorderPlacements,forestAtmosphere} from '../lib/game/forest-border';
+import {forestDepth} from '../lib/game/forest-border-layout';
+import {groundHeight} from '../lib/game/data';
+import {plantCollection} from '../lib/game/vegetation';
+const plants=forestBorderPlacements();assert.ok(plants.length>700&&plants.length<2000,`${plants.length} trees`);
+const sectors=new Array(24).fill(0);for(const p of plants){assert.ok(forestDepth(p.x,p.z)>=0);assert.ok(p.y<=groundHeight(p.x,p.z)-.21);sectors[Math.floor((Math.atan2(p.z,p.x)+Math.PI)/Math.PI/2*24)%24]++;}assert.ok(sectors.every(n=>n>15),'continuous belt in all directions');
+const scene=new Scene(),collection=plantCollection(scene,[{id:'forest_fir',x:0,y:0,z:0,scale:1,rotation:0}],{range:620,canopyLayers:2});
+scene.traverse(o=>{if(o instanceof InstancedMesh&&o.name.includes('bark')){o.geometry.computeBoundingBox();assert.ok(Math.abs(o.geometry.boundingBox!.min.y)<.001,'trunk base normalized to ground');}if(o instanceof InstancedMesh&&o.name.includes('leaf'))assert.equal(o.count,2);});collection.update(0,new Vector3(300,60,0));assert.ok(scene.children.some(o=>o.visible),'distant canopy stays present inside mist');
+forestAtmosphere(scene);let checked=false;scene.traverse(o=>{if(!(o instanceof Mesh)||!(o.material instanceof MeshStandardMaterial)||checked)return;const shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};o.material.onBeforeCompile(shader as any,{} as any);assert.ok(shader.vertexShader.includes('instanceMatrix*forestLocal'));assert.ok(shader.fragmentShader.includes('smoothstep(265.,286.,forestRadius)'));assert.ok(shader.fragmentShader.includes('reflectedLight.directDiffuse'));checked=true;});assert.ok(checked);collection.dispose();console.log('PASS forest border:',plants.length,'grounded trees, 24 sectors, denser crowns, distant visibility and atmosphere shader');
