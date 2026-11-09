@@ -26,10 +26,27 @@ export function groundColor(x:number,z:number){
  c.lerp(new T.Color('#524b43'),forge*.9);return c.multiplyScalar((.91+fine*.15)*(1-forestShade(x,z)*.48));
 }
 export function terrainGeometry(width=500,depth=500,cx=0,cz=0,spacing=1.6){
- const g=new T.PlaneGeometry(width,depth,Math.ceil(width/spacing),Math.ceil(depth/spacing));g.rotateX(-Math.PI/2);g.translate(cx,0,cz);
- const p=g.getAttribute('position'),colors=[],cover=[];
- for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,groundHeight(x,z));const c=groundColor(x,z);colors.push(c.r,c.g,c.b);const habitat=groundHabitat(x,z);cover.push(habitat.grass,habitat.forest*(.45+.35*landNoise(x*.08,z*.08)));}
- g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('groundCover',new T.Float32BufferAttribute(cover,2));g.computeVertexNormals();return g;
+ const nx=Math.ceil(width/spacing),nz=Math.ceil(depth/spacing),dx=width/nx,dz=depth/nz,refined=new Uint8Array(nx*nz);
+ // Spend extra triangles at the curving shoreline and small knolls, rather than
+ // multiplying the mesh across the entire forest. Shared edge vertices prevent cracks.
+ for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
+  const x=cx-width/2+(ix+.5)*dx,z=cz-depth/2+(iz+.5)*dz,r=Math.hypot((x-91)/31,z/47);
+  if(spacing<=2.1&&((r>.83&&r<1.29)||Math.hypot(x+13,z+10)<11||Math.hypot(x-13,z-11)<11||Math.hypot(x-65,z-35)<12))refined[iz*nx+ix]=1;
+ }
+ const positions:number[]=[],colors:number[]=[],cover:number[]=[],uv:number[]=[],indices:number[]=[],vertices=new Map<number,number>();
+ function vertex(ix:number,iz:number){const key=iz*(nx*2+1)+ix,old=vertices.get(key);if(old!==undefined)return old;
+  const x=cx-width/2+ix*dx/2,z=cz-depth/2+iz*dz/2,c=groundColor(x,z),habitat=groundHabitat(x,z),id=positions.length/3;
+  vertices.set(key,id);positions.push(x,groundHeight(x,z),z);colors.push(c.r,c.g,c.b);cover.push(habitat.grass,habitat.forest*(.45+.35*landNoise(x*.08,z*.08)));uv.push(ix/(nx*2),1-iz/(nz*2));return id;
+ }
+ function fine(ix:number,iz:number){return ix>=0&&ix<nx&&iz>=0&&iz<nz&&refined[iz*nx+ix]===1;}
+ for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
+  const x=ix*2,z=iz*2,self=fine(ix,iz),north=self||fine(ix,iz-1),east=self||fine(ix+1,iz),south=self||fine(ix,iz+1),west=self||fine(ix-1,iz);
+  const nw=vertex(x,z),ne=vertex(x+2,z),se=vertex(x+2,z+2),sw=vertex(x,z+2);
+  if(!north&&!east&&!south&&!west){indices.push(nw,sw,ne,ne,sw,se);continue;}
+  const perimeter=[nw];if(north)perimeter.push(vertex(x+1,z));perimeter.push(ne);if(east)perimeter.push(vertex(x+2,z+1));perimeter.push(se);if(south)perimeter.push(vertex(x+1,z+2));perimeter.push(sw);if(west)perimeter.push(vertex(x,z+1));
+  const center=vertex(x+1,z+1);for(let i=0;i<perimeter.length;i++)indices.push(center,perimeter[(i+1)%perimeter.length],perimeter[i]);
+ }
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('groundCover',new T.Float32BufferAttribute(cover,2));g.setIndex(indices);g.computeVertexNormals();return g;
 }
 function detailTexture(){
  const size=256,data=new Uint8Array(size*size*4);
@@ -57,20 +74,22 @@ export function groundMaterial(){
   s.fragmentShader=`varying vec3 soilPoint;varying vec2 coverWeights;uniform sampler2D soilDetail;
    vec2 coverUV(float tile,vec2 uv){uv=fract(uv);return vec2((uv.x*.996+.002)*.5+tile*.5,uv.y*.996+.002);}
    vec4 coverSample(sampler2D tex){
-    float tile=step(.48,coverWeights.y);vec2 p=soilPoint.xz;
+    vec2 p=soilPoint.xz;
     vec2 a=p*.47;vec2 b=mat2(.819,.574,-.574,.819)*p*.283+vec2(.37,.19);
     float blend=.34+.32*sin(p.x*.071+sin(p.y*.053));
-    return mix(texture2D(tex,coverUV(tile,a)),texture2D(tex,coverUV(tile,b)),blend);
+    vec4 grass=mix(texture2D(tex,coverUV(0.,a)),texture2D(tex,coverUV(0.,b)),blend);
+    vec4 moss=mix(texture2D(tex,coverUV(1.,a)),texture2D(tex,coverUV(1.,b)),blend);
+    return mix(grass,moss,smoothstep(.25,.8,coverWeights.y));
    }
   `+s.fragmentShader;
-  s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec3 coverGrain=coverSample(map).rgb/mix(vec3(.25,.32,.105),vec3(.17,.25,.085),coverWeights.y);
+  s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec3 coverGrain=coverSample(map).rgb/mix(vec3(.25,.32,.105),vec3(.17,.25,.085),smoothstep(.25,.8,coverWeights.y));
    vec3 soilGrain=texture2D(soilDetail,soilPoint.xz*.46).rgb;
    float gardenMottle=.82+.24*texture2D(soilDetail,soilPoint.xz*.037+vec2(.13,.61)).r;
    diffuseColor.rgb*=mix(soilGrain,clamp(coverGrain*gardenMottle,vec3(.34),vec3(1.45)),coverWeights.x);`);
   s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','float roughnessFactor = roughness * mix(.96,coverSample(roughnessMap).g,coverWeights.x);');
   s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',T.ShaderChunk.normal_fragment_maps.replaceAll('texture2D( normalMap, vNormalMapUv ).xyz','mix(vec3(.5,.5,1.),coverSample(normalMap).xyz,coverWeights.x)'));
  };
- m.customProgramCacheKey=()=> 'asterion-garden-cover-v2';
+ m.customProgramCacheKey=()=> 'asterion-garden-cover-v3';
  // The soil sampler is an extra shader uniform, so release it explicitly.
  const dispose=m.dispose.bind(m);m.dispose=()=>{soil.dispose();dispose();};return m;
 }
