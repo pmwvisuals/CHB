@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { plantCollection, type PlantPlacement } from './vegetation';
+import { plantCollection, forestTreeIds, type PlantPlacement } from './vegetation';
 import { groundHeight as h, type Settings } from './data';
 import { groundMaterial,groundHabitat,weatheredRockGeometry,weatheredRockMaterial } from './landscape';
 
@@ -25,7 +25,7 @@ export function buildWoodland(scene:T.Scene,collision:T.Group,blocked:(x:number,
  const d=new T.Object3D(),trees:{x:number;z:number}[]=[],plants:PlantPlacement[]=[];
  for(let attempt=0;attempt<800&&trees.length<24;attempt++){
   const x=-40+(rand()-.5)*55,z=-96+(rand()-.5)*55;if(!inWoodland(x,z)||blocked(x,z,3)||trees.some(p=>Math.hypot(p.x-x,p.z-z)<7))continue;
-  trees.push({x,z});const scale=.9+rand()*.1;plants.push({id:trees.length%2?'forest_oak':'forest_fir',x,y:h(x,z),z,scale,rotation:rand()*Math.PI*2});
+  trees.push({x,z});const scale=.9+rand()*.1;plants.push({id:forestTreeIds[Math.floor(rand()*forestTreeIds.length)],x,y:h(x,z),z,scale,rotation:rand()*Math.PI*2});
   const collider=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));collider.position.set(x,h(x,z)+1.2,z);collision.add(collider);
  }
  for(let i=0;i<1000;i++){const x=-40+(rand()-.5)*56,z=-96+(rand()-.5)*56;if(!inWoodland(x,z)||blocked(x,z,.8)||rand()>groundHabitat(x,z).bush*.9)continue;plants.push({id:i%4===0?'forest_bramble':i%4===1?'forest_fern':i%4===2?'forest_bracken':'forest_litter',x,y:h(x,z),z,scale:.65+rand()*.7,rotation:rand()*6.28});}

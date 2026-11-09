@@ -188,18 +188,19 @@ def asset(identifier,name,zone,parts,created=None):
  bounds=[v.co for ob in originals for v in ob.data.vertices];height=max(v.z for v in bounds)-min(v.z for v in bounds)
  catalog[identifier]={'name':name,'zone':zone,'height':round(height,3),'parts':records}
  # Asset contact sheet placement; sources keep named objects, materials and both exports.
- index=len(catalog)-1;col=index%4;row=index//4
- display_scale=(20/max(height,.1)) if index<4 else (8/max(height,.1)) if index<8 else (3/max(height,.1))
- for ob in originals:ob.location=Vector(((col-1.5)*32,(1-row)*34,0));ob.scale=(display_scale,)*3
+ index=len(catalog)-1;col=index%5;row=index//5
+ display_scale=2.8 if height>3 else 4.0 if height>1 else 6.0
+ for ob in originals:ob.location=Vector(((col-2)*32,(1-row)*34,0));ob.scale=(display_scale,)*3
  all_objects.extend(originals)
- bpy.ops.object.text_add(location=((col-1.5)*32,(1-row)*34-11,.1));label=bpy.context.object;label.data.body=name;label.data.align_x='CENTER';label.data.size=1.3;label.data.materials.append(materials['white'])
+ bpy.ops.object.text_add(location=((col-2)*32,(1-row)*34-11,.1));label=bpy.context.object;label.data.body=name;label.data.align_x='CENTER';label.data.size=1.15;label.data.materials.append(materials['white'])
  print('BUILT',identifier,round(height,1),sum(r['high']['triangles'] for r in records),flush=True)
 
 def natural_tree(identifier,height,seed,bush=False):
  # Explicit swept tubes have bounded radii and connected branch joints. Geometry
  # leaves and recessed crown clusters retain their coverage at every distance.
  rng=random.Random(seed);bv=[];bf=[];lv=[];lf=[];cv=[];cf=[]
- fir=identifier=='forest_fir';crown=height*(.28 if fir else .34);trunk=height*(.043 if fir else .046)
+ species=identifier.removeprefix('forest_');fir=species in ('fir','cedar','spruce')
+ crown=height*({'hornbeam':.26,'cedar':.37,'spruce':.23}.get(species,.28 if fir else .34));trunk=height*(.037 if species=='spruce' else .043 if fir else .046)
  def tube(points,radii,sides=8):
   start=len(bv)
   for j,p in enumerate(points):
@@ -222,27 +223,28 @@ def natural_tree(identifier,height,seed,bush=False):
    theta=math.pi*j/rows
    for k in range(segments):
     phi=math.tau*k/segments;wav=1+.045*math.sin(phi*3+j*2)+rng.uniform(-.02,.02)
-    cv.append(center+Vector((math.sin(theta)*math.cos(phi)*radius,math.sin(theta)*math.sin(phi)*radius,math.cos(theta)*radius*.83))*wav*.77)
+    cv.append(center+Vector((math.sin(theta)*math.cos(phi)*radius,math.sin(theta)*math.sin(phi)*radius,math.cos(theta)*radius*(.50 if species=='cedar' else 1.1 if species=='hornbeam' else .83)))*wav*.77)
   for j in range(rows):
    for k in range(segments):a=start+j*segments+k;b=start+j*segments+(k+1)%segments;cf.append((a,b,b+segments,a+segments))
   for _ in range(168 if not fir else 144):
    direction=Vector((rng.uniform(-1,1),rng.uniform(-1,1),rng.uniform(-.75,1))).normalized()
    leaf(center+direction*radius*rng.uniform(.68,1.16))
- lean=Vector((height*.018,-height*.012,0))
+ lean=Vector((height*(.033 if species=='hornbeam' else .018),-height*.012,0))
  points=[Vector((0,0,height*j/8))+lean*(j/8)**2 for j in range(9)]
  tube(points,[trunk*(1-j/8)**1.25+.005 for j in range(9)],10)
  # The root collar begins below zero; short buttress roots meet the soil.
  for k in range(5):
   a=k*2.399;v=Vector((math.cos(a),math.sin(a),0));tube([v*trunk*.3+Vector((0,0,.22)),v*trunk*2+Vector((0,0,.02)),v*trunk*2.8+Vector((0,0,-.07))],[trunk*.6,trunk*.3,.009],7)
- rings=6 if fir else 3
+ rings={'hornbeam':4,'cedar':4,'spruce':7}.get(species,6 if fir else 3)
  for ring in range(rings):
-  z=height*((.27+ring*.105) if fir else (.43+ring*.15));reach=crown*((1-ring*.13) if fir else (1-ring*.15))
-  for k in range(4 if fir else 7):
-   angle=k*math.tau/(4 if fir else 7)+ring*1.65+rng.uniform(-.25,.25);direction=Vector((math.cos(angle),math.sin(angle),0));base=Vector((lean.x*(z/height)**2,lean.y*(z/height)**2,z));tip=base+direction*reach+Vector((0,0,height*(.06 if fir else .13)))
+  start,spacing,count={'hornbeam':(.36,.145,5),'cedar':(.30,.17,5),'spruce':(.22,.105,3)}.get(species,(.27,.105,4) if fir else (.43,.15,7))
+  z=height*(start+ring*spacing);reach=crown*(1-ring*(.19 if species=='cedar' else .125 if fir else .15))
+  for k in range(count):
+   angle=k*math.tau/count+ring*1.65+rng.uniform(-.37,.37);direction=Vector((math.cos(angle),math.sin(angle),0));base=Vector((lean.x*(z/height)**2,lean.y*(z/height)**2,z));tip=base+direction*reach+Vector((0,0,height*(.025 if species=='cedar' else .06 if fir else .13)))
    tube([base,base+direction*reach*.48+Vector((0,0,height*.035)),tip],[trunk*.36*(1-z/height),trunk*.11,.006],6)
-   center=tip-direction*reach*.12;radius=height*(.145 if fir else .18)*rng.uniform(.9,1.09);crown_lobe(center,radius)
+   center=tip-direction*reach*.12;radius=height*(.12 if species=='spruce' else .16 if species=='hornbeam' else .145 if fir else .18)*rng.uniform(.86,1.12);crown_lobe(center,radius)
  crown_lobe(lean+Vector((0,0,height*.87)),height*.14)
- foliage=materials['fir' if fir else 'bramble' if bush else identifier.split('_')[-1]]
+ foliage=materials['fir' if fir else 'oak' if species=='hornbeam' else 'bramble' if bush else identifier.split('_')[-1]]
  # These materials use geometry silhouettes, rather than the legacy cutout atlas.
  solid=mat(identifier+' solid leaves',tuple(foliage.diffuse_color[:3]));solid.use_backface_culling=False
  core=mat(identifier+' shaded crown',tuple(c*.67 for c in foliage.diffuse_color[:3]))
@@ -256,6 +258,9 @@ def natural_tree(identifier,height,seed,bush=False):
 for identifier,name,zone,height,seed in [
  ('forest_oak','Deep green woodland oak','forest',4.6,41),
  ('forest_fir','Dark woodland fir','forest',5.0,62),
+ ('forest_hornbeam','Midnight hornbeam','forest',5.4,107),
+ ('forest_cedar','Shadow cedar','forest',5.7,236),
+ ('forest_spruce','Deepwood spruce','forest',6.0,319),
  ('camp_olive','Silver courtyard olive','camp',3.6,25),
  ('camp_blossom','Blush sanctuary tree','camp',3.3,14)]:
  parts=natural_tree(identifier,height,seed)
@@ -283,7 +288,7 @@ world=bpy.context.scene.world or bpy.data.worlds.new('World');bpy.context.scene.
 bpy.ops.mesh.primitive_plane_add(size=250);floor=bpy.context.object;floor.name='Preview floor';floor.data.materials.append(mat('Preview floor',(.12,.16,.13)))
 bpy.ops.object.light_add(type='AREA',location=(0,-25,80));bpy.context.object.data.energy=20000;bpy.context.object.data.shape='DISK';bpy.context.object.data.size=70
 bpy.ops.object.light_add(type='SUN',location=(-30,-50,50));bpy.context.object.rotation_euler=(.4,-.5,-.4);bpy.context.object.data.energy=2
-bpy.ops.object.camera_add(location=(0,-150,125));cam=bpy.context.object;cam.rotation_euler=(Vector((0,0,6))-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.type='ORTHO';cam.data.ortho_scale=145;bpy.context.scene.camera=cam
+bpy.ops.object.camera_add(location=(0,-150,125));cam=bpy.context.object;cam.rotation_euler=(Vector((0,0,6))-cam.location).to_track_quat('-Z','Y').to_euler();cam.data.type='ORTHO';cam.data.ortho_scale=180;bpy.context.scene.camera=cam
 scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=16;scene.render.resolution_x=1600;scene.render.resolution_y=1200;scene.render.resolution_percentage=100
 scene.render.image_settings.file_format='PNG';scene.render.filepath=str(OUT/'vegetation-contact-sheet.png')
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'asterion-vegetation.blend'));bpy.ops.render.render(write_still=True)

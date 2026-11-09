@@ -3,6 +3,7 @@ import { unzlibSync } from 'three/addons/libs/fflate.module.js';
 import { vegetationAssets,leafAtlas,leafAtlasSize } from './generated/vegetation';
 import {gardenGrassAssets} from './generated/garden-grass';
 export type PlantId=keyof typeof vegetationAssets;
+export const forestTreeIds=['forest_oak','forest_fir','forest_hornbeam','forest_cedar','forest_spruce'] as const;
 export interface PlantPlacement {id:PlantId;x:number;y:number;z:number;scale:number;rotation:number}
 function bytes(s:string){const binary=atob(s);return unzlibSync(Uint8Array.from(binary,c=>c.charCodeAt(0)));}
 type Packed=typeof vegetationAssets.forest_oak.parts[number]['high'];
@@ -17,7 +18,7 @@ export function plantCollection(scene:T.Scene,placements:PlantPlacement[],option
  const pixels=new Uint8Array(128*256*4);for(let y=0;y<256;y++)for(let x=0;x<128;x++){const grain=Math.sin(x*.4+Math.sin(y*.07)*1.8)*.5+.5,crack=Math.pow(grain,8),n=Math.sin(x*17.3+y*71.7)*.5+.5,i=(y*128+x)*4,v=.43+.16*n-.27*crack;pixels[i]=v*255;pixels[i+1]=v*211;pixels[i+2]=v*169;pixels[i+3]=255;}
  const bark=new T.DataTexture(pixels,128,256);bark.colorSpace=T.SRGBColorSpace;bark.wrapS=bark.wrapT=T.RepeatWrapping;bark.magFilter=T.LinearFilter;bark.minFilter=T.LinearMipmapLinearFilter;bark.generateMipmaps=true;bark.anisotropy=4;bark.needsUpdate=true;
  const time={value:0};
- function material(id:PlantId,key:string){const name=id+'_'+key;if(materials.has(name))return materials.get(name)!;const colors:Record<string,string>={forest_oak:'#284c2b',forest_fir:'#1d3c30',camp_olive:'#b4c797',camp_blossom:'#8fa35d',forest_bramble:'#59763d',camp_laurel:'#729353',camp_myrtle:'#6b9980',fern:'#426e3f',pink:'#efb0bd',white:'#f0e3b5',grass:'#90a45c',dry:'#9a7348'};const leafy=key==='leaf';const m=new T.MeshStandardMaterial({color:key==='bark'?'#bcb5a4':colors[leafy?id:key]||'#668348',map:leafy?atlas:key==='bark'?bark:null,roughness:key==='bark'?.96:.82,side:key==='bark'?T.FrontSide:T.DoubleSide,alphaTest:leafy?.48:0});
+ function material(id:PlantId,key:string){const name=id+'_'+key;if(materials.has(name))return materials.get(name)!;const colors:Record<string,string>={forest_oak:'#284c2b',forest_fir:'#1d3c30',forest_hornbeam:'#23452d',forest_cedar:'#203f35',forest_spruce:'#163f32',camp_olive:'#b4c797',camp_blossom:'#8fa35d',forest_bramble:'#355735',camp_laurel:'#729353',camp_myrtle:'#6b9980',fern:'#426e3f',pink:'#efb0bd',white:'#f0e3b5',grass:'#90a45c',dry:'#9a7348'};const leafy=key==='leaf';const m=new T.MeshStandardMaterial({color:key==='bark'?'#bcb5a4':colors[leafy?id:key]||'#668348',map:leafy?atlas:key==='bark'?bark:null,roughness:key==='bark'?.96:.82,side:key==='bark'?T.FrontSide:T.DoubleSide,alphaTest:leafy?.48:0});
   if(key==='bark'){m.bumpMap=bark;m.bumpScale=.035;}
   if(key==='foliage'||key==='canopy'){m.color.set(colors[id]||'#49734a');if(key==='canopy')m.color.multiplyScalar(.68);m.side=T.DoubleSide;m.roughness=.9;}
   if(leafy||key==='foliage'){m.onBeforeCompile=s=>{s.uniforms.plantTime=time;s.vertexShader='uniform float plantTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>',`#include <begin_vertex>
