@@ -6,11 +6,13 @@ import { findTemple, templeAtEntrance, templeReturnPoint } from './temple-catalo
 import {templeSites} from './sanctuary-layout';
 import { CampAudio } from './audio';
 import { simulatePlayer } from './physics';
+import {ForestMist} from './forest-mist';
 
 export interface GameHUD { x:number; z:number; heading:number; nearest:string|null; zone:string; fps:number; grounded:boolean }
 export interface Events { hud:(v:GameHUD)=>void; pause:()=>void; map:()=>void; inspect:(id:string)=>void; error:(message:string)=>void }
 export class CampEngine {
   renderer:T.WebGLRenderer; camera=new T.PerspectiveCamera(68,1,.1,650); world:ReturnType<typeof buildWorld>;
+  mist=new ForestMist();
   collider=new Capsule(new T.Vector3(),new T.Vector3(),.32); velocity=new T.Vector3(); audio=new CampAudio();
   keys=new Set<string>(); settings:Settings; active=false; started=false; grounded=false; yaw=0; pitch=-.07; nearest:string|null=null;
   jumpQueued=false;
@@ -32,8 +34,9 @@ export class CampEngine {
     this.frame=requestAnimationFrame(this.loop);
     const query=new URLSearchParams(location.search);
     if(query.has('debug')){(window as unknown as {__camp:CampEngine}).__camp=this;
-      const views:Record<string,[number,number,number]>={courtyard:[0,15,0],lake:[60,5,-Math.PI/2],house:[-55,59,0],interior:[-55,52,0],forest:[-40,-99,0],fire:[0,-53,0],arena:[-65,-15,0]};
+      const views:Record<string,[number,number,number]>={courtyard:[0,15,0],lake:[60,5,-Math.PI/2],house:[-55,59,0],interior:[-55,52,0],forest:[-40,-99,0],fire:[0,-53,0],arena:[-65,-15,0],border:[-80,-170,0],mist:[-80,-202,0],canopy:[-80,-170,0],arrival:[0,113,0]};
       const view=views[query.get('view')||''];if(view){this.teleport(view[0],view[1]);this.yaw=view[2];this.pitch=-.07;this.started=true;this.syncCamera();}
+      if(query.get('view')==='canopy'){this.camera.position.set(0,105,210);this.camera.lookAt(0,0,-80);}
     }
   }
   reset(){this.teleport(0,113);this.yaw=0;this.pitch=-.14;}
@@ -54,7 +57,7 @@ export class CampEngine {
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120){this.step(1/120);this.accumulator-=1/120;}}
     else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+2.5,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
-    if(this.disposed)return;this.world.update(this.time,this.camera.position);this.renderer.render(this.world.scene,this.camera);this.frames++;
+    if(this.disposed)return;this.world.update(this.time,this.camera.position);this.mist.render(this.renderer,this.world.scene,this.camera,this.time);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
       let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';for(const [id,site] of Object.entries(templeSites))if(Math.hypot(x-site.x,z-site.z)<28)zone=site.region;
@@ -62,5 +65,5 @@ export class CampEngine {
       if(this.active)this.audio.update(x,z,this.grounded&&Math.hypot(this.velocity.x,this.velocity.z)>.6,this.keys.has('ShiftLeft')||this.keys.has('ShiftRight'));
     }
   };
-  dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.removers.forEach(f=>f());this.resizeObserver.disconnect();this.audio.dispose();this.world.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
+  dispose(){if(this.disposed)return;this.disposed=true;cancelAnimationFrame(this.frame);this.removers.forEach(f=>f());this.resizeObserver.disconnect();this.audio.dispose();this.mist.dispose();this.world.dispose();this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();}
 }

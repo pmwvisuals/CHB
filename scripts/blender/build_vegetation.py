@@ -1,4 +1,4 @@
-"""Build Asterion vegetation with Sapling 1.0, export editable sources, GLBs and packed runtime meshes.
+"""Build Asterion vegetation; export editable sources, GLBs and packed runtime meshes.
 Run: blender --background --python scripts/blender/build_vegetation.py -- <project-directory>
 """
 import bpy, math, random, json, struct, base64, ast, sys
@@ -105,7 +105,9 @@ def sapling(preset,height,seed,branches,leaves,leaf_size,**overrides):
  return created,parts
 
 def meshpart(name,vertices,faces,material):
- mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update();ob=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(ob);ob.data.materials.append(material);return ob
+ mesh=bpy.data.meshes.new(name);mesh.from_pydata(vertices,[],faces);mesh.update()
+ for polygon in mesh.polygons:polygon.use_smooth=True
+ ob=bpy.data.objects.new(name,mesh);bpy.context.collection.objects.link(ob);ob.data.materials.append(material);return ob
 
 def fern(name,height=1.4):
  verts=[];faces=[]
@@ -174,7 +176,9 @@ def asset(identifier,name,zone,parts,created=None):
   if created is not None:ob=convert(ob,materials[key if key!='leaf' else identifier.split('_')[-1]])
   if key=='bark' and len(ob.data.polygons)>7000:
    dec=ob.modifiers.new('Game branch budget','DECIMATE');dec.ratio=7000/len(ob.data.polygons);bpy.context.view_layer.objects.active=ob;bpy.ops.object.modifier_apply(modifier=dec.name)
-  ob.name=identifier+'_'+key;originals.append(ob);records.append({'material':key,'high':pack(ob),'low':pack(ob,.22 if key=='bark' else .35)})
+  low_ratio=1 if key=='bark' else .4 if key=='canopy' else .06 if key=='foliage' else .55
+  distant=pack(ob,low_ratio)
+  ob.name=identifier+'_'+key;originals.append(ob);records.append({'material':key,'high':pack(ob),'low':distant})
  if created:
   for ob in created:bpy.data.objects.remove(ob,do_unlink=True)
  bpy.ops.object.select_all(action='DESELECT')
@@ -191,23 +195,77 @@ def asset(identifier,name,zone,parts,created=None):
  bpy.ops.object.text_add(location=((col-1.5)*32,(1-row)*34-11,.1));label=bpy.context.object;label.data.body=name;label.data.align_x='CENTER';label.data.size=1.3;label.data.materials.append(materials['white'])
  print('BUILT',identifier,round(height,1),sum(r['high']['triangles'] for r in records),flush=True)
 
-for identifier,name,zone,preset,height,seed,branches,leaves,leaf_size in [
- ('forest_oak','Ancient shadow oak','forest','black_oak',23,41,(0,26,38,3),60,.24),
- ('forest_fir','Towering dusk fir','forest','douglas_fir',28,62,(0,110,12,3),60,.16),
- ('camp_olive','Silver courtyard olive','camp','black_tupelo',7,25,(0,25,15,3),50,.16),
- ('camp_blossom','Blush sanctuary tree','camp','hill_cherry',6,14,(0,25,18,3),50,.17)]:
- created,parts=sapling(preset,height,seed,branches,leaves,leaf_size)
- converted=[(convert(o,materials[identifier.split('_')[-1]] if key=='leaf' else bark),key) for o,key in parts]
- if identifier=='camp_blossom':converted.append((blossoms(next(o for o,k in converted if k=='leaf'),300,.10,materials['pink']),'pink'))
- for o in created:bpy.data.objects.remove(o,do_unlink=True)
- asset(identifier,name,zone,converted)
+def natural_tree(identifier,height,seed,bush=False):
+ # Explicit swept tubes have bounded radii and connected branch joints. Geometry
+ # leaves and recessed crown clusters retain their coverage at every distance.
+ rng=random.Random(seed);bv=[];bf=[];lv=[];lf=[];cv=[];cf=[]
+ fir=identifier=='forest_fir';crown=height*(.28 if fir else .34);trunk=height*(.043 if fir else .046)
+ def tube(points,radii,sides=8):
+  start=len(bv)
+  for j,p in enumerate(points):
+   tangent=(points[min(j+1,len(points)-1)]-points[max(0,j-1)]).normalized()
+   a=tangent.cross(Vector((0,1,0))).normalized();b=tangent.cross(a).normalized()
+   for k in range(sides):bv.append(p+(a*math.cos(k*math.tau/sides)+b*math.sin(k*math.tau/sides))*radii[j])
+  for j in range(len(points)-1):
+   for k in range(sides):a=start+j*sides+k;b=start+j*sides+(k+1)%sides;bf.append((a,b,b+sides,a+sides))
+  bf.append(tuple(start+k for k in reversed(range(sides))))
+ def leaf(center):
+  axis=Vector((rng.uniform(-1,1),rng.uniform(-1,1),rng.uniform(-.45,.65))).normalized();across=axis.cross(Vector((0,0,1))).normalized();normal=axis.cross(across)
+  length=rng.uniform(.12,.23)*(height/4.6 if not bush else .58);width=length*(.24 if fir else .42);n=len(lv)
+  # A folded pointed leaf: no alpha texture to disappear in mipmaps.
+  lv.append(center+axis*length*.48+normal*length*.07)
+  for t,w in [(0,0),(.22,.66),(.58,1),(.84,.56),(1,0),(.84,-.56),(.58,-1),(.22,-.66)]:lv.append(center+axis*length*t+across*width*w)
+  for k in range(8):lf.append((n,n+1+k,n+1+(k+1)%8))
+ def crown_lobe(center,radius):
+  start=len(cv);rows=6;segments=12
+  for j in range(rows+1):
+   theta=math.pi*j/rows
+   for k in range(segments):
+    phi=math.tau*k/segments;wav=1+.045*math.sin(phi*3+j*2)+rng.uniform(-.02,.02)
+    cv.append(center+Vector((math.sin(theta)*math.cos(phi)*radius,math.sin(theta)*math.sin(phi)*radius,math.cos(theta)*radius*.83))*wav*.77)
+  for j in range(rows):
+   for k in range(segments):a=start+j*segments+k;b=start+j*segments+(k+1)%segments;cf.append((a,b,b+segments,a+segments))
+  for _ in range(168 if not fir else 144):
+   direction=Vector((rng.uniform(-1,1),rng.uniform(-1,1),rng.uniform(-.75,1))).normalized()
+   leaf(center+direction*radius*rng.uniform(.68,1.16))
+ lean=Vector((height*.018,-height*.012,0))
+ points=[Vector((0,0,height*j/8))+lean*(j/8)**2 for j in range(9)]
+ tube(points,[trunk*(1-j/8)**1.25+.005 for j in range(9)],10)
+ # The root collar begins below zero; short buttress roots meet the soil.
+ for k in range(5):
+  a=k*2.399;v=Vector((math.cos(a),math.sin(a),0));tube([v*trunk*.3+Vector((0,0,.22)),v*trunk*2+Vector((0,0,.02)),v*trunk*2.8+Vector((0,0,-.07))],[trunk*.6,trunk*.3,.009],7)
+ rings=6 if fir else 3
+ for ring in range(rings):
+  z=height*((.27+ring*.105) if fir else (.43+ring*.15));reach=crown*((1-ring*.13) if fir else (1-ring*.15))
+  for k in range(4 if fir else 7):
+   angle=k*math.tau/(4 if fir else 7)+ring*1.65+rng.uniform(-.25,.25);direction=Vector((math.cos(angle),math.sin(angle),0));base=Vector((lean.x*(z/height)**2,lean.y*(z/height)**2,z));tip=base+direction*reach+Vector((0,0,height*(.06 if fir else .13)))
+   tube([base,base+direction*reach*.48+Vector((0,0,height*.035)),tip],[trunk*.36*(1-z/height),trunk*.11,.006],6)
+   center=tip-direction*reach*.12;radius=height*(.145 if fir else .18)*rng.uniform(.9,1.09);crown_lobe(center,radius)
+ crown_lobe(lean+Vector((0,0,height*.87)),height*.14)
+ foliage=materials['fir' if fir else 'bramble' if bush else identifier.split('_')[-1]]
+ # These materials use geometry silhouettes, rather than the legacy cutout atlas.
+ solid=mat(identifier+' solid leaves',tuple(foliage.diffuse_color[:3]));solid.use_backface_culling=False
+ core=mat(identifier+' shaded crown',tuple(c*.67 for c in foliage.diffuse_color[:3]))
+ parts=[(meshpart('Connected trunk and roots',bv,bf,bark),'bark'),(meshpart('Folded geometry leaves',lv,lf,solid),'foliage'),(meshpart('Recessed crown clusters',cv,cf,core),'canopy')]
+ # Normalize all parts together, including roots. Placement uses the root collar.
+ allv=[v for ob,_ in parts for v in ob.data.vertices];bottom=min(v.co.z for v in allv);top=max(v.co.z for v in allv);factor=height/(top-bottom)
+ for ob,_ in parts:
+  for v in ob.data.vertices:v.co=Vector((v.co.x*factor,v.co.y*factor,(v.co.z-bottom)*factor))
+ return parts
+
+for identifier,name,zone,height,seed in [
+ ('forest_oak','Deep green woodland oak','forest',4.6,41),
+ ('forest_fir','Dark woodland fir','forest',5.0,62),
+ ('camp_olive','Silver courtyard olive','camp',3.6,25),
+ ('camp_blossom','Blush sanctuary tree','camp',3.3,14)]:
+ parts=natural_tree(identifier,height,seed)
+ if identifier=='camp_blossom':parts.append((blossoms(parts[1][0],130,.045,materials['pink']),'pink'))
+ asset(identifier,name,zone,parts)
 asset('forest_fern','Giant woodland fern','forest',[(fern('Fern',1.7),'fern')])
 for identifier,name,zone,preset,height,seed in [('forest_bramble','Dark tangled bramble','forest','black_tupelo',2.1,71),('camp_laurel','Clipped laurel bush','camp','black_tupelo',1.45,45),('camp_myrtle','Flowering myrtle','camp','black_tupelo',1.6,24)]:
- created,parts=sapling(preset,height,seed,(0,18,12,2),35,.09,baseSize=.02,ratio=.025,length=(1.,.65,.5,.1),shape='3')
- converted=[(convert(o,materials[identifier.split('_')[-1]] if key=='leaf' else bark),key) for o,key in parts]
- if identifier=='camp_myrtle':converted.append((blossoms(next(o for o,k in converted if k=='leaf'),90,.075,materials['white']),'white'))
- for o in created:bpy.data.objects.remove(o,do_unlink=True)
- asset(identifier,name,zone,converted)
+ parts=natural_tree(identifier,height,seed,True)
+ if identifier=='camp_myrtle':parts.append((blossoms(parts[1][0],70,.035,materials['white']),'white'))
+ asset(identifier,name,zone,parts)
 for identifier,name,zone,style in [('forest_bracken','Low bracken','forest','fern'),('forest_litter','Fallen leaves','forest','litter'),('camp_grass','Soft ornamental grass','camp','grass'),('camp_flowers','Ivory meadow flowers','camp','grass')]:
  ob=groundcover(name,style);parts=[(ob,'fern' if style=='fern' else 'dry' if style=='litter' else 'grass')]
  if identifier=='camp_flowers':parts.append((blossoms(ob,16,.06,materials['white']),'white'))

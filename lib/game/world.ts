@@ -16,7 +16,7 @@ import {buildWayfarerHall} from './wayfarer';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
 export function buildWorld(): World {
-  const scene = new T.Scene(); scene.background = new T.Color('#b8d5d5'); scene.fog = new T.FogExp2('#c4d5c1', .0037);
+  const scene = new T.Scene(); scene.background = new T.Color('#b8d5d5'); scene.fog = new T.FogExp2('#8fa99d', .0013);
   const collision = new T.Group();
   let seed = 721;
   const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -128,12 +128,12 @@ export function buildWorld(): World {
   function reserved(x:number,z:number){return inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x+67,z+34)<20 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
   const plants:PlantPlacement[]=buildCampGardens(scene,collision),planted:{x:number;z:number}[]=[];
   for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(inWoodland(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(Math.abs(x)<40&&z>-35&&z<95)continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
-   const forest=z<-65||Math.abs(x)>105,scale=forest?.65+rand()*.4:.65+rand()*.25;planted.push({x,z});plants.push({id:forest?(i%2?'forest_oak':'forest_fir'):(i%2?'camp_olive':'camp_blossom'),x,y:h(x,z),z,scale,rotation:rand()*6.28});
-   const c=new T.Mesh(new T.CylinderGeometry(forest?.65:.2,forest?.9:.35,forest?12:4,8));c.position.set(x,h(x,z)+(forest?6:2),z);collision.add(c);
+   const forest=z<-65||Math.abs(x)>105,scale=forest?.9+rand()*.1:.84+rand()*.16;planted.push({x,z});plants.push({id:forest?(i%2?'forest_oak':'forest_fir'):(i%2?'camp_olive':'camp_blossom'),x,y:h(x,z),z,scale,rotation:rand()*6.28});
+   const c=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));c.position.set(x,h(x,z)+1.2,z);collision.add(c);
   }
   for(let i=0;i<2600;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(inWoodland(x,z)||nearPath(x,z,.8)||rand()>groundHabitat(x,z).bush*.85)continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
   for(const theme of templeCatalog){const p=templePlacement(theme.id);for(const side of [-1,1]){const lx=side*5.4,lz=9.2,x=p.x+Math.cos(p.rotation)*lx+Math.sin(p.rotation)*lz,z=p.z-Math.sin(p.rotation)*lx+Math.cos(p.rotation)*lz;plants.push({id:theme.id==='aphrodite'||theme.id==='hera'?'camp_myrtle':'camp_laurel',x,y:h(x,z),z,scale:.28,rotation:p.rotation});}}
-  for(const id of ['ares','artemis','dionysus'] as const){const site=templeSites[id];for(let i=0;i<48;i++){const angle=i*2.399,r=24+(i%5)*4,x=site.x+Math.sin(angle)*r,z=site.z+Math.cos(angle)*r;if(nearPath(x,z,3)||insideTempleGrounds(x,z,2))continue;plants.push({id:i%2?'forest_oak':'forest_fir',x,y:h(x,z),z,scale:.75+(i%4)*.07,rotation:angle});const c=new T.Mesh(new T.CylinderGeometry(.6,.8,12,8));c.position.set(x,h(x,z)+6,z);collision.add(c);}}
+  for(const id of ['ares','artemis','dionysus'] as const){const site=templeSites[id];for(let i=0;i<48;i++){const angle=i*2.399,r=24+(i%5)*4,x=site.x+Math.sin(angle)*r,z=site.z+Math.cos(angle)*r;if(nearPath(x,z,3)||insideTempleGrounds(x,z,2))continue;plants.push({id:i%2?'forest_oak':'forest_fir',x,y:h(x,z),z,scale:.9+(i%4)*.03,rotation:angle});const c=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));c.position.set(x,h(x,z)+1.2,z);collision.add(c);}}
   const planting=plantCollection(scene,plants);const forestBorder=buildForestBorder(scene,collision);
   const dummy=new T.Object3D();
   const meadow=gardenGrass(),grass=new T.InstancedMesh(meadow.garden,meadow.material,18000),wisps=new T.InstancedMesh(meadow.wisps,meadow.material,3200);let gi=0,wi=0;
