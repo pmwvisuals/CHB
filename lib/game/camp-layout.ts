@@ -11,6 +11,8 @@ export const campRoutes=[
  {name:'Forest walk',width:2.5,points:[[-17,-23],[-25,-47],[-24,-75],[-40,-96],[-40,-108]]},
  {name:'Garden walk',width:2.8,points:[[-55,64],[-91,62],[-93,87],[-68,92],[-32,88],[0,96]]},
  {name:'Eastern promenade',width:3.2,points:[[46,55],[61,49],[57,27],[48,15],[55,5]]},
+ {name:'Lakeside pavilion walk',width:2.6,points:[[55,5],[55,14],[58,25],[65,29],[65,35]]},
+ {name:'Boat dock walk',width:2.8,points:[[55,5],[52,-5],[53,-12],[53,-18]]},
 ] as const;
 export function routePoints(points:readonly (readonly number[])[]){return new CatmullRomCurve3(points.map(p=>new Vector3(p[0],0,p[1]))).getPoints(160);}
 export const gardenCourts=[{x:-15,z:43,rx:6,rz:10},{x:15,z:43,rx:6,rz:10},{x:-18,z:-15,rx:4,rz:5},{x:18,z:-15,rx:4,rz:5}];

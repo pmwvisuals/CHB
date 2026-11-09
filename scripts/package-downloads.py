@@ -7,7 +7,8 @@ source=subprocess.check_output(['git','ls-files','--cached','--others','--exclud
 source=sorted({p for p in source if p!='.npmrc' and not p.startswith('.openai/') and (root/p).is_file()})
 models=[p.relative_to(root).as_posix() for p in (root/'assets-source/vegetation').iterdir() if p.suffix in ['.blend','.glb','.png','.json']]
 ground=[p.relative_to(root).as_posix() for p in (root/'assets-source/ground-cover').iterdir() if p.suffix in ['.blend','.glb','.png','.json']]
-for name,files,flatten in [('asterion-playable.zip',pages,True),('camp-half-blood-source.zip',source,False),('asterion-vegetation-assets.zip',models,True),('asterion-ground-cover-assets.zip',ground,True)]:
+landmarks=[p.relative_to(root).as_posix() for p in (root/'assets-source/landmarks').glob('*') if p.suffix in ['.blend','.png','.json']]
+for name,files,flatten in [('asterion-playable.zip',pages,True),('camp-half-blood-source.zip',source,False),('asterion-vegetation-assets.zip',models,True),('asterion-ground-cover-assets.zip',ground,True),('asterion-landmark-assets.zip',landmarks,True)]:
  with zipfile.ZipFile(root/name,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as archive:
   for relative in files:archive.write(root/relative,Path(relative).name if flatten else relative)
  with zipfile.ZipFile(root/name) as archive:

@@ -18,6 +18,10 @@ export default function SanctuaryMap({x,z,selected,onSelect,onVisit}:{x:number;z
   </g>;})}
   <rect x={map(-8)} y={map(-8)} width="18" height="18" fill="#52716c" stroke="#eee4ca" strokeWidth="2"/><text x={map(0)} y={map(0)+30} textAnchor="middle" fontSize="9" fill="#344c40">GREAT HALL</text>
   <rect x={map(-66)} y={map(43)} width="25" height="21" fill="#6c8b93" stroke="#eee4ca"/>
+  <ellipse cx={map(-67)} cy={map(-34)} rx="24" ry="23" fill="#b6a47c" stroke="#796e51"/>
+  <circle cx={map(-64)} cy={map(-31)} r="9" fill="none" stroke="#796e51"/>
+  <path d={`M${map(53)} ${map(-18)}H${map(75)}`} fill="none" stroke="#705239" strokeWidth="4"/>
+  <circle cx={map(65)} cy={map(35)} r="5" fill="#507d77" stroke="#eee4ca"/>
   {landmarks.map((l,i)=><g key={l.id} role="button" tabIndex={0} className="map-marker" aria-label={l.name} onClick={()=>onSelect(l.id)} onKeyDown={e=>{if(e.key==='Enter')onSelect(l.id);}}><circle cx={map(l.x)} cy={map(l.z)} r="8" fill={selected===l.id?'#344f45':'#f6edd3'} stroke="#344f45"/><text x={map(l.x)} y={map(l.z)+3} textAnchor="middle" fontSize="9" fill={selected===l.id?'#f6edd3':'#344f45'}>{i+1}</text></g>)}
   <circle cx={map(x)} cy={map(z)} r="5" fill="#c56942" stroke="#fff4d8" strokeWidth="2"/><circle cx={map(x)} cy={map(z)} r="10" fill="none" stroke="#c56942"/>
   <text x="565" y="57" className="map-north">N ↑</text><text x="320" y="600" textAnchor="middle" fontSize="11" fill="#344f45">SELECT A TEMPLE TO VISIT ITS GROUNDS</text>

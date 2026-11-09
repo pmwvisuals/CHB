@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {Scene,Group,Mesh,Vector3,ShaderLib} from 'three';
+import {Octree} from 'three/addons/math/Octree.js';
+import {Capsule} from 'three/addons/math/Capsule.js';
+import {buildTrainingGround} from '../lib/game/training-ground';
+import {buildLakeside} from '../lib/game/lakeside';
+import {groundHeight,outdoorWalkHeight,landmarks} from '../lib/game/data';
+import {terrainGeometry} from '../lib/game/landscape';
+import {simulatePlayer,type PlayerState} from '../lib/game/physics';
+const scene=new Scene(),collision=new Group();collision.add(new Mesh(terrainGeometry(220,180,0,0,1.6)));
+const training=buildTrainingGround(scene,collision),lake=buildLakeside(scene,collision);collision.updateMatrixWorld(true);const tree=new Octree().fromGraphNode(collision);
+const player=(x:number,z:number):PlayerState=>{const y=outdoorWalkHeight(x,z);return {keys:new Set(),yaw:0,grounded:false,jumpQueued:false,velocity:new Vector3(),collider:new Capsule(new Vector3(x,y+.33,z),new Vector3(x,y+1.63,z),.32)};};
+function walk(x:number,z:number,tx:number,tz:number){const p=player(x,z);p.keys.add('KeyW');for(let i=0;i<1800&&Math.hypot(p.collider.start.x-tx,p.collider.start.z-tz)>.35;i++){p.yaw=Math.atan2(p.collider.start.x-tx,p.collider.start.z-tz);simulatePlayer(p,tree,1/120);}assert.ok(Math.hypot(p.collider.start.x-tx,p.collider.start.z-tz)<.5,`route blocked from ${x},${z} at ${p.collider.start.x},${p.collider.start.z}`);return p;}
+walk(-67,-12,-67,-34);walk(-91,-32,-67,-32);walk(-82,-34,-82,-38);
+const dock=walk(51,-18,72,-18);assert.ok(Math.abs(dock.collider.start.y-.32-1.12)<.1,'dock deck is grounded at its declared spawn height');walk(72,-18,51,-18);walk(65,28,65,35);
+const rail=player(70,-18);rail.keys.add('KeyS');for(let i=0;i<400;i++)simulatePlayer(rail,tree,1/120);assert.ok(rail.collider.start.z<-16.2,'dock rail prevents walking into the water');
+const shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};(lake.water.material as any).onBeforeCompile(shader,{});assert.ok(shader.fragmentShader.includes('vec2 ripple')&&shader.fragmentShader.includes('caustic'));
+assert.ok(landmarks.some(l=>l.id==='training'));training.update(1);training.update(2);lake.update(1);lake.update(2);
+scene.traverse(o=>{if(o instanceof Mesh){for(const value of o.geometry.getAttribute('position').array)assert.ok(Number.isFinite(value));o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});tree.clear();collision.clear();scene.clear();
+console.log('PASS training ground entrances, equipment pavilion, dock ramp/rails, return walk, lakeside pavilion and animated water integration');
