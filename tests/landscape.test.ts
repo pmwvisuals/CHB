@@ -1,13 +1,25 @@
+import {surfaceCover,terrainSlope,roadCover,slopeCover} from '../lib/game/ground-surface';
+import {groundCover} from '../lib/game/generated/ground-cover';
+import {unzlibSync} from 'three/addons/libs/fflate.module.js';
+import {ShaderLib} from 'three';
 import assert from 'node:assert/strict';
 import {Group,Mesh,Vector3} from 'three';
 import {Octree} from 'three/addons/math/Octree.js';
 import {Capsule} from 'three/addons/math/Capsule.js';
 import {groundHeight} from '../lib/game/data';
-import {terrainGeometry,groundHabitat,weatheredRockGeometry} from '../lib/game/landscape';
+import {terrainGeometry,groundHabitat,groundMaterial,weatheredRockGeometry} from '../lib/game/landscape';
 import {simulatePlayer} from '../lib/game/physics';
 const terrain=terrainGeometry(),positions=terrain.getAttribute('position');
 for(let i=0;i<positions.count;i+=19)assert.ok(Math.abs(positions.getY(i)-groundHeight(positions.getX(i),positions.getZ(i)))<.00001);
-let bare=0,dense=0;for(let x=-130;x<130;x+=3)for(let z=-130;z<130;z+=3){const a=groundHabitat(x,z);if(a.grass<.08)bare++;if(a.bush>.5)dense++;}assert.ok(bare>300&&dense>300,'both bare ground and dense thickets must exist');
+let green=0,flat=0,steep=0,exposed=0;
+for(let x=-130;x<130;x+=3)for(let z=-130;z<130;z+=3){const slope=terrainSlope(x,z),cover=surfaceCover(x,z);if(slope<.2&&roadCover(x,z)<.1&&x<50){flat++;if(cover>.8)green++;}if(slope>.6){steep++;if(cover<.01)exposed++;}}
+assert.ok(green/flat>.9,'gentle ground is predominantly grass');assert.ok(steep>10&&exposed===steep,'steep faces stay bare');
+assert.equal(slopeCover(.7),0);assert.equal(slopeCover(.1),1);assert.ok(roadCover(0,60)>.9&&surfaceCover(0,60)<.1,'arrival road stays bare');assert.ok(surfaceCover(123,0)<.1,'lake shore stays sandy');
+assert.equal(terrain.getAttribute('groundCover').count,positions.count);
+for(const packed of Object.values(groundCover.maps)){const raw=unzlibSync(Uint8Array.from(atob(packed),c=>c.charCodeAt(0)));assert.equal(raw.length,groundCover.width*groundCover.height*3);}
+const material=groundMaterial(),shader={vertexShader:ShaderLib.standard.vertexShader,fragmentShader:ShaderLib.standard.fragmentShader,uniforms:{}};
+material.onBeforeCompile(shader as any,{} as any);assert.ok(shader.fragmentShader.includes('float roughnessFactor = roughness'));assert.ok(shader.fragmentShader.includes('coverSample(normalMap)'));assert.ok(shader.vertexShader.includes('attribute vec2 groundCover'));
+for(const texture of [material.map,material.normalMap,material.roughnessMap])texture?.dispose();material.dispose();
 assert.ok(groundHeight(-30,60)>1.4&&groundHeight(-59,-91)>1.5,'small hills must have meaningful relief');
 const root=new Group();root.add(new Mesh(terrain));root.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(root);
 const x=-30,z=72,y=groundHeight(x,z),p={keys:new Set(['KeyW']),yaw:0,grounded:false,jumpQueued:false,velocity:new Vector3(),collider:new Capsule(new Vector3(x,y+.33,z),new Vector3(x,y+1.63,z),.32)};
@@ -15,4 +27,4 @@ for(let i=0;i<600;i++)simulatePlayer(p,octree,1/120);
 assert.ok(p.collider.start.z<52&&Math.abs(p.collider.start.y-.32-groundHeight(p.collider.start.x,p.collider.start.z))<.12,'hill walking follows the terrain without sticking or falling');
 p.keys.clear();for(let i=0;i<120;i++)simulatePlayer(p,octree,1/120);assert.ok(p.grounded,'player settles on the hillside');p.jumpQueued=true;for(let i=0;i<240;i++)simulatePlayer(p,octree,1/120);assert.ok(p.grounded,'jump lands on sloping terrain');
 const rock=weatheredRockGeometry();assert.ok(rock.getAttribute('color').count===rock.getAttribute('position').count);assert.ok(Array.from(rock.getAttribute('position').array).every(Number.isFinite));assert.ok(rock.getAttribute('position').count<1500,'shared weathered rock stays small enough to instance');
-terrain.dispose();rock.dispose();console.log('PASS landscape relief, matching collision surface, natural clearings, hill walking/jumping and rock geometry budget');
+terrain.dispose();rock.dispose();console.log('PASS landscape relief, matching collision surface, grass coverage, exposed slopes/roads, packed PBR maps, shader integration, hill walking/jumping and rock geometry budget');

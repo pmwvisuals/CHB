@@ -2,30 +2,33 @@ import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {templeSites} from './sanctuary-layout';
 import { groundHeight } from './data';
+import {surfaceCover} from './ground-surface';
+import {unzlibSync} from 'three/addons/libs/fflate.module.js';
+import {groundCover} from './generated/ground-cover';
 
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 const hash=(x:number,z:number)=>{const n=Math.sin(x*127.1+z*311.7)*43758.5453;return n-Math.floor(n);};
 export function landNoise(x:number,z:number){const ix=Math.floor(x),iz=Math.floor(z),u=smooth(0,1,x-ix),v=smooth(0,1,z-iz);return T.MathUtils.lerp(T.MathUtils.lerp(hash(ix,iz),hash(ix+1,iz),u),T.MathUtils.lerp(hash(ix,iz+1),hash(ix+1,iz+1),u),v);}
-// A single ecological mask drives both soil colour and planting. Bare clearings really stay bare.
+// One slope/road mask drives the ground material and its living ground cover.
 export function groundHabitat(x:number,z:number){
  const warpX=x+8*landNoise(x*.027+19,z*.027),warpZ=z+8*landNoise(x*.031,z*.031+31);
  const patch=.72*landNoise(warpX*.065,warpZ*.065)+.28*landNoise(x*.19+9,z*.19);
  const forest=Math.max(1-smooth(23,42,Math.hypot(x+40,z+96)),1-smooth(-90,-62,z),smooth(99,124,Math.abs(x)));
- const grass=smooth(.33,.64,patch),bush=smooth(.54,.74,patch);
+ const grass=surfaceCover(x,z)*(.85+.15*patch),bush=smooth(.54,.74,patch)*grass;
  return {grass,bush,forest,patch};
 }
 export function groundColor(x:number,z:number){
- const a=groundHabitat(x,z),fine=landNoise(x*.4,z*.4),c=new T.Color('#82725b');
- c.lerp(new T.Color('#665643'),a.forest*.7).lerp(new T.Color('#717854'),a.grass*.85);
- c.lerp(new T.Color('#496044'),a.forest*a.grass*.6);
- const forge=1-Math.min(1,Math.hypot(x-templeSites.hephaestus.x,z-templeSites.hephaestus.z)/31),ridge=1-Math.min(1,Math.hypot(x-templeSites.zeus.x,z-templeSites.zeus.z)/31);
- c.lerp(new T.Color('#4d4843'),forge*.9).lerp(new T.Color('#a39d8b'),ridge*.65);return c.multiplyScalar(.86+fine*.25);
+ const a=groundHabitat(x,z),fine=landNoise(x*.4,z*.4),c=new T.Color('#a18a68');
+ const green=new T.Color('#698546').lerp(new T.Color('#4c693d'),a.forest*.7);
+ green.lerp(new T.Color('#7c9151'),landNoise(x*.045,z*.045)*.32);c.lerp(green,a.grass);
+ const forge=1-Math.min(1,Math.hypot(x-templeSites.hephaestus.x,z-templeSites.hephaestus.z)/31);
+ c.lerp(new T.Color('#524b43'),forge*.9);return c.multiplyScalar(.91+fine*.15);
 }
 export function terrainGeometry(width=500,depth=500,cx=0,cz=0){
  const g=new T.PlaneGeometry(width,depth,Math.ceil(width/1.6),Math.ceil(depth/1.6));g.rotateX(-Math.PI/2);g.translate(cx,0,cz);
- const p=g.getAttribute('position'),colors=[];
- for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,groundHeight(x,z));const c=groundColor(x,z);colors.push(c.r,c.g,c.b);}
- g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;
+ const p=g.getAttribute('position'),colors=[],cover=[];
+ for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i);p.setY(i,groundHeight(x,z));const c=groundColor(x,z);colors.push(c.r,c.g,c.b);const habitat=groundHabitat(x,z);cover.push(habitat.grass,habitat.forest*(.45+.35*landNoise(x*.08,z*.08)));}
+ g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setAttribute('groundCover',new T.Float32BufferAttribute(cover,2));g.computeVertexNormals();return g;
 }
 function detailTexture(){
  const size=256,data=new Uint8Array(size*size*4);
@@ -35,12 +38,34 @@ function detailTexture(){
  }
  const t=new T.DataTexture(data,size,size);t.wrapS=t.wrapT=T.RepeatWrapping;t.generateMipmaps=true;t.minFilter=T.LinearMipmapLinearFilter;t.magFilter=T.LinearFilter;t.anisotropy=8;t.colorSpace=T.SRGBColorSpace;t.needsUpdate=true;return t;
 }
+function coverTexture(kind:'albedo'|'normal'|'roughness'){
+ const raw=unzlibSync(Uint8Array.from(atob(groundCover.maps[kind]),c=>c.charCodeAt(0)));
+ // Expand RGB to RGBA: WebGL2 supports this layout consistently on all devices.
+ const rgba=new Uint8Array(groundCover.width*groundCover.height*4);
+ for(let i=0,j=0;i<raw.length;i+=3,j+=4){rgba[j]=raw[i];rgba[j+1]=raw[i+1];rgba[j+2]=raw[i+2];rgba[j+3]=255;}
+ const t=new T.DataTexture(rgba,groundCover.width,groundCover.height);t.wrapS=t.wrapT=T.RepeatWrapping;t.generateMipmaps=true;t.minFilter=T.LinearMipmapLinearFilter;t.magFilter=T.LinearFilter;t.anisotropy=16;t.colorSpace=kind==='albedo'?T.SRGBColorSpace:T.NoColorSpace;t.needsUpdate=true;return t;
+}
 export function groundMaterial(){
- const map=detailTexture();map.repeat.set(140,140);
- const m=new T.MeshStandardMaterial({vertexColors:true,map,bumpMap:map,bumpScale:.055,roughness:1});
- // World-space grain avoids the texture scale changing on the separate forest map.
- m.onBeforeCompile=s=>{s.vertexShader='varying vec3 soilPoint;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nsoilPoint=position;');s.fragmentShader='varying vec3 soilPoint;\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>','diffuseColor *= texture2D(map,soilPoint.xz*.46);');};
- m.customProgramCacheKey=()=> 'asterion-soil-v2';return m;
+ const albedo=coverTexture('albedo'),normal=coverTexture('normal'),roughness=coverTexture('roughness'),soil=detailTexture();
+ const m=new T.MeshStandardMaterial({vertexColors:true,map:albedo,normalMap:normal,normalScale:new T.Vector2(.55,-.55),roughnessMap:roughness,roughness:1});
+ m.userData.groundCover=true;
+ m.onBeforeCompile=s=>{
+  s.uniforms.soilDetail={value:soil};
+  s.vertexShader='attribute vec2 groundCover; varying vec3 soilPoint; varying vec2 coverWeights;\n'+s.vertexShader;
+  s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nsoilPoint=position;coverWeights=groundCover;');
+  s.fragmentShader=`varying vec3 soilPoint;varying vec2 coverWeights;uniform sampler2D soilDetail;
+   vec2 coverUV(float tile,vec2 offset){vec2 uv=fract(soilPoint.xz*.5+offset);return vec2((uv.x*.996+.002)*.5+tile*.5,uv.y*.996+.002);}
+   vec4 coverSample(sampler2D tex){return mix(texture2D(tex,coverUV(0.,vec2(0.))),texture2D(tex,coverUV(1.,vec2(.31,.47))),coverWeights.y);}
+  `+s.fragmentShader;
+  s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>',`vec3 coverGrain=coverSample(map).rgb/mix(vec3(.25,.32,.105),vec3(.17,.25,.085),coverWeights.y);
+   vec3 soilGrain=texture2D(soilDetail,soilPoint.xz*.46).rgb;
+   diffuseColor.rgb*=mix(soilGrain,clamp(coverGrain,vec3(.4),vec3(1.65)),coverWeights.x);`);
+  s.fragmentShader=s.fragmentShader.replace('#include <roughnessmap_fragment>','float roughnessFactor = roughness * mix(.96,coverSample(roughnessMap).g,coverWeights.x);');
+  s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',T.ShaderChunk.normal_fragment_maps.replaceAll('texture2D( normalMap, vNormalMapUv ).xyz','mix(vec3(.5,.5,1.),coverSample(normalMap).xyz,coverWeights.x)'));
+ };
+ m.customProgramCacheKey=()=> 'asterion-blender-cover-v1';
+ // The soil sampler is an extra shader uniform, so release it explicitly.
+ const dispose=m.dispose.bind(m);m.dispose=()=>{soil.dispose();dispose();};return m;
 }
 export function trailMaterial(){
  const map=detailTexture();map.repeat.set(4,45);
@@ -58,3 +83,4 @@ export function weatheredRockGeometry(variant=0){
  g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;
 }
 export function weatheredRockMaterial(){const map=detailTexture();map.repeat.set(2,2);return new T.MeshStandardMaterial({color:'#d0c9b8',vertexColors:true,map,bumpMap:map,bumpScale:.09,roughness:.91});}
+

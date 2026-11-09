@@ -66,3 +66,6 @@ yarn-error.log*
 
 /assets-source/vegetation/
 /asterion-vegetation-assets.zip
+
+/assets-source/ground-cover/
+/asterion-ground-cover-assets.zip
