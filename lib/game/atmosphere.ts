@@ -2,7 +2,7 @@ import * as T from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {cloudBanks,cloudLobes,cloudCenter,cloudFootprintSource} from './atmosphere-layout';
 import {sampleDayCycle,updateDayCycle,dayCycleDuration} from './day-cycle';
-import {buildNightSky} from './celestial-sky';
+import {buildNightSky,celestialDiscAngularRadius} from './celestial-sky';
 
 const glslVec=(values:readonly number[])=>'vec3('+values.map(v=>Number.isInteger(v)?v+'.':String(v)).join(',')+')';
 const cloudShapeGLSL=`float cloudShape(vec3 q){float shape=-1.;${cloudLobes.map(l=>`shape=max(shape,1.-length((q-${glslVec(l.center)})/${glslVec(l.radius)}));`).join('')}return shape;}`;
@@ -23,7 +23,10 @@ export function buildAtmosphere(scene:T.Scene,options:{clock?:()=>number;ambient
  const ambient=new T.HemisphereLight('#c4ddf3','#69734d',1.65);ambient.name='Cool sky fill';scene.add(ambient);
  const sky=new Sky();sky.name='Cycling atmospheric sky and solar disc';sky.scale.setScalar(10000);sky.renderOrder=-1000;sky.frustumCulled=false;
  const skyMaterial=sky.material as T.ShaderMaterial,u=skyMaterial.uniforms;u.turbidity.value=3.6;u.rayleigh.value=2.3;u.mieCoefficient.value=.004;u.mieDirectionalG.value=.82;u.sunPosition.value.copy(state.sunDirection).multiplyScalar(450000);
- u.cycleDaylight={value:state.daylight};skyMaterial.fragmentShader='uniform float cycleDaylight;\n'+skyMaterial.fragmentShader;skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('gl_FragColor = vec4( retColor, 1.0 );',`vec3 nightColor=mix(vec3(.008,.015,.033),vec3(.0015,.0035,.012),pow(max(direction.y,0.),.45));
+ u.cycleDaylight={value:state.daylight};u.sunDiscEdgeCos={value:Math.cos(celestialDiscAngularRadius)};u.sunDiscCoreCos={value:Math.cos(celestialDiscAngularRadius*.96)};
+ skyMaterial.fragmentShader='uniform float cycleDaylight;uniform float sunDiscEdgeCos;uniform float sunDiscCoreCos;\n'+skyMaterial.fragmentShader;
+ skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('float sundisk = smoothstep( sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta );','float sundisk = smoothstep( sunDiscEdgeCos, sunDiscCoreCos, cosTheta );');
+ skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('gl_FragColor = vec4( retColor, 1.0 );',`vec3 nightColor=mix(vec3(.008,.015,.033),vec3(.0015,.0035,.012),pow(max(direction.y,0.),.45));
   gl_FragColor=vec4(mix(nightColor,retColor,cycleDaylight),1.);`);scene.add(sky);
  const centers=cloudBanks.map((_,i)=>cloudCenter(i,0)),sizes=cloudBanks.map(c=>c.size.clone()),clock={value:0};
  const cube=new T.BoxGeometry(1,1,1),clouds:T.Mesh[]=[];
