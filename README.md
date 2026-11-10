@@ -16,6 +16,10 @@ Choose **Explore the twelve temples** on the welcome screen, or walk through a t
 
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump and the mouse to look. Click and drag to look if mouse capture is unavailable. **Esc** pauses. Outdoors, **M** opens the map and **E** reads nearby discoveries. High graphics quality is always enabled. Sensitivity and walking motion are adjustable. Settings use browser storage; storage sharing for local file URLs depends on the browser.
 
+## Training ground
+
+Enter the yard or choose **Esc → Training ground**. Use **1** for the sword, **2** for the bow and **R** to cycle through accuracy, sword-combo and guard drills. Hold/release left mouse to shoot; with the sword, left mouse strikes, **F** performs a heavy strike and right mouse guards. See [TRAINING.md](TRAINING.md) for controls and validation. Practice bests are saved separately from quests and currency.
+
 ## Twelve sacred interiors
 
 Each page instantiates one hall, with a deity statue, offering table, columned approach, coffered ceiling, votive displays and forecourt altar. These are original stylized interpretations, not archaeological reconstructions. There are no sleeping chambers or lounges.

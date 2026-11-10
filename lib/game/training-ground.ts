@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {groundHeight} from './data';
 import {landmarkKit} from './landmark-kit';
+import {practiceSword,practiceBow} from './practice-weapons';
 
 export function buildTrainingGround(scene:T.Scene,collision:T.Group){
  const k=landmarkKit(scene,collision),{box,mesh,group,cylinder,beam,stone,ivory,wood,darkWood,bronze,iron,cloth}=k;
@@ -56,6 +57,7 @@ export function buildTrainingGround(scene:T.Scene,collision:T.Group){
   mesh(new T.SphereGeometry(.18,12,8),bronze,armory,-2+i*2,1.35,-3.99).scale.z=.5;
  }
  k.bench(armory,0,2.2,5.5);k.urn(armory,-2.7,.15,2.3,.85);k.urn(armory,2.8,.15,2.2,.65);
+ box(armory,0,2.4,-3.6,4.5,.12,.16,wood);const sword=practiceSword();sword.position.set(-1.1,2.1,-3.4);armory.add(sword);const bow=practiceBow();bow.root.position.set(1.1,2.45,-3.4);bow.root.rotation.y=Math.PI/2;armory.add(bow.root);
  // Leather-and-straw practice dummies occupy a separate lane east of the ring.
  for(let i=0;i<3;i++){
   const g=group('Training · practice dummy',-48.5,-23-i*8,-.3+i*.3);cylinder(g,0,.14,0,.65,.28,stone,true);box(g,0,1.28,0,.17,2.3,.17,wood,true);box(g,0,1.75,0,1.65,.14,.15,wood);
