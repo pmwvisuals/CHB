@@ -20,6 +20,7 @@ import {buildAtmosphere} from './atmosphere';
 import {buildFlowers,type FlowerPlacement} from './flowers';
 import {buildRoadBorders} from './road-borders';
 import {dayCycleSeconds} from './day-cycle';
+import {buildCampLighting} from './camp-lighting';
 
 export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; atmosphere:ReturnType<typeof buildAtmosphere>; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
 export function buildWorld(): World {
@@ -52,7 +53,7 @@ export function buildWorld(): World {
   function lantern(parent:T.Object3D,x:number,y:number,z:number) {
     box(parent,x,y,z,.3,.48,.3,brass); box(parent,x,y,z+.16,.22,.3,.01,new T.MeshStandardMaterial({color:'#ffe0a0',emissive:'#ffbc5a',emissiveIntensity:1.3}));
     const cap=mesh(new T.ConeGeometry(.3,.25,4),brass,parent,x,y+.36,z); cap.rotation.y=Math.PI/4;
-    const light=new T.PointLight('#ffba70',7,15,2);light.position.set(x,y,z);parent.add(light);atmosphere.registerNightLight(light);
+    const light=new T.PointLight('#ffba70',18,22,2);light.position.set(x,y,z);parent.add(light);atmosphere.registerNightLight(light);
   }
   // Broad, softly rolling landscape with a raised arrival hill.
   const terrain=terrainGeometry();
@@ -61,6 +62,7 @@ export function buildWorld(): World {
   // Scenery outside the playable square needs terrain, but no collision octree.
   for(const [w,d,x,z] of [[700,100,0,300],[700,100,0,-300],[100,500,300,0],[100,500,-300,0]]){const outer=mesh(terrainGeometry(w,d,x,z,5),ground.material,scene);outer.castShadow=false;}
   const atmosphere=buildAtmosphere(scene,{clock:dayCycleSeconds}),sun=atmosphere.sun;
+  const campLighting=buildCampLighting(scene,atmosphere.state);
   // Preserve the accepted, seeded camp planting when replacing the old clouds.
   for(let i=0;i<144;i++)rand();
   const paths: { points:T.Vector3[]; width:number }[]=[];
@@ -167,7 +169,7 @@ export function buildWorld(): World {
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps];
   return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
-    atmosphere.update(time,camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);flowers.update(time,camera);
+    atmosphere.update(time,camera);campLighting.update(camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);flowers.update(time,camera);
     flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
     const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
     (water.material as T.MeshStandardMaterial).roughness=.17+Math.sin(time*.4)*.012;

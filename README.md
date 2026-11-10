@@ -6,7 +6,7 @@ The twelve temples now occupy distinct landscapes across the map, each with its 
 
 The sandy road network now has chamfered Greek-key limestone borders and open junctions. Modelled daisies, poppies and lavender replace the geometric flower placeholders, with matching garden borders and a smoother lake bank. See [LANDSCAPE-POLISH.md](LANDSCAPE-POLISH.md) for the landscape changes and verification limits.
 
-A full day and night lasts 24 minutes. The sun and moon move, shadows follow them, the sky and clouds change colour, stars appear, and camp lamps come on at dusk. The lake stays opaque blue while reflecting the changing light. The HUD shows game time; the saved clock continues while visiting temples or the forest. See [ATMOSPHERE.md](ATMOSPHERE.md) for details and verification limits.
+A full day and night lasts 13 minutes. The sun and moon both rise in the east and set in the west; shadows follow them, stars appear, and camp lamps come on at dusk. Warm lanterns mark temple entrances, paths and gathering places, with brighter moonlight for walking. The lake stays opaque blue while reflecting the changing light. The HUD shows game time; the saved clock continues while visiting temples or the forest. See [ATMOSPHERE.md](ATMOSPHERE.md) for details and verification limits.
 
 ## Play
 

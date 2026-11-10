@@ -4,11 +4,14 @@ import {buildAtmosphere} from '../lib/game/atmosphere';
 import {cloudBanks,cloudCenter,cloudShadowTransmission} from '../lib/game/atmosphere-layout';
 import {sampleDayCycle,cycleSecondsAtHour,dayCycleDuration,updateDayCycle,createDayCycleClock,skyStateLabel} from '../lib/game/day-cycle';
 import {buildLakeside} from '../lib/game/lakeside';
+import {buildCampLighting} from '../lib/game/camp-lighting';
 const sample=(hour:number)=>sampleDayCycle(cycleSecondsAtHour(hour));
 for(let hour=0;hour<24;hour+=.125){const s=sample(hour);assert.ok(Math.abs(s.sunDirection.length()-1)<1e-10);assert.ok(s.sunDirection.dot(s.moonDirection)<-.9999);assert.ok(s.lightDirection.y>=-1e-10);assert.ok(Number.isFinite(s.lightIntensity));assert.ok(s.daylight>=0&&s.daylight<=1);}
 assert.ok(sample(6).sunDirection.x>.99&&sample(12).sunDirection.y>.9&&sample(18).sunDirection.x<-.99,'sun rises east, arcs south and sets west');
 assert.ok(sample(0).moonDirection.y>.9&&sample(0).stars>.99&&sample(12).stars===0,'moon and stars dominate midnight');
-assert.ok(sample(12).ambientIntensity>sample(0).ambientIntensity*7&&sample(12).lightIntensity>sample(0).lightIntensity*8,'night lighting is substantially darker');
+assert.equal(dayCycleDuration,780,'a complete cycle lasts thirteen minutes');
+assert.ok(sample(12).ambientIntensity>sample(0).ambientIntensity*5&&sample(12).lightIntensity>sample(0).lightIntensity*6,'night lighting remains distinct from day');
+assert.ok(sample(18).moonDirection.x>.99&&sample(0).moonDirection.y>.9&&sample(6).moonDirection.x<-.99,'moon also rises east and sets west');
 assert.ok(sample(7).lightColor.b<sample(12).lightColor.b,'low sun has a warmer colour');
 assert.ok(sample(0).nightLights>.99&&sample(12).nightLights===0);assert.equal(skyStateLabel(sample(0)),'NIGHT · 00:00');
 for(const hour of [0,6,12,18,23.99]){const a=sample(hour),b=sampleDayCycle(cycleSecondsAtHour(hour)+dayCycleDuration);assert.ok(a.sunDirection.distanceTo(b.sunDirection)<1e-8,'cycle wraps without a position jump');}
@@ -37,5 +40,7 @@ atmosphere.update(cycleSecondsAtHour(0),new Vector3(40,2,50));lake.update(2);atm
 assert.ok(shaders[0].uniforms.cloudSun.value.y>.9,'cloud shadows follow the moon at night');assert.ok(shaders[1].uniforms.lakeSunDirection.value.y<-.9&&shaders[1].uniforms.lakeMoonDirection.value.y>.9);assert.ok(shaders[1].uniforms.lakeMoonStrength.value>.99&&shaders[1].uniforms.lakeSunStrength.value===0,'water reflects the active body');
 assert.ok(atmosphere.moon.position.clone().sub(new Vector3(40,2,50)).normalize().distanceTo(atmosphere.state.moonDirection)<1e-8);assert.ok((atmosphere.sky.material as ShaderMaterial).fragmentShader.includes('mix(nightColor,retColor,cycleDaylight)'));
 const nightLightPosition=atmosphere.sun.position.clone();atmosphere.update(cycleSecondsAtHour(2));assert.ok(nightLightPosition.distanceTo(atmosphere.sun.position)>100,'lunar shadows also move');
+const campLights=buildCampLighting(scene,atmosphere.state);campLights.update(new Vector3(0,2,0));assert.equal(campLights.positions.length,42);assert.equal(campLights.lights.length,8);assert.ok(campLights.lights.some(l=>l.intensity>29),'nearby paths and gathering areas have warm light pools');
+atmosphere.update(cycleSecondsAtHour(12));campLights.update(new Vector3(0,2,0));assert.ok(campLights.lights.every(l=>l.intensity===0),'added lamps switch off during daylight');
 atmosphere.dispose();scene.traverse(o=>{if(o instanceof Mesh){o.geometry.dispose();for(const m of Array.isArray(o.material)?o.material:[o.material])m.dispose();}});scene.clear();
 console.log('PASS full day/night orbit, smooth cycle wrap, warm twilight, moving sun/moon shadows, timed shadow refresh, persisted clock, night lamps/stars/fog and opaque blue water reflections');
