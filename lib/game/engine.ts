@@ -5,7 +5,7 @@ import { groundHeight, outdoorWalkHeight, landmarks, type Settings } from './dat
 import { findTemple, templeAtEntrance, templeReturnPoint } from './temple-catalog';
 import {templeSites} from './sanctuary-layout';
 import { CampAudio } from './audio';
-import { simulatePlayer } from './physics';
+import { simulatePlayer,playerEyePosition,standingEyeHeight } from './physics';
 import {ForestMist} from './forest-mist';
 import {skyStateLabel} from './day-cycle';
 import {TrainingRuntime} from './training-runtime';
@@ -52,7 +52,7 @@ export class CampEngine {
   pause(){this.active=false;this.training.pause();this.keys.clear();this.jumpQueued=false;this.velocity.set(0,0,0);this.dragging=false;this.audio.pause();if(document.pointerLockElement)document.exitPointerLock();}
   applySettings(settings:Settings){this.settings={...settings,quality:'high'};const q='high';this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));this.renderer.shadowMap.enabled=true;this.world.sun.shadow.mapSize.setScalar(4096);this.world.sun.shadow.map?.dispose();this.world.sun.shadow.map=null;this.renderer.shadowMap.needsUpdate=true;this.world.foliage[0].visible=true;this.world.setQuality(q);this.audio.volume(settings.volume);this.resize();}
   private resize(){const w=this.host.clientWidth,h=this.host.clientHeight;this.renderer.setSize(w,h);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();}
-  private syncCamera(){this.camera.position.copy(this.collider.end);if(this.settings.headBob&&this.grounded&&this.velocity.lengthSq()>.5)this.camera.position.y+=Math.sin(this.time*12)*.035;this.camera.rotation.set(this.pitch,this.yaw,0);}
+  private syncCamera(){playerEyePosition(this.collider,this.camera.position);if(this.settings.headBob&&this.grounded&&this.velocity.lengthSq()>.5)this.camera.position.y+=Math.sin(this.time*12)*.035;this.camera.rotation.set(this.pitch,this.yaw,0);}
   step(dt:number){
     simulatePlayer(this,this.world.octree,dt);
     if(this.collider.end.y<-20||!Number.isFinite(this.collider.end.y))this.reset();
@@ -63,7 +63,7 @@ export class CampEngine {
   }
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120&&!this.disposed){this.step(1/120);this.accumulator-=1/120;}}
-    else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+2.5,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
+    else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+standingEyeHeight,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
     if(this.disposed)return;this.world.update(this.time,this.camera.position);this.training.update(this.active?dt:0);this.world.atmosphere.prepareRenderer(this.renderer);this.mist.render(this.renderer,this.world.scene,this.camera,this.time,this.world.atmosphere.state.daylight);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>(this.training.session.inside?80:180)){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;

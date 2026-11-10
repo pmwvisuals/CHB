@@ -7,7 +7,7 @@ import { buildWoodland, inWoodland } from './woodland';
 import type { Settings } from './data';
 import { gardenGrass, plantCollection, forestTreeIds, type PlantPlacement } from './vegetation';
 import { terrainGeometry,groundMaterial,groundHabitat,weatheredRockGeometry,weatheredRockMaterial } from './landscape';
-import {limestoneRoadMaterial} from './road-paving';
+import {limestoneRoadMaterial,pavedRoadGeometry} from './road-paving';
 import { buildTempleExteriors,buildGreatHall } from './temple-exteriors';
 import { templeCatalog,templePlacement } from './temple-catalog';
 import {sanctuaryExtent,templeTrails,insideTempleGrounds,templeSites,sitePoint} from './sanctuary-layout';
@@ -68,9 +68,8 @@ export function buildWorld(): World {
   for(let i=0;i<144;i++)rand();
   const paths: { points:T.Vector3[]; width:number }[]=[];
   const paving=limestoneRoadMaterial();
-  function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
-    points.forEach((p,i)=>{const dir=points[Math.min(i+1,points.length-1)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72;const x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,h(x,z)+.065,z);uvs.push(j/4,i/(points.length-1));}if(i<points.length-1)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
-    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();mesh(geo,paving,scene).castShadow=false;
+  function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});
+    const geo=pavedRoadGeometry(points,width),road=mesh(geo,paving,scene);road.name='Walkable limestone road';road.castShadow=false;collision.add(new T.Mesh(geo));
   }
   for(const route of campRoutes)path(route.points,route.width);
   function circleGround(x:number,z:number,r:number,color:string){ const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);const p=geo.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,h(x+p.getX(i),z+p.getZ(i))+.075);const m=mesh(geo,mat(color),scene,x,0,z);m.castShadow=false;return m; }

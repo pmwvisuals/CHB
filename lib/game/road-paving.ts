@@ -1,4 +1,13 @@
 import * as T from 'three';
+import {groundHeight} from './data';
+
+export const pavingLift=.065;
+/** One surface is used by rendering and walking collision, including on hills. */
+export function pavedRoadGeometry(points:T.Vector3[],width:number,height=groundHeight){
+ const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
+ points.forEach((p,i)=>{const dir=points[Math.min(i+1,points.length-1)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72,x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,height(x,z)+pavingLift,z);uvs.push(j/4,i/(points.length-1));}if(i<points.length-1)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();return geo;
+}
 
 /** Simple worn limestone flagstones. One seamless material covers the road network. */
 export function limestoneRoadMaterial(){

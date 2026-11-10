@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { buildSacredTemple } from './lib/game/sacred-temple';
-import { simulatePlayer } from './lib/game/physics';
+import { simulatePlayer,playerEyePosition } from './lib/game/physics';
 import { readSave } from './lib/game/data';
 import { findTemple } from './lib/game/temple-catalog';
 import './app/temple.css';
@@ -30,6 +30,6 @@ function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);
 on(window,'pagehide',dispose);window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
 document.querySelector('#enter')!.addEventListener('click',start);document.querySelector('#exit')!.addEventListener('click',leave);document.querySelector('#menu')!.addEventListener('click',pause);
 const prompt=document.querySelector<HTMLElement>('#prompt')!;
-function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);const dt=Math.min((now-(previous||now))/1000,.08);previous=now;time+=dt;if(active){acc+=dt;while(acc>=1/120){simulatePlayer(player,world.octree,1/120);acc-=1/120;}if(player.collider.start.z>28){leave();return;}if(player.collider.start.y<-5){player.collider.start.set(0,.33,16);player.collider.end.set(0,1.63,16);player.velocity.set(0,0,0);}}camera.position.copy(player.collider.end);if(saved.settings.headBob&&player.grounded&&player.velocity.lengthSq()>.5)camera.position.y+=Math.sin(time*12)*.035;camera.rotation.set(pitch,player.yaw,0);world.update(time);renderer.render(world.scene,camera);prompt.hidden=!active||player.collider.start.z<17;}
+function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);const dt=Math.min((now-(previous||now))/1000,.08);previous=now;time+=dt;if(active){acc+=dt;while(acc>=1/120){simulatePlayer(player,world.octree,1/120);acc-=1/120;}if(player.collider.start.z>28){leave();return;}if(player.collider.start.y<-5){player.collider.start.set(0,.33,16);player.collider.end.set(0,1.63,16);player.velocity.set(0,0,0);}}playerEyePosition(player.collider,camera.position);if(saved.settings.headBob&&player.grounded&&player.velocity.lengthSq()>.5)camera.position.y+=Math.sin(time*12)*.035;camera.rotation.set(pitch,player.yaw,0);world.update(time);renderer.render(world.scene,camera);prompt.hidden=!active||player.collider.start.z<17;}
 status.textContent='The sacred hall is ready.';document.querySelector<HTMLButtonElement>('#enter')!.disabled=false;frame=requestAnimationFrame(loop);
 }catch(e){status.textContent=`Unable to open the temple: ${e instanceof Error?e.message:'WebGL is unavailable'}.`;document.querySelector('#exit')!.addEventListener('click',()=>{location.href=returnURL();});}

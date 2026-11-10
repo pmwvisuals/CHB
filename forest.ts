@@ -4,7 +4,7 @@ import { Octree } from 'three/addons/math/Octree.js';
 import { buildWoodland,woodlandGround } from './lib/game/woodland';
 import { terrainGeometry } from './lib/game/landscape';
 import { groundHeight as h,readSave } from './lib/game/data';
-import { simulatePlayer } from './lib/game/physics';
+import { simulatePlayer,playerEyePosition } from './lib/game/physics';
 import {buildAtmosphere} from './lib/game/atmosphere';
 import {dayCycleSeconds} from './lib/game/day-cycle';
 import { readProfile,saveProfile,saveWarning,beginExpedition,finishExpedition,rewardEnemy,level,quests } from './lib/game/progression';
@@ -57,7 +57,7 @@ function step(dt:number){
 }
 let last=performance.now(),acc=0;
 function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);const dt=Math.min((now-last)/1000,.05);last=now;if(active){acc+=dt;while(acc>=1/120&&!disposed){step(1/120);acc-=1/120;}clock+=dt;}else acc=0;if(disposed)return;
- camera.position.copy(player.collider.end);camera.rotation.set(pitch,player.yaw,0);sword.rotation.x=attack>0?Math.sin(attack/.5*Math.PI)*-1.3:player.keys.has('Block')?-.6:0;
+ playerEyePosition(player.collider,camera.position);camera.rotation.set(pitch,player.yaw,0);sword.rotation.x=attack>0?Math.sin(attack/.5*Math.PI)*-1.3:player.keys.has('Block')?-.6:0;
  creatures.forEach((g,i)=>{const e=run.enemies[i];g.visible=e.phase!=='dead';g.position.set(e.x,h(e.x,e.z),e.z);g.rotation.y=Math.atan2(run.x-e.x,run.z-e.z)+Math.PI;g.scale.setScalar(e.phase==='windup'?1.12:1);g.traverse(o=>{if(o instanceof T.Mesh&&o.material instanceof T.MeshStandardMaterial){o.material.emissive.set(run.insight>0?'#405b79':e.phase==='windup'?'#803219':'#000000');}});});satchel.visible=!run.supplies;chest.visible=!run.chest;woodland.update(clock,camera.position);
  $('hud').textContent=`FOREST EDGE · Lv ${level(profile)} | HP ${Math.ceil(run.hp)} / 100 | Stamina ${Math.ceil(run.stamina)} | Carried ${run.coins} coins · ${run.materials} materials | Potions ${profile.potions} | Insight ${profile.quest<2?'locked':run.cooldown>0?Math.ceil(run.cooldown)+'s':'ready'}`;
  messageTime-=active?dt:0;if(messageTime<=0)$('message').textContent=Math.hypot(run.x+40,run.z+69)<4?'E · Return to sanctuary':Math.hypot(run.x+31,run.z+92)<3&&!run.supplies?'E · Recover supplies':Math.hypot(run.x+40,run.z+118)<3&&!run.chest?'E · Open shrine chest':profile.accepted?quests[profile.quest]?.title||'Explore the forest':'Accept a quest at the sanctuary';

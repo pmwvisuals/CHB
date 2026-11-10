@@ -1,10 +1,18 @@
 import {Color,Vector3,MathUtils} from 'three';
 
-export const dayCycleDuration=13*60;
+export const daylightDuration=24*60;
+export const nightDuration=8*60;
+export const dayCycleDuration=daylightDuration+nightDuration;
 export const startingHour=8.2;
 const smooth=(a:number,b:number,x:number)=>MathUtils.smoothstep(x,a,b);
+// Sunrise is 06:00, sunset 18:00. Solar daytime advances more slowly than night.
+function elapsedAtHour(hour:number){
+ const day=Math.floor((hour-6)/24),relative=hour-6-day*24;
+ return day*dayCycleDuration+(relative<=12?relative/12*daylightDuration:daylightDuration+(relative-12)/12*nightDuration);
+}
 export function sampleDayCycle(seconds:number){
- const hour=((startingHour+seconds/dayCycleDuration*24)%24+24)%24,angle=(hour/24-.25)*Math.PI*2;
+ const phase=((elapsedAtHour(startingHour)+seconds)%dayCycleDuration+dayCycleDuration)%dayCycleDuration;
+ const hour=(phase<daylightDuration?6+phase/daylightDuration*12:18+(phase-daylightDuration)/nightDuration*12)%24,angle=(hour/24-.25)*Math.PI*2;
  const sunDirection=new Vector3(Math.cos(angle),Math.sin(angle)*.94,Math.sin(angle)*.34).normalize(),moonDirection=sunDirection.clone().negate();
  const daylight=smooth(-.12,.20,sunDirection.y),solarStrength=smooth(0,.17,sunDirection.y),lunarStrength=(1-daylight)*smooth(0,.20,moonDirection.y);
  const warmth=1-smooth(.02,.42,sunDirection.y),twilight=(1-smooth(.02,.25,Math.abs(sunDirection.y)))*smooth(-.20,-.03,sunDirection.y);
@@ -22,7 +30,7 @@ export type DayCycleState=ReturnType<typeof sampleDayCycle>;
 export function updateDayCycle(state:DayCycleState,seconds:number){
  const next=sampleDayCycle(seconds);for(const key of Object.keys(next) as (keyof DayCycleState)[]){const a=state[key],b=next[key];if(a instanceof Vector3&&b instanceof Vector3)a.copy(b);else if(a instanceof Color&&b instanceof Color)a.copy(b);else (state as any)[key]=b;}return state;
 }
-export function cycleSecondsAtHour(hour:number){return (hour-startingHour)/24*dayCycleDuration;}
+export function cycleSecondsAtHour(hour:number){return elapsedAtHour(hour)-elapsedAtHour(startingHour);}
 /** Share the sky between camp, expeditions and returns from temple pages. */
 export function createDayCycleClock(storage:()=>Pick<Storage,'getItem'|'setItem'>=()=>localStorage){
  let rememberedEpoch:number|undefined;return (now=Date.now())=>{

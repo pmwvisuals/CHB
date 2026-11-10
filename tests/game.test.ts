@@ -1,9 +1,9 @@
 import {campRoutes,routePoints} from '../lib/game/camp-layout';
 import assert from 'node:assert/strict';
-import { Vector3, Group, Mesh, BoxGeometry } from 'three';
+import { Vector3, Group, Mesh, BoxGeometry,Raycaster } from 'three';
 import { Capsule } from 'three/addons/math/Capsule.js';
 import { Octree } from 'three/addons/math/Octree.js';
-import { simulatePlayer, type PlayerState } from '../lib/game/physics';
+import { simulatePlayer,playerEyePosition,standingEyeHeight, type PlayerState } from '../lib/game/physics';
 import { buildWorld } from '../lib/game/world';
 import { buildSacredTemple } from '../lib/game/sacred-temple';
 import { templeCatalog, templeAtEntrance, templePlacement, templeLocal, templeReturnPoint, findTemple } from '../lib/game/temple-catalog';
@@ -22,6 +22,16 @@ const sprint=p();sprint.keys.add('KeyW');sprint.keys.add('ShiftLeft');step(sprin
 player=p();player.keys.add('KeyW');step(player,tree,1200);assert.ok(player.collider.start.z>-19.25);pass('solid wall blocks sustained movement');
 const renderRates=[30,60,144].map(rate=>{const s=p();s.keys.add('KeyD');let acc=0;for(let frame=0;frame<rate*2;frame++){acc+=1/rate;while(acc+1e-9>=1/120){simulatePlayer(s,tree,1/120);acc-=1/120;}}return s.collider.start.x;});assert.ok(Math.max(...renderRates)-Math.min(...renderRates)<.001);pass('30, 60 and 144 FPS produce the same movement distance');
 const world=buildWorld();player=p(0,113,groundHeight(0,113));player.keys.add('KeyW');step(player,world.octree,2100);assert.ok(player.collider.start.z<36,`arrival blocked at ${player.collider.start.z}`);assert.ok(player.collider.start.y>-1);pass('arrival hill and path lead into camp');
+const roads:Mesh[]=[];world.scene.traverse(o=>{if(o instanceof Mesh&&!Array.isArray(o.material)&&o.material.name==='Worn Greek limestone paving')roads.push(o);});world.scene.updateMatrixWorld(true);assert.ok(roads.length>0,'batched paving is present');
+const arrival=routePoints(campRoutes[0].points);
+for(const index of [38,65,100]){
+ const v=arrival[index],standing=p(v.x,v.z,groundHeight(v.x,v.z)+.5);step(standing,world.octree,240);
+ const hit=new Raycaster(new Vector3(standing.collider.start.x,80,standing.collider.start.z),new Vector3(0,-1,0)).intersectObjects(roads,false)[0];assert.ok(hit,'paved road exists beneath player');
+ const foot=standing.collider.start.y-standing.collider.radius,eye=playerEyePosition(standing.collider,new Vector3());
+ assert.ok(foot>=hit.point.y-.005,'player stands on visible paving, not underneath it');assert.ok(Math.abs(eye.y-hit.point.y-standingEyeHeight)<.08,'standing eye clearance follows paving even on the arrival slope');
+ standing.jumpQueued=true;let landed=false;for(let i=0;i<300;i++){step(standing,world.octree,1);if(i>60&&standing.grounded)landed=true;}assert.ok(landed,'jump lands back on raised paving');
+}
+pass('visible limestone road supports player feet, consistent standing eye height and jump landings');
 player=p(0,45,groundHeight(0,45));player.keys.add('KeyW');step(player,world.octree,1200);assert.ok(player.collider.start.z<5,`courtyard blocked at ${player.collider.start.z}`);pass('gap between cabins leads into courtyard');
 player=p(-55,62,groundHeight(-55,62));player.keys.add('KeyW');step(player,world.octree,360);assert.ok(player.collider.start.z<52&&player.collider.start.z>43,`house entry at ${player.collider.start.z}`);pass('Big House ground-floor doorway is enterable');
 player=p(55,20,groundHeight(55,20));player.yaw=-Math.PI/2;player.keys.add('KeyW');step(player,world.octree,900);assert.ok(player.collider.start.x<66);pass('lakeshore stops entry into deep water');

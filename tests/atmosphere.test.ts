@@ -2,14 +2,18 @@ import assert from 'node:assert/strict';
 import {Scene,Mesh,PlaneGeometry,MeshStandardMaterial,Vector3,ShaderLib,Group,FogExp2,PointLight,ShaderMaterial} from 'three';
 import {buildAtmosphere} from '../lib/game/atmosphere';
 import {cloudBanks,cloudCenter,cloudShadowTransmission} from '../lib/game/atmosphere-layout';
-import {sampleDayCycle,cycleSecondsAtHour,dayCycleDuration,updateDayCycle,createDayCycleClock,skyStateLabel} from '../lib/game/day-cycle';
+import {sampleDayCycle,cycleSecondsAtHour,dayCycleDuration,daylightDuration,nightDuration,updateDayCycle,createDayCycleClock,skyStateLabel} from '../lib/game/day-cycle';
 import {buildLakeside} from '../lib/game/lakeside';
 import {buildCampLighting} from '../lib/game/camp-lighting';
 const sample=(hour:number)=>sampleDayCycle(cycleSecondsAtHour(hour));
 for(let hour=0;hour<24;hour+=.125){const s=sample(hour);assert.ok(Math.abs(s.sunDirection.length()-1)<1e-10);assert.ok(s.sunDirection.dot(s.moonDirection)<-.9999);assert.ok(s.lightDirection.y>=-1e-10);assert.ok(Number.isFinite(s.lightIntensity));assert.ok(s.daylight>=0&&s.daylight<=1);}
 assert.ok(sample(6).sunDirection.x>.99&&sample(12).sunDirection.y>.9&&sample(18).sunDirection.x<-.99,'sun rises east, arcs south and sets west');
 assert.ok(sample(0).moonDirection.y>.9&&sample(0).stars>.99&&sample(12).stars===0,'moon and stars dominate midnight');
-assert.equal(dayCycleDuration,780,'a complete cycle lasts thirteen minutes');
+assert.equal(dayCycleDuration,32*60);assert.equal(daylightDuration,24*60);assert.equal(nightDuration,8*60);
+const dawn=cycleSecondsAtHour(6),dusk=cycleSecondsAtHour(18),nextDawn=cycleSecondsAtHour(30);
+assert.equal(dusk-dawn,24*60,'sun above horizon lasts 24 real minutes');assert.equal(nextDawn-dusk,8*60,'sun below horizon lasts 8 real minutes');
+assert.ok(Math.abs(sampleDayCycle(dawn+12*60).hour-12)<1e-8);assert.ok(Math.abs(sampleDayCycle(dusk+4*60).hour)<1e-8);
+for(const t of [dawn,dusk,nextDawn])assert.ok(sampleDayCycle(t-.001).sunDirection.distanceTo(sampleDayCycle(t+.001).sunDirection)<.0001,'day/night boundaries have no celestial position jump');
 assert.ok(sample(12).ambientIntensity>sample(0).ambientIntensity*5&&sample(12).lightIntensity>sample(0).lightIntensity*6,'night lighting remains distinct from day');
 assert.ok(sample(18).moonDirection.x>.99&&sample(0).moonDirection.y>.9&&sample(6).moonDirection.x<-.99,'moon also rises east and sets west');
 assert.ok(sample(7).lightColor.b<sample(12).lightColor.b,'low sun has a warmer colour');
@@ -24,7 +28,7 @@ saved.set('asterion-sky-epoch','NaN');assert.equal(createDayCycleClock(()=>stora
 const scene=new Scene();scene.fog=new FogExp2('#9bafba',.0013);const atmosphere=buildAtmosphere(scene),sun=atmosphere.sun.position.clone();
 assert.equal(atmosphere.clouds.length,4);assert.equal(scene.userData.atmosphere.sunMotion,true);
 assert.ok(Math.abs(atmosphere.sun.shadow.camera.projectionMatrix.elements[0]-.004)<1e-8,'shadow projection actually covers the full camp');
-const initial=atmosphere.clouds.map(c=>c.position.clone());atmosphere.update(60,new Vector3(10,2,30));assert.ok(atmosphere.sun.position.distanceTo(sun)>50,'light and its shadow camera move through the sky');
+const initial=atmosphere.clouds.map(c=>c.position.clone());atmosphere.update(60,new Vector3(10,2,30));assert.ok(atmosphere.sun.position.distanceTo(sun)>10,'light and its shadow camera move through the slower daytime sky');
 for(let i=0;i<4;i++){const moved=atmosphere.clouds[i].position.distanceTo(initial[i]);assert.ok(moved>5&&moved<20,'cloud motion stays slow');assert.ok(cloudBanks[i].size.x>=95&&cloudBanks[i].size.y>=30);}
 const morning=sampleDayCycle(0).lightDirection,center=cloudCenter(1,0),shadowPoint=center.clone().addScaledVector(morning,-center.y/morning.y);shadowPoint.y=0;
 assert.ok(cloudShadowTransmission(shadowPoint,0,morning)<.4);assert.ok(cloudShadowTransmission(new Vector3(-400,0,-400),0,morning)>.99);assert.ok(Math.abs(cloudShadowTransmission(shadowPoint,0,morning)-cloudShadowTransmission(shadowPoint,600,morning))>.1);

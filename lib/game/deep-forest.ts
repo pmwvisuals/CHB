@@ -2,6 +2,7 @@ import * as T from 'three';
 import {plantCollection} from './vegetation';
 import {groundMaterial,trailMaterial,weatheredRockGeometry,weatheredRockMaterial} from './landscape';
 import {deepForest,deepForestHeight as h,deepForestPlacements,forestPatchNoise,forestTrails,forestTrailDistance,forestClearings,deepForestHeightGLSL} from './deep-forest-layout';
+import {sampleDayCycle,type DayCycleState} from './day-cycle';
 
 export function deepForestTerrain(size=deepForest.terrainSize,spacing=2.4){
  const geo=new T.PlaneGeometry(size,size,Math.ceil(size/spacing),Math.ceil(size/spacing));geo.rotateX(-Math.PI/2);const p=geo.getAttribute('position'),colors:number[]=[],cover:number[]=[];
@@ -11,19 +12,32 @@ export function deepForestTerrain(size=deepForest.terrainSize,spacing=2.4){
 
 /** Canopy absorption affects light, without altering visibility or washing out trees. */
 export function deepCanopyShading(scene:T.Scene){
+ const state:DayCycleState=scene.userData.dayCycle??sampleDayCycle(0),strength={value:state.solarStrength},time={value:0};
  const seen=new Set<T.Material>();scene.traverse(o=>{if(!(o instanceof T.Mesh))return;for(const m of Array.isArray(o.material)?o.material:[o.material]){
   if(!(m instanceof T.MeshStandardMaterial)||seen.has(m))continue;seen.add(m);const previous=m.onBeforeCompile,cache=m.customProgramCacheKey();
-  m.onBeforeCompile=(s,r)=>{previous.call(m,s,r);s.vertexShader='varying vec3 deepWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
+  m.onBeforeCompile=(s,r)=>{previous.call(m,s,r);s.uniforms.deepSunStrength=strength;s.uniforms.deepSunDirection={value:state.sunDirection};s.uniforms.deepSunColor={value:state.lightColor};s.uniforms.deepTime=time;s.vertexShader='varying vec3 deepWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
    vec4 deepLocal=vec4(transformed,1.);
    #ifdef USE_INSTANCING
     deepLocal=instanceMatrix*deepLocal;
    #endif
    deepWorld=(modelMatrix*deepLocal).xyz;`);
-   s.fragmentShader='varying vec3 deepWorld;\n'+deepForestHeightGLSL+'\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
+   s.fragmentShader=`varying vec3 deepWorld;uniform vec3 deepSunDirection;uniform vec3 deepSunColor;uniform float deepSunStrength;uniform float deepTime;
+    float deepHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float deepNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(deepHash(i),deepHash(i+vec2(1,0)),f.x),mix(deepHash(i+vec2(0,1)),deepHash(i+vec2(1,1)),f.x),f.y);}
+    `+deepForestHeightGLSL+'\n'+s.fragmentShader;s.fragmentShader=s.fragmentShader.replace('#include <lights_fragment_end>',`#include <lights_fragment_end>
     float opening=0.;${forestClearings.map(c=>`opening=max(opening,1.-smoothstep(${(c.r-5).toFixed(2)},${(c.r+7).toFixed(2)},length(deepWorld.xz-vec2(${c.x.toFixed(1)},${c.z.toFixed(1)}))));`).join('')}
-    float belowCanopy=1.-smoothstep(8.,14.,deepWorld.y-forestGround(deepWorld.xz));reflectedLight.directDiffuse*=mix(1.,mix(.17,.72,opening),belowCanopy);reflectedLight.indirectDiffuse*=mix(1.,.78,belowCanopy);`);
-  };m.customProgramCacheKey=()=>cache+'-deep-canopy-v1';m.needsUpdate=true;
+    float belowCanopy=1.-smoothstep(8.,14.,deepWorld.y-forestGround(deepWorld.xz));reflectedLight.directDiffuse*=mix(1.,mix(.45,.82,opening),belowCanopy);reflectedLight.indirectDiffuse*=mix(1.,.90,belowCanopy);
+    // A small leaf-transmission term survives overlapping opaque crown shadows.
+    // Project along sunlight so the scattered light patches follow the moving sun.
+    vec2 deepProjected=deepWorld.xz-deepWorld.y*deepSunDirection.xz/max(deepSunDirection.y,.15);
+    vec2 deepDrift=vec2(sin(deepTime*.08),cos(deepTime*.06))*.08;
+    float sunfleck=smoothstep(.64,.84,deepNoise(deepProjected*.27+deepDrift)*.7+deepNoise(deepProjected*.67)*.3);
+    float leafTransmission=.035+.22*sunfleck;
+    float leafFacing=max(0.,dot(normal,normalize(mat3(viewMatrix)*deepSunDirection)));
+    reflectedLight.directDiffuse+=diffuseColor.rgb*deepSunColor*deepSunStrength*leafTransmission*leafFacing*belowCanopy*(1.-opening*.65);`);
+  };m.customProgramCacheKey=()=>cache+'-deep-canopy-v2';m.needsUpdate=true;
  }});
+ return (seconds:number)=>{strength.value=state.solarStrength;time.value=seconds;};
 }
 
 export function buildDeepForest(scene:T.Scene,collision:T.Group){
@@ -39,6 +53,6 @@ export function buildDeepForest(scene:T.Scene,collision:T.Group){
  rocks.count=count;rocks.castShadow=rocks.receiveShadow=true;rocks.computeBoundingSphere();scene.add(rocks);
  // Boundary collision is buried in the outer ridge and dense scenery, never shown as walls.
  const boundary=new T.BoxGeometry(1,1,1);for(let i=0;i<96;i++){const a=i/96*Math.PI*2,b=new T.Mesh(boundary);b.position.set(Math.sin(a)*270,20,Math.cos(a)*270);b.rotation.y=a;b.scale.set(19,80,2);collision.add(b);}
- deepCanopyShading(scene);scene.userData.deepForest={trees:placements.trees.length,floorPlants:placements.floor.length,span:deepForest.radius*2,varieties:5,clearings:forestClearings.length,rocks:count};
- return {stats:scene.userData.deepForest,update(time:number,camera:T.Vector3){trees.update(time,camera);floor.update(time,camera);},dispose(){trees.dispose();floor.dispose();}};
+ const updateCanopy=deepCanopyShading(scene);scene.userData.deepForest={trees:placements.trees.length,floorPlants:placements.floor.length,span:deepForest.radius*2,varieties:5,clearings:forestClearings.length,rocks:count};
+ return {stats:scene.userData.deepForest,update(time:number,camera:T.Vector3){updateCanopy(time);trees.update(time,camera);floor.update(time,camera);},dispose(){trees.dispose();floor.dispose();}};
 }

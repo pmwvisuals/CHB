@@ -6,7 +6,7 @@ import {deepForest,deepForestHeight as h} from './lib/game/deep-forest-layout';
 import {buildAtmosphere} from './lib/game/atmosphere';
 import {dayCycleSeconds,skyStateLabel} from './lib/game/day-cycle';
 import {ForestMist} from './lib/game/forest-mist';
-import {simulatePlayer} from './lib/game/physics';
+import {simulatePlayer,playerEyePosition} from './lib/game/physics';
 import {readSave} from './lib/game/data';
 
 /** Landscape-only exploration. Does not create an expedition or write its save. */
@@ -14,7 +14,7 @@ export function startDeepForest(){
  const $=(id:string)=>document.getElementById(id)!,menu=$('menu');let active=false,disposed=false,drag=false,pitch=-.08,clock=0,frame=0,last=performance.now(),accumulator=0,lastHud=0;
  const settings=readSave().settings,scene=new T.Scene(),collision=new T.Group();scene.background=new T.Color('#24392f');scene.fog=new T.FogExp2('#32483e',.0025);
  const renderer=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.outputColorSpace=T.SRGBColorSpace;renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.toneMapping=T.ACESFilmicToneMapping;$('scene').appendChild(renderer.domElement);renderer.domElement.setAttribute('aria-label','First-person exploration beneath the deep forest canopy');
- const camera=new T.PerspectiveCamera(68,1,.1,650);camera.rotation.order='YXZ';const atmosphere=buildAtmosphere(scene,{clock:dayCycleSeconds,ambientScale:.78}),forest=buildDeepForest(scene,collision),mist=new ForestMist('deep');
+ const camera=new T.PerspectiveCamera(68,1,.1,650);camera.rotation.order='YXZ';const atmosphere=buildAtmosphere(scene,{clock:dayCycleSeconds,ambientScale:.9}),forest=buildDeepForest(scene,collision),mist=new ForestMist('deep');
  Object.assign(atmosphere.sun.shadow.camera,{left:-105,right:105,top:105,bottom:-105});atmosphere.sun.shadow.camera.updateProjectionMatrix();atmosphere.applyCloudShadows();collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
  const player={keys:new Set<string>(),yaw:0,grounded:false,jumpQueued:false,velocity:new T.Vector3(),collider:new Capsule(new T.Vector3(),new T.Vector3(),.32)};
  function reset(){const {x,z}=deepForest.spawn,y=h(x,z);player.collider.start.set(x,y+.36,z);player.collider.end.set(x,y+1.66,z);player.velocity.set(0,0,0);player.grounded=false;player.yaw=0;pitch=-.08;}reset();
@@ -33,11 +33,12 @@ export function startDeepForest(){
  on(renderer.domElement,'webglcontextlost',((e:Event)=>{e.preventDefault();pause();$('warning').textContent='The graphics connection was interrupted. Reload to explore again.';}) as EventListener);
  function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}on(window,'resize',resize);resize();
  $('start').onclick=()=>{active=true;menu.hidden=true;last=performance.now();accumulator=0;try{void renderer.domElement.requestPointerLock()?.catch(()=>{});}catch{}};$('retreat').onclick=leave;
- const forestTint=new T.Color('#9daea1'),fogTint=new T.Color('#263d34');
+ const forestTint=new T.Color('#b4c4b7'),fogTint=new T.Color('#263d34');
  function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);const dt=Math.min((now-last)/1000,.06);last=now;clock+=dt;
   if(active){accumulator+=dt;while(accumulator>=1/120){simulatePlayer(player,octree,1/120);accumulator-=1/120;}if(player.collider.end.y<-20||!Number.isFinite(player.collider.end.y))reset();}else accumulator=0;
-  camera.position.copy(player.collider.end);camera.rotation.set(pitch,player.yaw,0);forest.update(clock,camera.position);
+  playerEyePosition(player.collider,camera.position);camera.rotation.set(pitch,player.yaw,0);
   const x=Math.round(camera.position.x/16)*16,z=Math.round(camera.position.z/16)*16;atmosphere.sun.target.position.set(x,h(x,z),z);atmosphere.update(clock,camera.position);atmosphere.ambient.color.multiply(forestTint);atmosphere.ambient.intensity+=(1-atmosphere.state.daylight)*.18;scene.fog!.color.lerp(fogTint,.72);atmosphere.prepareRenderer(renderer);
+  forest.update(clock,camera.position);
   mist.render(renderer,scene,camera,clock,atmosphere.state.daylight);
   if(now-lastHud>180){lastHud=now;const heading=((T.MathUtils.radToDeg(-player.yaw)%360)+360)%360,directions=['N','NE','E','SE','S','SW','W','NW'];$('hud').textContent=`THE DEEP FOREST · ${skyStateLabel(atmosphere.state)} · ${directions[Math.round(heading/45)%8]}`;$('message').textContent='R · Forest entrance     E · Return to sanctuary';}
  }

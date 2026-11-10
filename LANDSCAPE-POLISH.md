@@ -10,6 +10,8 @@ The terrain now adds detail locally at the lake bank, belvedere and small court 
 
 ## Validation
 
+The limestone paving now supplies the exact same triangle surface to rendering and the collision octree, so feet stand on the visible road rather than the terrain underneath it. The outdoor standing camera is raised 16 cm to the eye position within the existing capsule's head. The camp welcome view uses the same standing height to avoid a noticeable drop on entering play. Regression checks raycast the rendered paving along the arrival hill, compare settled foot and eye clearance, and check jump landings.
+
 `npm test` checks the full camp routes, twelve temple entrances, causeway, training ground, dock and lakeside access; it also covers road-border completeness, equal spacing, junction clearance, grounded placement, complete botanical geometry and closed terrain seams. Type checking, static build and fourteen portable-page checks are separate release checks.
 
 `node scripts/preview-landscape.mjs` exports the runtime models for the offline Blender study. Run Blender with `--background --python scripts/blender/render_landscape.py -- <project-path>` to regenerate its two studies and editable `.blend` file in `assets-source/landmarks`. These renders inspect geometry, not browser shading: they omit the full camp architecture, vegetation textures, live mist and atmospheric shaders. Browser WebGL appearance and FPS remain unverified because local browser preview is unavailable. The existing hosted Sites project currently returns `project_not_found`, so this release is delivered through the portable package and GitHub source.
