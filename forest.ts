@@ -9,6 +9,8 @@ import {buildAtmosphere} from './lib/game/atmosphere';
 import {dayCycleSeconds} from './lib/game/day-cycle';
 import { readProfile,saveProfile,saveWarning,beginExpedition,finishExpedition,rewardEnemy,level,quests } from './lib/game/progression';
 import './app/forest.css';
+import {startDeepForest} from './deep-forest';
+function startExpedition(){
 const profile=readProfile(),run=beginExpedition(profile),settings=readSave().settings;
 const $=(id:string)=>document.getElementById(id)!;const menu=$('menu');let active=false,disposed=false,drag=false,pitch=-.1,attack=0,dodge=0,dodgeCooldown=0,messageTime=0,saveTime=0,clock=0,frame=0;
 const scene=new T.Scene();scene.background=new T.Color('#738578');scene.fog=new T.FogExp2('#afbdac',.015);const collision=new T.Group();
@@ -63,3 +65,9 @@ function loop(now:number){if(disposed)return;frame=requestAnimationFrame(loop);c
 }
 function dispose(){if(disposed)return;disposed=true;cancelAnimationFrame(frame);listeners.forEach(f=>f());atmosphere.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);const map=(m as T.MeshStandardMaterial).map;if(map)textures.add(map);}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});woodland.dispose();geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.forceContextLoss();}
 atmosphere.applyCloudShadows();pause();frame=requestAnimationFrame(loop);
+}
+if(new URLSearchParams(location.search).get('view')==='landscape'){
+ const start=document.getElementById('start') as HTMLButtonElement;start.disabled=true;start.textContent='Preparing the forest…';document.querySelector('#menu h1')!.textContent='Under the old canopy.';document.getElementById('intro')!.textContent='Preparing the trees, woodland floor and mist.';
+ document.getElementById('retreat')!.onclick=()=>{location.href=location.protocol==='file:'?'asterion-sanctuary.html':'index.html';};
+ requestAnimationFrame(()=>setTimeout(()=>{try{startDeepForest();start.disabled=false;}catch(error){document.getElementById('warning')!.textContent='The forest could not start. '+(error instanceof Error?error.message:'Please reload.');start.disabled=false;start.textContent='Reload forest';start.onclick=()=>location.reload();}},0));
+}else startExpedition();

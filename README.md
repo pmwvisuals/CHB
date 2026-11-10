@@ -16,6 +16,10 @@ Choose **Explore the twelve temples** on the welcome screen, or walk through a t
 
 Use **WASD** to walk, **Shift** to sprint, **Space** to jump and the mouse to look. Click and drag to look if mouse capture is unavailable. **Esc** pauses. Outdoors, **M** opens the map and **E** reads nearby discoveries. High graphics quality is always enabled. Sensitivity and walking motion are adjustable. Settings use browser storage; storage sharing for local file URLs depends on the browser.
 
+## Deep forest landscape
+
+Choose **Explore the deep forest** from the welcome screen or pause menu. Walk beneath tall, overlapping dark trees across a roughly 520-metre woodland with winding trails, hollows, leaf litter and localized mist. This landscape-only exploration has no enemies, flowers or decorative structures. **R** returns to its entrance; **E** returns to camp. The earlier expedition remains separate under Quests & expeditions. See [DEEP-FOREST.md](DEEP-FOREST.md).
+
 ## Training ground
 
 Enter the yard or choose **Esc → Training ground**. Use **1** for the sword, **2** for the bow and **R** to cycle through accuracy, sword-combo and guard drills. Hold/release left mouse to shoot; with the sword, left mouse strikes, **F** performs a heavy strike and right mouse guards. See [TRAINING.md](TRAINING.md) for controls and validation. Practice bests are saved separately from quests and currency.

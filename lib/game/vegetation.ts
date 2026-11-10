@@ -12,7 +12,7 @@ export function unpackPlant(p:Packed){
  for(let i=0;i<count;i++){for(let a=0;a<3;a++){positions[i*3+a]=view.getInt16(i*9+a*2,true)/32767*p.scale;normals[i*3+a]=view.getInt8(i*9+6+a)/127;}uv[i*2]=uvview.getUint16(i*4,true)/65535;uv[i*2+1]=uvview.getUint16(i*4+2,true)/65535;}
  const idxraw=bytes(p.i),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.setAttribute('normal',new T.BufferAttribute(normals,3));g.setAttribute('uv',new T.BufferAttribute(uv,2));g.setIndex(new T.BufferAttribute(p.wide?new Uint32Array(idxraw.buffer):new Uint16Array(idxraw.buffer),1));g.computeBoundingSphere();g.computeBoundingBox();return g;
 }
-export function plantCollection(scene:T.Scene,placements:PlantPlacement[],options:{range?:number;canopyLayers?:number;detailedRange?:number}={}){
+export function plantCollection(scene:T.Scene,placements:PlantPlacement[],options:{range?:number;canopyLayers?:number;detailedRange?:number;cellSize?:number;widthScale?:number}={}){
  const geometries=new Map<string,T.BufferGeometry>(),materials=new Map<string,T.MeshStandardMaterial>(),depths:T.MeshDepthMaterial[]=[];
  const atlas=new T.DataTexture(bytes(leafAtlas),leafAtlasSize,leafAtlasSize);atlas.colorSpace=T.SRGBColorSpace;atlas.magFilter=T.LinearFilter;atlas.minFilter=T.LinearMipmapLinearFilter;atlas.generateMipmaps=true;atlas.anisotropy=8;atlas.needsUpdate=true;
  const pixels=new Uint8Array(128*256*4);for(let y=0;y<256;y++)for(let x=0;x<128;x++){const grain=Math.sin(x*.4+Math.sin(y*.07)*1.8)*.5+.5,crack=Math.pow(grain,8),n=Math.sin(x*17.3+y*71.7)*.5+.5,i=(y*128+x)*4,v=.43+.16*n-.27*crack;pixels[i]=v*255;pixels[i+1]=v*211;pixels[i+2]=v*169;pixels[i+3]=255;}
@@ -31,13 +31,13 @@ export function plantCollection(scene:T.Scene,placements:PlantPlacement[],option
  }
  const rootOffsets=new Map<string,number>();
  for(const id of new Set(placements.map(p=>p.id))){const asset=vegetationAssets[id];if(asset.height<3)continue;const part=asset.parts.find(p=>p.material==='bark');if(part){const g=unpackPlant(part.high);rootOffsets.set(id,g.boundingBox!.min.y);g.dispose();}}
- const cells=new Map<string,PlantPlacement[]>();for(const p of placements){const key=`${p.id}:${Math.floor(p.x/24)}:${Math.floor(p.z/24)}`;const list=cells.get(key)||[];list.push(p);cells.set(key,list);}
+ const cellSize=options.cellSize??24,cells=new Map<string,PlantPlacement[]>();for(const p of placements){const key=`${p.id}:${Math.floor(p.x/cellSize)}:${Math.floor(p.z/cellSize)}`;const list=cells.get(key)||[];list.push(p);cells.set(key,list);}
  const batches:{high:T.Group;low:T.Group;center:T.Vector3;ground:boolean}[]=[];const dummy=new T.Object3D();
  for(const list of cells.values()){
   const id=list[0].id,asset=vegetationAssets[id],high=new T.Group(),low=new T.Group();high.name=id+' high detail';low.name=id+' distant detail';scene.add(high,low);
   for(const lod of ['high','low'] as const)for(let i=0;i<asset.parts.length;i++){
    const part=asset.parts[i],key=`${id}:${i}:${lod}`;let geo=geometries.get(key);if(!geo){geo=unpackPlant(part[lod]);geo.translate(0,-(rootOffsets.get(id)||0),0);geometries.set(key,geo);}const mat=material(id,part.material),layers=part.material==='leaf'?(options.canopyLayers||1):1,mesh=new T.InstancedMesh(geo,mat,list.length*layers);mesh.name=`${id} ${part.material} ${lod}`;
-   for(let layer=0;layer<layers;layer++)list.forEach((p,index)=>{const n=index+layer*list.length;dummy.position.set(p.x,p.y-(asset.height>3?.045:0),p.z);dummy.rotation.set(0,p.rotation+layer*1.73,0);dummy.scale.setScalar(p.scale);dummy.updateMatrix();mesh.setMatrixAt(n,dummy.matrix);if(['leaf','foliage','canopy'].includes(part.material))mesh.setColorAt(n,new T.Color().setScalar(.88+(n%5)*.045));});mesh.castShadow=asset.height>1;mesh.receiveShadow=true;
+   for(let layer=0;layer<layers;layer++)list.forEach((p,index)=>{const n=index+layer*list.length;dummy.position.set(p.x,p.y-(asset.height>3?.045:0),p.z);dummy.rotation.set(0,p.rotation+layer*1.73,0);dummy.scale.set(p.scale*(options.widthScale??1),p.scale,p.scale*(options.widthScale??1));dummy.updateMatrix();mesh.setMatrixAt(n,dummy.matrix);if(['leaf','foliage','canopy'].includes(part.material))mesh.setColorAt(n,new T.Color().setScalar(.88+(n%5)*.045));});mesh.castShadow=asset.height>1;mesh.receiveShadow=true;
    if(part.material==='leaf'){const d=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,map:atlas,alphaTest:.48,side:T.DoubleSide});depths.push(d);mesh.customDepthMaterial=d;}
    mesh.computeBoundingSphere();mesh.boundingSphere!.radius+=.2;(lod==='high'?high:low).add(mesh);
   }

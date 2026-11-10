@@ -1,0 +1,17 @@
+# The deep forest landscape
+
+Choose **Explore the deep forest** on the sanctuary welcome screen or pause menu. This opens `forest.html?view=landscape`: landscape-only exploration with no enemies, loot, weapon models or expedition-save changes. The earlier combat demo remains available through Quests & expeditions. The shared forest page and portable package keep their existing filenames.
+
+The playable woodland spans roughly 520 metres, surrounded by further scenery out to a 330-metre radius. Rolling ground, a low ridge, depressions and several small clearings break up the landscape. Four connected winding earth trails cross the interior. There are no stone road borders, flower beds, ornamental trees, decorative structures or new creature assets.
+
+5,200 instances reuse all five existing dark forest tree models. Trees are scaled to approximately 13–22 metres high, with slightly broader crowns so neighbouring canopies overlap. The lowest foliage stays above normal standing eye height. Trunks and rocks have collision; leaves do not act as movement barriers. Root collars are embedded using the local slope, and the ground mesh is shared by rendering and collision. Trees use deterministic irregular scatter, clear trails and reserved sky openings instead of planting rows.
+
+The floor uses mottled soil and restrained moss detail, 20,000 reused leaf-litter/fern/bracken/bramble instances, and 170 existing weathered rocks. Shrubs remain low. There is no meadow-grass carpet or flower planting. Distance batching and the existing tree distance geometry keep the large field bounded without introducing graphics quality menus.
+
+Actual tree shadows and canopy light absorption reduce direct sunlight beneath the crowns. Cool ambient fill preserves readable trunks and ground; it increases slightly at night. The existing 13-minute sun/moon cycle continues. The shadow camera follows the player's vicinity, retaining the 4096-pixel shadow map.
+
+Mist integrates world-space density between camera and visible surface using the depth buffer. Twelve irregularly placed low pockets drift subtly through hollows and clearings. Nearby geometry occludes mist, the entrance has no mist blanket, and individual pockets remain light enough to see through. A stronger outer mist field hides the scenery boundary. Ordinary distance fog is sparse; darkness comes from shade and material colour rather than reducing the player's visible range with dense fog.
+
+**Controls:** WASD walk, Shift sprint, Space jump, mouse look (or left-drag), Esc pause, R return to the forest entrance, E return to camp. Exploration does not spend resources or change quest progress.
+
+Automated checks cover all trail routes with player collision, terrain/collision alignment, embedded roots, actual asset heights and crown clearance, natural scatter, allowed ground-cover types, mist height/locality and canopy shader integration. Browser WebGL appearance, interaction and FPS remain unverified because preview access is unavailable. No offline Blender render is used as evidence of final browser appearance.

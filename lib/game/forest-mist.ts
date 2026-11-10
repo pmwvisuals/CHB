@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {deepForestMistDensityGLSL} from './deep-forest-layout';
 
 /** Depth-aware, world-space participating mist. Integrates only the air between
  * the camera and the visible surface, including the sky, so foreground objects
@@ -7,7 +8,7 @@ export class ForestMist {
  private target=new T.WebGLRenderTarget(1,1,{type:T.HalfFloatType,depthBuffer:true});
  private pass=new T.Scene();private camera=new T.OrthographicCamera(-1,1,1,-1,0,1);
  private material:T.ShaderMaterial;private quad:T.Mesh;
- constructor(){
+ constructor(field:'camp'|'deep'='camp'){
   this.target.depthTexture=new T.DepthTexture(1,1,T.UnsignedIntType);
   this.material=new T.ShaderMaterial({depthTest:false,depthWrite:false,uniforms:{
    sceneColor:{value:this.target.texture},sceneDepth:{value:this.target.depthTexture},
@@ -53,6 +54,7 @@ export class ForestMist {
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
    }`});
+  if(field==='deep')this.material.fragmentShader=this.material.fragmentShader.replace(/float density\(vec3 p\)\{[\s\S]*?\n   \}/,deepForestMistDensityGLSL).replace('(-3.-eye.y)','(-12.-eye.y)').replace('(20.-eye.y)','(34.-eye.y)').replaceAll('/32.','/48.').replace('i<32','i<48');
   this.quad=new T.Mesh(new T.PlaneGeometry(2,2),this.material);this.quad.frustumCulled=false;this.pass.add(this.quad);
  }
  render(renderer:T.WebGLRenderer,scene:T.Scene,camera:T.PerspectiveCamera,time:number,daylight=1){

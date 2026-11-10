@@ -14,5 +14,7 @@ for (const theme of templeCatalog) {
   }
 }
 const main = await readFile('asterion-sanctuary.html', 'utf8');
+assert.ok(main.includes('forest.html?view=landscape'),'camp links to the forest landscape');
+for(const prefix of ['dist/','']){const forest=await readFile(prefix+'forest.html','utf8');assert.ok(forest.includes('id="controls"')&&forest.includes('id="retreat-cost"'),'forest modes share their controls');if(!prefix){assert.ok(forest.includes('Under the old canopy.')&&forest.includes('Old forest soil and rolling hollows'));assert.doesNotMatch(forest,/<(?:script|link)[^>]+(?:src|href)="(?:\.\/)?assets\//,'forest portable assets are embedded');}}
 assert.doesNotMatch(main, /<(?:script|link)[^>]+(?:src|href)="\/assets\//);
 console.log('All twelve hosted and portable temple pages pass identity, selector, return-link and asset checks.');
