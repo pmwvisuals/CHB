@@ -72,3 +72,8 @@ yarn-error.log*
 
 /assets-source/landmarks/
 /asterion-landmark-assets.zip
+
+/assets-source/creatures/
+/asterion-ash-tusk-boar.zip
+/asterion-boar-viewer.html
+__pycache__/

@@ -1,0 +1,23 @@
+import * as T from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+const host=document.getElementById('view')!,status=document.getElementById('status')!,renderer=new T.WebGLRenderer({antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;renderer.domElement.setAttribute('aria-label','Interactive inspection of the actual exported Ash-Tusk boar model');host.appendChild(renderer.domElement);
+const scene=new T.Scene();scene.background=new T.Color('#252b2d');const camera=new T.PerspectiveCamera(40,1,.03,100);camera.position.set(9,3.4,6.5);const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1.55,.35);controls.enableDamping=true;controls.minDistance=2;controls.maxDistance=24;controls.maxPolarAngle=Math.PI/2-.015;
+const environment=new RoomEnvironment(),pmrem=new T.PMREMGenerator(renderer),env=pmrem.fromScene(environment,.05);scene.environment=env.texture;scene.environmentIntensity=.5;environment.dispose();pmrem.dispose();
+scene.add(new T.HemisphereLight('#d8e5ed','#66543d',.8));const key=new T.DirectionalLight('#d8e8ff',2.5);key.position.set(5,7,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:30});key.shadow.camera.updateProjectionMatrix();key.shadow.normalBias=.01;scene.add(key);const fill=new T.DirectionalLight('#b6cde2',.6);fill.position.set(-5,4,0);scene.add(fill);const rim=new T.DirectionalLight('#ff985e',2);rim.position.set(0,5,-5);scene.add(rim);
+const ground=new T.Mesh(new T.PlaneGeometry(100,100),new T.MeshStandardMaterial({color:'#62675f',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.018;ground.receiveShadow=true;scene.add(ground);
+const clay=new T.MeshStandardMaterial({color:'#b0b5ae',roughness:.85});let model:T.Group|undefined;const materials=new Set<T.MeshStandardMaterial>();
+const encoded=(window as any).__BOAR_GLB__ as string,binary=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+new GLTFLoader().parse(binary.buffer,'',gltf=>{model=gltf.scene;let triangles=0,meshes=0;model.traverse(o=>{if(o instanceof T.Mesh){meshes++;triangles+=(o.geometry.index?.count??o.geometry.getAttribute('position').count)/3;o.castShadow=o.receiveShadow=true;for(const m of Array.isArray(o.material)?o.material:[o.material])if(m instanceof T.MeshStandardMaterial)materials.add(m);}});scene.add(model);const size=new T.Box3().setFromObject(model).getSize(new T.Vector3());status.textContent=`${Math.round(triangles).toLocaleString()} triangles · ${meshes} mesh parts · ${size.x.toFixed(2)} × ${size.y.toFixed(2)} × ${size.z.toFixed(2)} m · Static asset`;},error=>{status.textContent='Model could not load: '+String(error);});
+const views:Record<string,{eye:number[];target:number[]}>= {'three-quarter':{eye:[9,3.4,6.5],target:[0,1.55,.35]},profile:{eye:[11,3.2,0],target:[0,1.55,.35]},front:{eye:[0,2.8,10],target:[0,1.55,.6]},head:{eye:[4.5,2.9,4.5],target:[0,1.72,1.95]}};
+document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button=>button.onclick=()=>{const view=views[button.dataset.view!];camera.position.fromArray(view.eye);controls.target.fromArray(view.target);controls.update();});
+(document.getElementById('wire') as HTMLInputElement).onchange=e=>{for(const material of materials)material.wireframe=(e.target as HTMLInputElement).checked;};
+(document.getElementById('clay') as HTMLInputElement).onchange=e=>{scene.overrideMaterial=(e.target as HTMLInputElement).checked?clay:null;};
+(document.getElementById('turn') as HTMLInputElement).onchange=e=>{controls.autoRotate=(e.target as HTMLInputElement).checked;controls.autoRotateSpeed=.65;};
+(document.getElementById('floor') as HTMLInputElement).onchange=e=>{ground.visible=(e.target as HTMLInputElement).checked;controls.maxPolarAngle=ground.visible?Math.PI/2-.015:Math.PI;};
+document.getElementById('download')!.onclick=()=>{const url=URL.createObjectURL(new Blob([binary],{type:'model/gltf-binary'})),link=document.createElement('a');link.href=url;link.download='ash-tusk-boar.glb';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(host);resize();
+renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);});
