@@ -12,10 +12,10 @@ export class ForestMist {
   this.material=new T.ShaderMaterial({depthTest:false,depthWrite:false,uniforms:{
    sceneColor:{value:this.target.texture},sceneDepth:{value:this.target.depthTexture},
    inverseProjection:{value:new T.Matrix4()},cameraWorld:{value:new T.Matrix4()},
-   eye:{value:new T.Vector3()},mistTime:{value:0},
+   eye:{value:new T.Vector3()},mistTime:{value:0},mistDaylight:{value:1},
   },vertexShader:'varying vec2 mistUV;void main(){mistUV=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:`
    varying vec2 mistUV;uniform sampler2D sceneColor;uniform sampler2D sceneDepth;
-   uniform mat4 inverseProjection;uniform mat4 cameraWorld;uniform vec3 eye;uniform float mistTime;
+   uniform mat4 inverseProjection;uniform mat4 cameraWorld;uniform vec3 eye;uniform float mistTime;uniform float mistDaylight;
    float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
    float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
     return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
@@ -46,7 +46,7 @@ export class ForestMist {
     for(int i=0;i<32;i++){
      vec3 p=eye+ray*(start+(float(i)+jitter)*stepSize);float amount=1.-exp(-density(p)*stepSize);
      float light=.75+.25*noise3(p*.045+vec3(0.,1.,0.));
-     vec3 color=mix(vec3(.18,.255,.24),vec3(.47,.55,.49),light);
+     vec3 color=mix(mix(vec3(.008,.016,.029),vec3(.038,.060,.095),light),mix(vec3(.18,.255,.24),vec3(.47,.55,.49),light),mistDaylight);
      scattering+=transmission*amount*color;transmission*=1.-amount;
     }
     gl_FragColor=vec4(surface*transmission+scattering,1.);
@@ -55,9 +55,9 @@ export class ForestMist {
    }`});
   this.quad=new T.Mesh(new T.PlaneGeometry(2,2),this.material);this.quad.frustumCulled=false;this.pass.add(this.quad);
  }
- render(renderer:T.WebGLRenderer,scene:T.Scene,camera:T.PerspectiveCamera,time:number){
+ render(renderer:T.WebGLRenderer,scene:T.Scene,camera:T.PerspectiveCamera,time:number,daylight=1){
   const size=renderer.getDrawingBufferSize(new T.Vector2());if(this.target.width!==size.x||this.target.height!==size.y)this.target.setSize(size.x,size.y);
-  camera.updateMatrixWorld();const u=this.material.uniforms;u.inverseProjection.value.copy(camera.projectionMatrixInverse);u.cameraWorld.value.copy(camera.matrixWorld);u.eye.value.copy(camera.position);u.mistTime.value=time;
+  camera.updateMatrixWorld();const u=this.material.uniforms;u.inverseProjection.value.copy(camera.projectionMatrixInverse);u.cameraWorld.value.copy(camera.matrixWorld);u.eye.value.copy(camera.position);u.mistTime.value=time;u.mistDaylight.value=daylight;
   renderer.setRenderTarget(this.target);renderer.render(scene,camera);renderer.setRenderTarget(null);renderer.render(this.pass,this.camera);
  }
  dispose(){this.target.dispose();this.quad.geometry.dispose();this.material.dispose();this.pass.clear();}

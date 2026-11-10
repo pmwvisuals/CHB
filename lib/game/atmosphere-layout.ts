@@ -1,6 +1,5 @@
 import {Vector3} from 'three';
-/** East is +X in the camp's navigation system. No day/night motion yet. */
-export const easternSunDirection=new Vector3(1,.64,0).normalize();
+import {sampleDayCycle} from './day-cycle';
 export const cloudBanks=[
  {center:new Vector3(120,118,-155),size:new Vector3(108,35,70)},
  {center:new Vector3(205,135,70),size:new Vector3(120,44,80)},
@@ -25,13 +24,14 @@ export function cloudCenter(index:number,time:number,target=new Vector3()){
 }
 const smooth=(a:number,b:number,v:number)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t);};
 /** CPU counterpart of the projected cloud column, useful for layout/QA tools. */
-export function cloudShadowTransmission(point:Vector3,time:number){
+export function cloudShadowTransmission(point:Vector3,time:number,direction=sampleDayCycle(time).lightDirection){
+ if(direction.y<.025)return 1;
  let transmission=1;
  for(let i=0;i<cloudBanks.length;i++){
   const center=cloudCenter(i,time);if(point.y>=center.y)continue;
-  const travel=(center.y-point.y)/easternSunDirection.y;
-  const x=(point.x+easternSunDirection.x*travel-center.x)/cloudBanks[i].size.x,z=(point.z-center.z)/cloudBanks[i].size.z;
+  const travel=(center.y-point.y)/direction.y;
+  const x=(point.x+direction.x*travel-center.x)/cloudBanks[i].size.x,z=(point.z+direction.z*travel-center.z)/cloudBanks[i].size.z;
   let shape=-1;for(const lobe of cloudLobes)shape=Math.max(shape,1-Math.hypot((x-lobe.center[0])/lobe.radius[0],(z-lobe.center[2])/lobe.radius[2]));
   transmission*=Math.exp(-smooth(-.12,.22,shape)*1.75);
- }return transmission;
+ }return 1+(transmission-1)*smooth(.025,.15,direction.y);
 }

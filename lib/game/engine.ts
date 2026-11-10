@@ -7,8 +7,9 @@ import {templeSites} from './sanctuary-layout';
 import { CampAudio } from './audio';
 import { simulatePlayer } from './physics';
 import {ForestMist} from './forest-mist';
+import {skyStateLabel} from './day-cycle';
 
-export interface GameHUD { x:number; z:number; heading:number; nearest:string|null; zone:string; fps:number; grounded:boolean }
+export interface GameHUD { x:number; z:number; heading:number; nearest:string|null; zone:string; fps:number; grounded:boolean; skyLabel:string; night:boolean }
 export interface Events { hud:(v:GameHUD)=>void; pause:()=>void; map:()=>void; inspect:(id:string)=>void; error:(message:string)=>void }
 export class CampEngine {
   renderer:T.WebGLRenderer; camera=new T.PerspectiveCamera(68,1,.1,650); world:ReturnType<typeof buildWorld>;
@@ -57,11 +58,11 @@ export class CampEngine {
   private loop=(now:number)=>{this.frame=requestAnimationFrame(this.loop);const dt=Math.min((now-(this.previous||now))/1000,.08);this.previous=now;this.time+=dt;
     if(this.active){this.accumulator+=dt;while(this.accumulator>=1/120){this.step(1/120);this.accumulator-=1/120;}}
     else if(!this.started){this.camera.position.set(0,groundHeight(0,113)+2.5,113);this.camera.rotation.set(-.17,Math.sin(this.time*.06)*.035,0);}
-    if(this.disposed)return;this.world.update(this.time,this.camera.position);this.mist.render(this.renderer,this.world.scene,this.camera,this.time);this.frames++;
+    if(this.disposed)return;this.world.update(this.time,this.camera.position);this.world.atmosphere.prepareRenderer(this.renderer);this.mist.render(this.renderer,this.world.scene,this.camera,this.time,this.world.atmosphere.state.daylight);this.frames++;
     if(now-this.fpsStart>1000){this.fps=Math.round(this.frames*1000/(now-this.fpsStart));this.frames=0;this.fpsStart=now;}
     if(now-this.lastHud>180){this.lastHud=now;const {x,z}=this.camera.position;const nearest=landmarks.find(l=>Math.hypot(x-l.x,z-l.z)<7);this.nearest=nearest?.id||null;
       let zone='Asterion Sanctuary';if(z>88)zone='Arrival Ridge';else if(x>57)zone='Mirror Lake';else if(z<-82)zone='The Whispering Woods';else if(z<-48&&Math.abs(x)<25)zone='The Amphitheatre';else if(x<-43&&z>30)zone='The Wayfarer Hall';else if(x<-43&&z<0)zone='Training Grounds';else if(x>30&&z>25)zone='Dining Pavilion';else if(Math.hypot(x,z)<42)zone='The Temple Courts';for(const [id,site] of Object.entries(templeSites))if(Math.hypot(x-site.x,z-site.z)<28)zone=site.region;
-      this.events.hud({x,z,heading:((T.MathUtils.radToDeg(-this.yaw)%360)+360)%360,nearest:this.nearest,zone,fps:this.fps,grounded:this.grounded});
+      this.events.hud({x,z,heading:((T.MathUtils.radToDeg(-this.yaw)%360)+360)%360,nearest:this.nearest,zone,fps:this.fps,grounded:this.grounded,skyLabel:skyStateLabel(this.world.atmosphere.state),night:this.world.atmosphere.state.daylight<.15});
       if(this.active)this.audio.update(x,z,this.grounded&&Math.hypot(this.velocity.x,this.velocity.z)>.6,this.keys.has('ShiftLeft')||this.keys.has('ShiftRight'));
     }
   };

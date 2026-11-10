@@ -19,8 +19,9 @@ import {inMainLandmark} from './landmark-layout';
 import {buildAtmosphere} from './atmosphere';
 import {buildFlowers,type FlowerPlacement} from './flowers';
 import {buildRoadBorders} from './road-borders';
+import {dayCycleSeconds} from './day-cycle';
 
-export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
+export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; atmosphere:ReturnType<typeof buildAtmosphere>; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
 export function buildWorld(): World {
   const scene = new T.Scene(); scene.background = new T.Color('#9dbed8'); scene.fog = new T.FogExp2('#9bafba', .0013);
   const collision = new T.Group();
@@ -51,6 +52,7 @@ export function buildWorld(): World {
   function lantern(parent:T.Object3D,x:number,y:number,z:number) {
     box(parent,x,y,z,.3,.48,.3,brass); box(parent,x,y,z+.16,.22,.3,.01,new T.MeshStandardMaterial({color:'#ffe0a0',emissive:'#ffbc5a',emissiveIntensity:1.3}));
     const cap=mesh(new T.ConeGeometry(.3,.25,4),brass,parent,x,y+.36,z); cap.rotation.y=Math.PI/4;
+    const light=new T.PointLight('#ffba70',7,15,2);light.position.set(x,y,z);parent.add(light);atmosphere.registerNightLight(light);
   }
   // Broad, softly rolling landscape with a raised arrival hill.
   const terrain=terrainGeometry();
@@ -58,7 +60,7 @@ export function buildWorld(): World {
   collision.add(new T.Mesh(terrain));
   // Scenery outside the playable square needs terrain, but no collision octree.
   for(const [w,d,x,z] of [[700,100,0,300],[700,100,0,-300],[100,500,300,0],[100,500,-300,0]]){const outer=mesh(terrainGeometry(w,d,x,z,5),ground.material,scene);outer.castShadow=false;}
-  const atmosphere=buildAtmosphere(scene),sun=atmosphere.sun;
+  const atmosphere=buildAtmosphere(scene,{clock:dayCycleSeconds}),sun=atmosphere.sun;
   // Preserve the accepted, seeded camp planting when replacing the old clouds.
   for(let i=0;i<144;i++)rand();
   const paths: { points:T.Vector3[]; width:number }[]=[];
@@ -164,13 +166,13 @@ export function buildWorld(): World {
   atmosphere.applyCloudShadows();
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps];
-  return {scene,octree,water,fire,embers,sun,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
+  return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
     atmosphere.update(time,camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);flowers.update(time,camera);
     flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
     const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
     (water.material as T.MeshStandardMaterial).roughness=.17+Math.sin(time*.4)*.012;
     meadow.update(time);
-  },dispose(){forestBorder.dispose();woodland.dispose();planting.dispose();flowers.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};
+  },dispose(){atmosphere.dispose();forestBorder.dispose();woodland.dispose();planting.dispose();flowers.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};
 }
 
 

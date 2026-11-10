@@ -4,7 +4,7 @@ import {templeReturnPoint} from '@/lib/game/temple-catalog';
 import {templeSites,type SiteId} from '@/lib/game/sanctuary-layout';
 import AdventurePanel from './AdventurePanel';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ArrowUpRight, Compass, Map, Volume2, VolumeX, Settings2, X, Sun, Leaf, Footprints, RotateCcw, ChevronRight, Pause, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Compass, Map, Volume2, VolumeX, Settings2, X, Sun, Moon, Leaf, Footprints, RotateCcw, ChevronRight, Pause, Sparkles } from 'lucide-react';
 import { defaults, landmarks, readSave, writeSave, type Settings } from '@/lib/game/data';
 import type { CampEngine, GameHUD } from '@/lib/game/engine';
 
@@ -14,7 +14,7 @@ type Screen='adventure'|'temples'|'welcome'|'play'|'pause'|'map'|'settings'|'dis
 export default function Camp(){
   const host=useRef<HTMLDivElement>(null),engine=useRef<CampEngine|null>(null);
   const [screen,setScreen]=useState<Screen>('welcome'),[ready,setReady]=useState(false),[error,setError]=useState(''),[settings,setSettings]=useState<Settings>(defaults),[found,setFound]=useState<string[]>([]),[selected,setSelected]=useState('hill');
-  const [hud,setHud]=useState<GameHUD>({x:0,z:113,heading:0,nearest:null,zone:'Arrival Ridge',fps:0,grounded:false});
+  const [hud,setHud]=useState<GameHUD>({x:0,z:113,heading:0,nearest:null,zone:'Arrival Ridge',fps:0,grounded:false,skyLabel:'DAYLIGHT · 08:12',night:false});
   const [progress,setProgress]=useState(8),[started,setStarted]=useState(false),[help,setHelp]=useState(true),[debug,setDebug]=useState(false);
   const settingsRef=useRef(settings),foundRef=useRef(found),returnTo=useRef<Screen>('welcome');
   useEffect(()=>{let disposed=false;const saved=readSave();setSettings(saved.settings);settingsRef.current=saved.settings;setFound(saved.discoveries);foundRef.current=saved.discoveries;setDebug(new URLSearchParams(location.search).has('debug'));setProgress(24);
@@ -37,7 +37,7 @@ export default function Camp(){
     <header className="topbar">
       <button className="brand" aria-label="Sanctuary menu" onClick={()=>{if(started)open('pause');}}><span className="brand-mark">Ψ</span><span>ASTERION<br/><b>SANCTUARY</b></span></button>
       <div className="top-meta"><span className="status-dot"/> A HOME AMONG THE GODS</div>
-      <div className="top-actions"><span className="golden-hour"><Sun size={15}/> EASTERN LIGHT</span><button className="icon-button" title={muted?'Enable sound':'Mute sound'} aria-label={muted?'Enable sound':'Mute sound'} onClick={()=>setSettings({...settings,volume:muted?.35:0})}>{muted?<VolumeX size={18}/>:<Volume2 size={18}/>}</button><button className="icon-button" title="Settings" aria-label="Settings" onClick={()=>open('settings')}><Settings2 size={18}/></button></div>
+      <div className="top-actions"><span className="golden-hour">{hud.night?<Moon size={15}/>:<Sun size={15}/>} {hud.skyLabel}</span><button className="icon-button" title={muted?'Enable sound':'Mute sound'} aria-label={muted?'Enable sound':'Mute sound'} onClick={()=>setSettings({...settings,volume:muted?.35:0})}>{muted?<VolumeX size={18}/>:<Volume2 size={18}/>}</button><button className="icon-button" title="Settings" aria-label="Settings" onClick={()=>open('settings')}><Settings2 size={18}/></button></div>
     </header>
     {!ready&&!error&&<div className="loading-screen"><span className="loading-mark">Ψ</span><p>THE VALLEY IS WAKING</p><div className="loading-track"><i style={{width:`${progress}%`}}/></div><small>Preparing your place among legends…</small></div>}
     {error&&<div className="modal-backdrop"><section className="panel error-panel"><span className="eyebrow">A PAUSE IN THE ADVENTURE</span><h2>Let’s try that again.</h2><p>{error}</p><button className="primary-button" onClick={()=>location.reload()}>Reload sanctuary <RotateCcw size={16}/></button></section></div>}
