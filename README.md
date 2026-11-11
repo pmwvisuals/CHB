@@ -10,6 +10,8 @@ A full cycle lasts 32 minutes: 24 minutes of daylight and 8 minutes of night. Th
 
 ## Play
 
+Online game: [pmwvisuals.com/CHB/](https://pmwvisuals.com/CHB/). GitHub Pages must publish the compiled `dist` artifact, not the source repository root. `.github/workflows/pages.yml` installs the locked dependencies, type-checks, builds, validates subdirectory asset links and deploys after pushes to `main`. In repository Settings → Pages → Build and deployment, select **GitHub Actions** as the source. The project inherits the existing account site's domain; it does not need a separate `CNAME` file. Asset URLs are relative so the camp, forests and temples work under `/CHB/` as well as at a domain root.
+
 Extract every file in `asterion-playable.zip` to the same folder and open `asterion-sanctuary.html` in Chrome or Edge. The package contains the sanctuary and twelve separate temple pages plus the development forest expedition. Keep all fourteen pages together so navigation works.
 
 Choose **Explore the twelve temples** on the welcome screen, or walk through a temple doorway in the sanctuary. Each temple also has a selector for visiting another. Use the menu or press **E** near the exit to return outside that temple.
