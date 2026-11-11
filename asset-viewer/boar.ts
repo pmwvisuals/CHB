@@ -20,6 +20,6 @@ document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button=>butt
 (document.getElementById('clay') as HTMLInputElement).onchange=e=>{scene.overrideMaterial=(e.target as HTMLInputElement).checked?clay:null;};
 (document.getElementById('turn') as HTMLInputElement).onchange=e=>{controls.autoRotate=(e.target as HTMLInputElement).checked;controls.autoRotateSpeed=.65;};
 (document.getElementById('floor') as HTMLInputElement).onchange=e=>{ground.visible=(e.target as HTMLInputElement).checked;controls.maxPolarAngle=ground.visible?Math.PI/2-.015:Math.PI;};
-document.getElementById('download')!.onclick=()=>{const url=URL.createObjectURL(new Blob([binary],{type:'model/gltf-binary'})),link=document.createElement('a');link.href=url;link.download=Object.keys(actions).length?'ash-tusk-boar-motion.glb':'ash-tusk-boar.glb';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+document.getElementById('download')!.onclick=()=>{const url=URL.createObjectURL(new Blob([binary],{type:'model/gltf-binary'})),link=document.createElement('a');link.href=url;link.download=(window as any).__BOAR_FILENAME__||(Object.keys(actions).length?'ash-tusk-boar-motion.glb':'ash-tusk-boar.glb');link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(host);resize();
 renderer.setAnimationLoop(()=>{mixer?.update(Math.min(timer.getDelta(),.1));controls.update();renderer.render(scene,camera);});

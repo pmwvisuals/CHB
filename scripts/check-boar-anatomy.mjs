@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+const folder='assets-source/creatures/ash-tusk-boar/',bytes=await fs.readFile(folder+'ash-tusk-boar-anatomy.glb');
+assert.equal(bytes.readUInt32LE(0),0x46546c67);assert.equal(bytes.readUInt32LE(8),bytes.length);
+const json=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)));
+assert(!json.skins?.length&&!json.animations?.length);assert.equal(json.images.length,3);assert(json.images.every(i=>i.bufferView!==undefined&&!i.uri));
+const loader=new GLTFLoader();loader.register(parser=>{parser.loadTexture=async()=>null;return {name:'HeadlessTextureCheck'};});
+const gltf=await loader.parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+let triangles=0,meshes=0;
+gltf.scene.traverse(ob=>{if(!(ob instanceof T.Mesh))return;meshes++;const p=ob.geometry.getAttribute('position'),normal=ob.geometry.getAttribute('normal');assert(p.count&&normal.count===p.count);assert(p.array.every(Number.isFinite)&&normal.array.every(Number.isFinite));triangles+=(ob.geometry.index?.count??p.count)/3;});
+assert.equal(meshes,5);const bounds=new T.Box3().setFromObject(gltf.scene,true),size=bounds.getSize(new T.Vector3());
+assert(size.x>2&&size.x<3.5&&size.y>3&&size.y<4&&size.z>4.5&&size.z<6);assert(Math.abs(bounds.min.y)<.01,'Feet stay grounded');
+const report=JSON.parse(await fs.readFile(folder+'anatomy-quality-report.json','utf8'));
+Object.assign(report,{gltf_bytes:bytes.length,export_triangles:triangles,dimensions_gltf_m:size.toArray(),export_validation:'Three.js imports the actual GLB: finite positions/normals, grounded feet, five mesh groups, three embedded maps, no animation or skin',browserUIVisuallyTested:false});
+await fs.writeFile(folder+'anatomy-quality-report.json',JSON.stringify(report,null,2));console.log('PASS anatomy GLB:',meshes,'meshes,',triangles,'triangles, grounded, static, embedded maps');
