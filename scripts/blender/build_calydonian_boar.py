@@ -320,7 +320,7 @@ bpy.context.view_layer.objects.active=body;bpy.ops.object.mode_set(mode='EDIT');
 for ob in parts:ob['asset']='Ash-Tusk Boar';ob['rigged']=False
 scene=bpy.context.scene;scene.unit_settings.system='METRIC';scene.unit_settings.scale_length=1;scene.render.engine='CYCLES';scene.cycles.samples=32;scene.cycles.use_denoising=True;scene.render.image_settings.file_format='PNG';scene.render.resolution_x=1600;scene.render.resolution_y=1200;scene.render.resolution_percentage=65 if QUICK else 100
 
-def bake_maps():
+def bake_maps(map_prefix='AshTusk'):
  textures=OUT/'textures';textures.mkdir(exist_ok=True);original={};targets={}
  # One evaluated bake surface avoids allocating a complete 4K image for every
  # separate tooth and hoof. Preserve per-object generated coordinates in an
@@ -349,7 +349,7 @@ def bake_maps():
   nt=m.node_tree;output=next(n for n in nt.nodes if n.type=='OUTPUT_MATERIAL');original[m]=output.inputs['Surface'].links[0].from_socket;targets[m]=nt.nodes.new('ShaderNodeTexImage');targets[m].label='Baked atlas target';nt.nodes.active=targets[m]
  maps={}
  for kind in ['BaseColor','Roughness','Normal']:
-  image=bpy.data.images.new('AshTusk_'+kind,4096,4096,alpha=False);image.colorspace_settings.name='sRGB' if kind=='BaseColor' else 'Non-Color';image.generated_color=(.5,.5,1,1) if kind=='Normal' else (.8,.8,.8,1) if kind=='Roughness' else (.025,.025,.02,1);maps[kind]=image
+  image=bpy.data.images.new(map_prefix+'_'+kind,4096,4096,alpha=False);image.colorspace_settings.name='sRGB' if kind=='BaseColor' else 'Non-Color';image.generated_color=(.5,.5,1,1) if kind=='Normal' else (.8,.8,.8,1) if kind=='Roughness' else (.025,.025,.02,1);maps[kind]=image
   for m in materials:
    nt=m.node_tree;targets[m].image=image;nt.nodes.active=targets[m];output=next(n for n in nt.nodes if n.type=='OUTPUT_MATERIAL');principled=next(n for n in nt.nodes if n.type=='BSDF_PRINCIPLED')
    for link in list(output.inputs['Surface'].links):nt.links.remove(link)
