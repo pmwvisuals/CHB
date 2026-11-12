@@ -9,6 +9,8 @@ scene=bpy.context.scene;scene.frame_set(40);arm=bpy.data.objects['BoarRig']
 for pb in arm.pose.bones:pb.matrix_basis.identity()
 bpy.context.view_layer.update();asset=bpy.data.collections['ASSET · Rigged clean boar'];asset.name='ASSET · Gameplay boar'
 parts=[o for o in asset.objects if o.type=='MESH'];fur=bpy.data.objects['Clean directional fur'];old=fur.data;group_names=[g.name for g in fur.vertex_groups]
+before=0
+for ob in parts:ob.data.calc_loop_triangles();before+=len(ob.data.loop_triangles)
 report=json.loads((base/'clean/quality-report.json').read_text());regular=report['groom_curves']-report['mane_strands'];lengths=np.array([15]*regular+[21]*report['mane_strands']);starts=np.r_[0,np.cumsum(lengths)[:-1]]
 p=np.empty(len(old.vertices)*3,dtype=np.float32);old.vertices.foreach_get('co',p);p=p.reshape((-1,3));col=np.empty(len(old.vertices)*4,dtype=np.float32);old.color_attributes['BristleTint'].data.foreach_get('color',col);col=col.reshape((-1,4))
 # Sample spatially across the short coat, retaining every mane strand for the silhouette.
@@ -41,7 +43,6 @@ for j,group in enumerate(fur.vertex_groups):
   for g,w in values:
    if g==j:buckets.setdefault(w,[]).append(v)
  for w,indices in buckets.items():group.add(indices,w,'REPLACE')
-before=790996
 for ob in parts:
  if ob==fur:continue
  bpy.ops.object.select_all(action='DESELECT');ob.select_set(True);bpy.context.view_layer.objects.active=ob

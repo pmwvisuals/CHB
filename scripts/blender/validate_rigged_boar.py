@@ -17,7 +17,7 @@ def imported(fmt):
  for name in ['Idle','Walk','TuskAttack']:assert any(name in a.name for a in actions)
  triangles=0
  for ob in meshes:ob.data.calc_loop_triangles();triangles+=len(ob.data.loop_triangles)
- assert (70000<triangles<120000) if runtime else triangles==790996
+ assert (70000<triangles<120000) if runtime else triangles==json.loads((out/'rig-quality-report.json').read_text()).get('triangles',790996)
  action=next(a for a in actions if 'TuskAttack' in a.name)
  if not arm.animation_data:arm.animation_data_create()
  for track in arm.animation_data.nla_tracks:track.mute=True

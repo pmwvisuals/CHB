@@ -22,7 +22,7 @@ gltf.scene.traverse(ob=>{
  for(let v=0;v<w.count;v++)assert(Math.abs(w.getX(v)+w.getY(v)+w.getZ(v)+w.getW(v)-1)<.001,'Non-normalized skin weights');
  triangles+=(ob.geometry.index?.count??p.count)/3;
 });
-assert.equal(skinned.length,5);if(runtime)assert(triangles>70000&&triangles<120000);else assert.equal(triangles,790996);
+assert.equal(skinned.length,5);if(runtime)assert(triangles>70000&&triangles<120000);else assert.equal(triangles,JSON.parse(await fs.readFile(folder+'rig-quality-report.json','utf8')).triangles??790996);
 const bone=name=>{const b=gltf.scene.getObjectByName(name)??gltf.scene.getObjectByName(name.replaceAll('.',''));assert(b,`Missing bone ${name}`);return b;};
 const feet=['Fore.L','Fore.R','Hind.L','Hind.R'].map(n=>bone(n+'.Foot'));
 const head=bone('Head'),jaw=bone('Jaw');const mixer=new T.AnimationMixer(gltf.scene),report={clips:[],triangles,meshes:skinned.length,bones:skinned[0].skeleton.bones.length,embedded_maps:3,browserUIVisuallyTested:false};

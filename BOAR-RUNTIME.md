@@ -1,6 +1,6 @@
 # Gameplay boar
 
-One reduced version of the clean rigged boar: 106,818 triangles versus 790,996 in the detailed source, an 86.5% reduction. Original high-detail files remain intact. There are no added scars or decorations.
+One reduced version of the clean rigged boar, with roughly 86% fewer triangles. Exact revised counts are in rig-quality-report.json. The head now has a connected lower face, a closed mouth crease, a broader muzzle and rebuilt tusks seated inside the cheeks. The detached lower plate and exposed peg teeth are removed. There are no added scars or decorations.
 
 The body and small details use reduced surfaces with their existing UVs and transferred skin weights. The coat retains 5,900 spatially distributed solid strands, including all 1,400 mane strands. Each strand has fewer segments; short strands are slightly wider to retain coverage. Fine coat density is lower than in the detailed source, so this is a practical visual tradeoff rather than a lossless conversion or hand-retopologized quad mesh.
 
@@ -16,6 +16,7 @@ Rebuild from the repository root with the detailed rigged source present:
 
 ```powershell
 blender --background --python scripts/blender/optimize_boar.py -- "<absolute project path>"
+blender --background --python scripts/blender/validate_boar_head.py -- "<absolute project path>" --runtime
 node scripts/build-boar-viewer.mjs --runtime
 node scripts/check-rigged-boar.mjs --runtime
 blender --background --python scripts/blender/validate_rigged_boar.py -- "<absolute project path>" --runtime
