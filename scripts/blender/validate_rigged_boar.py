@@ -2,13 +2,14 @@
 import bpy,sys,json
 import numpy as np
 from pathlib import Path
-root=Path(sys.argv[sys.argv.index('--')+1]);out=root/'assets-source/creatures/ash-tusk-boar/rigged';source=out/'ash-tusk-boar-rigged.blend'
+runtime='--runtime' in sys.argv;variant='runtime' if runtime else 'rigged'
+root=Path(sys.argv[sys.argv.index('--')+1]);out=root/'assets-source/creatures/ash-tusk-boar'/variant;stem='ash-tusk-boar-'+variant;source=out/(stem+'.blend')
 def curves(action):
  return [fc for layer in action.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]
 def imported(fmt):
  bpy.ops.wm.read_factory_settings(use_empty=True)
- if fmt=='fbx':bpy.ops.import_scene.fbx(filepath=str(out/'ash-tusk-boar-rigged.fbx'))
- else:bpy.ops.import_scene.gltf(filepath=str(out/'ash-tusk-boar-rigged.glb'),disable_bone_shape=True)
+ if fmt=='fbx':bpy.ops.import_scene.fbx(filepath=str(out/(stem+'.fbx')))
+ else:bpy.ops.import_scene.gltf(filepath=str(out/(stem+'.glb')),disable_bone_shape=True)
  scene=bpy.context.scene;arms=[o for o in scene.objects if o.type=='ARMATURE'];assert len(arms)==1;arm=arms[0];assert len(arm.data.bones)==21
  meshes=[o for o in scene.objects if o.type=='MESH'];assert len(meshes)==5,[(o.name,len(o.data.vertices)) for o in meshes]
  assert all(any(m.type=='ARMATURE' and m.object==arm for m in o.modifiers) for o in meshes)
@@ -16,7 +17,7 @@ def imported(fmt):
  for name in ['Idle','Walk','TuskAttack']:assert any(name in a.name for a in actions)
  triangles=0
  for ob in meshes:ob.data.calc_loop_triangles();triangles+=len(ob.data.loop_triangles)
- assert triangles==790996
+ assert (70000<triangles<120000) if runtime else triangles==790996
  action=next(a for a in actions if 'TuskAttack' in a.name)
  if not arm.animation_data:arm.animation_data_create()
  for track in arm.animation_data.nla_tracks:track.mute=True

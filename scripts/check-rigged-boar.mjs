@@ -4,8 +4,9 @@ import vm from 'node:vm';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
-const folder='assets-source/creatures/ash-tusk-boar/rigged/';
-const bytes=await fs.readFile(folder+'ash-tusk-boar-rigged.glb');
+const runtime=process.argv.includes('--runtime'),variant=runtime?'runtime':'rigged';
+const folder=`assets-source/creatures/ash-tusk-boar/${variant}/`;
+const bytes=await fs.readFile(folder+`ash-tusk-boar-${variant}.glb`);
 assert.equal(bytes.readUInt32LE(0),0x46546c67);assert.equal(bytes.readUInt32LE(8),bytes.length);
 const json=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)));
 assert(json.skins?.length);assert.deepEqual(json.animations.map(a=>a.name).sort(),['Idle','TuskAttack','Walk']);
@@ -21,7 +22,7 @@ gltf.scene.traverse(ob=>{
  for(let v=0;v<w.count;v++)assert(Math.abs(w.getX(v)+w.getY(v)+w.getZ(v)+w.getW(v)-1)<.001,'Non-normalized skin weights');
  triangles+=(ob.geometry.index?.count??p.count)/3;
 });
-assert.equal(skinned.length,5);assert.equal(triangles,790996);
+assert.equal(skinned.length,5);if(runtime)assert(triangles>70000&&triangles<120000);else assert.equal(triangles,790996);
 const bone=name=>{const b=gltf.scene.getObjectByName(name)??gltf.scene.getObjectByName(name.replaceAll('.',''));assert(b,`Missing bone ${name}`);return b;};
 const feet=['Fore.L','Fore.R','Hind.L','Hind.R'].map(n=>bone(n+'.Foot'));
 const head=bone('Head'),jaw=bone('Jaw');const mixer=new T.AnimationMixer(gltf.scene),report={clips:[],triangles,meshes:skinned.length,bones:skinned[0].skeleton.bones.length,embedded_maps:3,browserUIVisuallyTested:false};
@@ -50,7 +51,7 @@ for(const clip of gltf.animations){
  }else assert(samples.some(s=>new T.Quaternion().fromArray(samples[0].head).angleTo(new T.Quaternion().fromArray(s.head))>.001),'Idle has no movement');
  report.clips.push({name:clip.name,duration_seconds:clip.duration,samples});
 }
-const html=await fs.readFile('asterion-boar-rigged.html','utf8'),scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
+const html=await fs.readFile(`asterion-boar-${variant}.html`,'utf8'),scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]);
 for(const code of scripts)new vm.Script(code);const ctx={window:{}};vm.runInNewContext(scripts[0],ctx);assert(Buffer.from(ctx.window.__BOAR_GLB__,'base64').equals(bytes));
 await fs.writeFile(folder+'export-motion-checks.json',JSON.stringify(report,null,2));
 console.log('PASS actual GLB: 5 skinned meshes, normalized weights, embedded maps; idle, seamless walk and planted-foot tusk attack; viewer embeds matching bytes.');
