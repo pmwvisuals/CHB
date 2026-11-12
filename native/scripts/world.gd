@@ -1,0 +1,287 @@
+extends Node3D
+
+@export var forest := false
+@export var tree_scenes:Array[PackedScene] = []
+@export var shrub_scene:PackedScene
+@export var beast_scene:PackedScene
+var player
+var enemy
+var gate := Vector3.ZERO
+var rng := RandomNumberGenerator.new()
+var sun:DirectionalLight3D
+var moon:DirectionalLight3D
+var sun_disc:MeshInstance3D
+var moon_disc:MeshInstance3D
+var environment:Environment
+var autosave := 0.0
+
+func material(color:String,roughness:float=.85) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = Color(color)
+	m.roughness = roughness
+	return m
+
+func mesh_node(mesh:Mesh,at:Vector3,mat:Material,solid:bool=false) -> MeshInstance3D:
+	var node := MeshInstance3D.new()
+	node.mesh = mesh
+	node.position = at
+	node.material_override = mat
+	add_child(node)
+	if solid:
+		node.create_trimesh_collision()
+	return node
+
+func block(at:Vector3,extent:Vector3,mat:Material,solid:bool=false) -> MeshInstance3D:
+	var mesh := BoxMesh.new()
+	mesh.size = extent
+	return mesh_node(mesh,at,mat,solid)
+
+func height(x:float,z:float) -> float:
+	var rolls := .55*sin(x*.13)*cos(z*.11)+.35*sin(z*.19+x*.06)
+	var road := 1.0-smoothstep(2.0,5.0,absf(x-3*sin(z*.08)))
+	if not forest:
+		rolls *= smoothstep(9.0,21.0,Vector2(x,z).length())
+	return rolls*(1-road*.65)
+
+func prepare():
+	rng.seed = 72191 if forest else 41256
+	build_sky()
+	build_ground()
+	await get_tree().process_frame
+	build_landmarks()
+	await plant()
+	player = preload("res://scripts/player.gd").new()
+	player.world = self
+	add_child(player)
+	player.position = Vector3(0,height(0,18)+.2,18)
+	var saved = Session.data.positions.get(Session.data.zone,[])
+	if saved is Array and saved.size() == 3:
+		if saved.all(func(v): return (v is float or v is int) and is_finite(float(v))):
+			if absf(saved[0]) < 44 and absf(saved[2]) < 44:
+				player.position = Vector3(saved[0],maxf(saved[1],height(saved[0],saved[2])+.1),saved[2])
+	var hud = preload("res://scripts/hud.gd").new()
+	hud.world = self
+	add_child(hud)
+	if forest and beast_scene:
+		enemy = preload("res://scripts/boar.gd").new()
+		enemy.player = player
+		enemy.model = beast_scene.instantiate()
+		add_child(enemy)
+		enemy.position = Vector3(3,height(3,-8)+.3,-8)
+	Session.message = "Follow the trail. Step away when the boar lowers its head." if forest else "Safe haven. Follow the northern path to the woodland gate."
+
+func build_sky():
+	var world := WorldEnvironment.new()
+	environment = Environment.new()
+	environment.background_mode = Environment.BG_SKY
+	var sky := Sky.new()
+	var sky_mat := ProceduralSkyMaterial.new()
+	sky_mat.sky_top_color = Color("345f71")
+	sky_mat.sky_horizon_color = Color("a4b7ac")
+	sky_mat.ground_bottom_color = Color("14291d")
+	sky.sky_material = sky_mat
+	environment.sky = sky
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	environment.ambient_light_color = Color("9bbaa6")
+	environment.fog_enabled = true
+	environment.fog_light_color = Color("748b7b")
+	environment.fog_density = .013 if forest else .005
+	environment.fog_sky_affect = .10
+	world.environment = environment
+	add_child(world)
+	sun = DirectionalLight3D.new()
+	sun.light_color = Color("ffe3b1")
+	sun.shadow_enabled = true
+	sun.directional_shadow_max_distance = 45
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	add_child(sun)
+	moon = DirectionalLight3D.new()
+	moon.light_color = Color("9db6dc")
+	add_child(moon)
+	var disc := SphereMesh.new()
+	disc.radius = 1.4
+	disc.height = 2.8
+	var glow = material("ffe8b7")
+	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sun_disc = mesh_node(disc,Vector3(45,40,0),glow)
+	var lunar = material("c8d9e9")
+	lunar.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	moon_disc = mesh_node(disc,Vector3(-45,-40,0),lunar)
+
+func build_ground():
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var size := 64
+	for row in range(size):
+		for column in range(size):
+			for corner in [Vector2(0,0),Vector2(1,0),Vector2(0,1),Vector2(1,0),Vector2(1,1),Vector2(0,1)]:
+				var x:float = (column+corner.x)*1.5-48
+				var z:float = (row+corner.y)*1.5-48
+				var path := 1.0-smoothstep(1.9,2.4,absf(x-3*sin(z*.08)))
+				var green := Color("203e29") if forest else Color("35583b")
+				var soil := Color("4a4030") if forest else Color("a69c7e")
+				var variation := .90+.12*sin(x*1.7+z*.9)
+				tool.set_color(green.lerp(soil,path)*variation)
+				tool.set_uv(Vector2(x,z)*.15)
+				tool.add_vertex(Vector3(x,height(x,z),z))
+	tool.generate_normals()
+	var mat = material("ffffff")
+	mat.vertex_color_use_as_albedo = true
+	mat.vertex_color_is_srgb = true
+	mesh_node(tool.commit(),Vector3.ZERO,mat,true)
+	# Invisible limits keep this small test region traversable.
+	for x in [-47.0,47.0]:
+		var wall := StaticBody3D.new()
+		var collision := CollisionShape3D.new()
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(1,16,96)
+		collision.shape = shape
+		wall.position = Vector3(x,5,0)
+		wall.add_child(collision)
+		add_child(wall)
+	for z in [-47.0,47.0]:
+		var wall := StaticBody3D.new()
+		var collision := CollisionShape3D.new()
+		var shape := BoxShape3D.new()
+		shape.size = Vector3(96,16,1)
+		collision.shape = shape
+		wall.position = Vector3(0,5,z)
+		wall.add_child(collision)
+		add_child(wall)
+
+func build_landmarks():
+	var marble = material("b5b7a6")
+	var dark = material("324a48")
+	var gold = material("b5a46b",.4)
+	gate = Vector3(0,height(0,24 if forest else -28),24 if forest else -28)
+	for side in [-1,1]:
+		block(gate+Vector3(side*2.1,1.7,0),Vector3(.55,3.4,.65),marble,true)
+	block(gate+Vector3(0,3.5,0),Vector3(5,.45,.9),gold)
+	var sign := Label3D.new()
+	sign.text = "SANCTUARY" if forest else "DEEPWOOD"
+	sign.position = gate+Vector3(0,4.15,0)
+	sign.font_size = 64
+	sign.pixel_size = .009
+	sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	add_child(sign)
+	if forest:
+		for i in range(18):
+			var at := Vector3(rng.randf_range(-38,38),0,rng.randf_range(-35,35))
+			if absf(at.x)<5:
+				continue
+			at.y = height(at.x,at.z)
+			var rock := SphereMesh.new()
+			rock.radial_segments = 8
+			rock.rings = 4
+			var node = mesh_node(rock,at,material("424c40"))
+			node.scale = Vector3(rng.randf_range(.8,1.8),rng.randf_range(.5,1.2),rng.randf_range(.7,1.5))
+		return
+	# Four open approaches echo the central hall, without pretending to port its final art.
+	block(Vector3(0,.2,0),Vector3(11,.4,9),marble,true)
+	for x in [-4.0,4.0]:
+		for z in [-3.0,0.0,3.0]:
+			var column := CylinderMesh.new()
+			column.top_radius = .30
+			column.bottom_radius = .39
+			column.height = 4
+			column.radial_segments = 12
+			mesh_node(column,Vector3(x,2.4,z),marble,true)
+	block(Vector3(0,4.55,0),Vector3(11,.4,9),marble)
+	block(Vector3(0,4.9,0),Vector3(10.5,.30,8.5),dark)
+	for z in range(-22,26,3):
+		for side in [-1,1]:
+			var x:float = 3*sin(z*.08)+side*2.45
+			block(Vector3(x,height(x,z)+.10,z),Vector3(.3,.2,1.15),marble)
+	var water := CylinderMesh.new()
+	water.top_radius = 7
+	water.bottom_radius = 7
+	water.height = .10
+	water.radial_segments = 48
+	mesh_node(water,Vector3(24,height(24,5)+.03,5),material("246f95",.26))
+
+func plant():
+	var positions := []
+	var target := 68 if forest else 20
+	var attempts := 0
+	while positions.size() < target and attempts < 3000:
+		attempts += 1
+		var p := Vector2(rng.randf_range(-43,43),rng.randf_range(-41,41))
+		if absf(p.x-3*sin(p.y*.08)) < 5 or p.length()<10 or (not forest and p.distance_to(Vector2(24,5))<10):
+			continue
+		if positions.any(func(v): return v.distance_to(p)<3.5):
+			continue
+		positions.append(p)
+	for i in range(positions.size()):
+		var p:Vector2 = positions[i]
+		var tree = tree_scenes[i%tree_scenes.size()].instantiate()
+		tree.position = Vector3(p.x,height(p.x,p.y)-.08,p.y)
+		tree.rotation.y = rng.randf()*TAU
+		tree.scale = Vector3.ONE*rng.randf_range(1.25,1.7) if forest else Vector3.ONE*rng.randf_range(.95,1.20)
+		add_child(tree)
+		finish_plant(tree)
+		var trunk := StaticBody3D.new()
+		trunk.position = tree.position+Vector3.UP
+		var collider := CollisionShape3D.new()
+		var shape := CylinderShape3D.new()
+		shape.height = 2
+		shape.radius = .22
+		collider.shape = shape
+		trunk.add_child(collider)
+		add_child(trunk)
+		if i%8 == 0:
+			await get_tree().process_frame
+	for i in range(64 if forest else 24):
+		var x := rng.randf_range(-40,40)
+		var z := rng.randf_range(-38,38)
+		if absf(x-3*sin(z*.08)) < 4 or Vector2(x,z).length()<9:
+			continue
+		var shrub = shrub_scene.instantiate()
+		shrub.position = Vector3(x,height(x,z)-.03,z)
+		shrub.rotation.y = rng.randf()*TAU
+		add_child(shrub)
+		finish_plant(shrub)
+
+func finish_plant(plant_root:Node3D):
+	for part in plant_root.find_children("*","MeshInstance3D",true,false):
+		# Closed crown geometry supplies the shadow; thousands of tiny leaves
+		# need not be rendered again into the sun's shadow map.
+		if "foliage" in part.name:
+			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if "bark" in part.name:
+			var bark = material("514335")
+			bark.metallic_specular = .08
+			part.material_override = bark
+
+func near_gate():
+	return is_instance_valid(player) and player.global_position.distance_to(gate)<3.4
+
+func interact():
+	if near_gate():
+		Session.change_zone("camp" if forest else "forest")
+
+func _process(delta):
+	if Session.paused or not is_instance_valid(player):
+		return
+	autosave += delta
+	Session.data.time = fmod(Session.data.time+delta,1920.0)
+	var t:float = Session.data.time
+	var angle := PI*(t/1440.0) if t<1440 else PI+PI*(t-1440)/480.0
+	var direction := Vector3(cos(angle),sin(angle),.15).normalized()
+	sun.position = direction*65
+	sun.look_at(Vector3.ZERO)
+	moon.position = -direction*65
+	moon.look_at(Vector3.ZERO)
+	sun_disc.position = direction*65
+	moon_disc.position = -direction*65
+	var day := smoothstep(-.08,.22,direction.y)
+	sun.light_energy = day*1.15
+	moon.light_energy = (1-day)*.32
+	environment.ambient_light_energy = lerpf(.16,.44 if forest else .7,day)
+	var sky_mat = environment.sky.sky_material
+	sky_mat.sky_top_color = Color("071220").lerp(Color("345f71"),day)
+	sky_mat.sky_horizon_color = Color("152836").lerp(Color("a4b7ac"),day)
+	if not forest:
+		Session.data.health = minf(100,Session.data.health+delta*4)
+	if autosave>20:
+		autosave = 0
+		Session.save_game(player)

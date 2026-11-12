@@ -1,0 +1,40 @@
+{
+  "assets": [
+    {
+      "source": "assets-source/vegetation/camp_olive.glb",
+      "file": "assets/camp_olive.glb",
+      "bytes": 1061228,
+      "sha256": "c7f9b3813cabbbf103fd2570adffc2665f18019019686c606da69593124606d6"
+    },
+    {
+      "source": "assets-source/vegetation/camp_laurel.glb",
+      "file": "assets/camp_laurel.glb",
+      "bytes": 1061240,
+      "sha256": "89d27b04aad7921c827919a5ecc37efee62206ad6bf7ce69e6c2ec1487c667e9"
+    },
+    {
+      "source": "assets-source/vegetation/forest_fir.glb",
+      "file": "assets/forest_fir.glb",
+      "bytes": 1046308,
+      "sha256": "6d92e6dff4f7b0830962b95fd175c9e8bfc3fc7e65a45565f97a624d40e49a99"
+    },
+    {
+      "source": "assets-source/vegetation/forest_oak.glb",
+      "file": "assets/forest_oak.glb",
+      "bytes": 1061216,
+      "sha256": "926216985e8c9c0e4cd721e67902cb1b229a140625c710bd06258bdc97b36481"
+    },
+    {
+      "source": "assets-source/vegetation/forest_fern.glb",
+      "file": "assets/forest_fern.glb",
+      "bytes": 17956,
+      "sha256": "9bef2708c506af940753920646b8783caed11715a7c01645dbb37c6ff5d47a45"
+    },
+    {
+      "source": "assets-source/creatures/ash-tusk-boar/runtime/ash-tusk-boar-runtime.glb",
+      "file": "assets/boar.glb",
+      "bytes": 20940520,
+      "sha256": "f7a0782dc6c311328c360844841264232759647ebd30c2e74b98d3eee739b56c"
+    }
+  ]
+}

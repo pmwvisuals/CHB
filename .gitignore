@@ -87,3 +87,15 @@ __pycache__/
 /asterion-boar-rigged.zip
 /asterion-boar-runtime.html
 /asterion-boar-runtime.zip
+/native/.godot/
+/native/assets/
+/native/builds/
+/native/export_credentials.cfg
+/.tools/
+/asterion-native-project.zip
+/native/*.log
+/native/tests/_*-save.json*
+/native/export_templates/
+/native/feature_profiles/
+/native/script_templates/
+/native/text_editor_themes/
