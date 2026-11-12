@@ -1,6 +1,6 @@
 # Asterion Sanctuary
 
-**Native Android migration:** an initial Godot 4.7.2 project is available in [`native/`](native/README.md), with desktop and touch movement, separate camp/forest test regions, the animated boar, a first combat encounter, saving and the 24-minute day / 8-minute night cycle. The complete editable project archive includes its model files. This checkpoint is not yet an Android APK or a full transfer of the finished browser camp. See [`native/VALIDATION.md`](native/VALIDATION.md) for verification and remaining work.
+**Native Android migration:** the Godot 4.7.2 project in [`native/`](native/README.md) now includes the original camp terrain and roads, all twelve decorated temple exteriors, the Great Hall, Wayfarer Hall, training and lakeside structures, instanced planting, an eighteen-destination map, sprinting, simultaneous touch actions and nearby night lights. Forest travel, the animated boar encounter, saving and the 24/8-minute cycle remain playable. The complete editable archive includes all required assets. Temple interiors, native training drills, the large forest and Android device verification remain outstanding. See [`native/VALIDATION.md`](native/VALIDATION.md).
 
 A single-player first-person browser game inspired by ancient Greek mythology, built with TypeScript, Three.js and React. All scenery is generated locally by code; no external art or audio downloads are required during play.
 

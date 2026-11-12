@@ -11,9 +11,9 @@ manifest = json.loads((native / "assets-manifest.json").read_text(encoding="utf-
 files = [native / name for name in (
     "project.godot", "export_presets.cfg", "README.md", "VALIDATION.md", "assets-manifest.json"
 )]
-for folder in ("scenes", "scripts", "tests"):
+for folder in ("scenes", "scripts", "tests", "shaders"):
     files += sorted(p for p in (native / folder).rglob("*")
-                    if p.is_file() and p.suffix in (".tscn", ".gd", ".uid"))
+                    if p.is_file() and p.suffix in (".tscn", ".gd", ".uid", ".gdshader"))
 for item in manifest["assets"]:
     asset = native / item["file"]
     content = asset.read_bytes()
@@ -27,6 +27,6 @@ with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslev
 with zipfile.ZipFile(archive) as package:
     assert package.testzip() is None, "Archive checksum validation failed"
     assert "asterion-native/project.godot" in package.namelist()
-    assert len([name for name in package.namelist() if name.endswith(".glb")]) == 6
+    assert len([name for name in package.namelist() if name.endswith(".glb")]) == len([a for a in manifest["assets"] if a["file"].endswith(".glb")])
     assert not any("/.godot/" in name or "/.tools/" in name for name in package.namelist())
 print(f"Packaged {len(files)} files: {archive} ({archive.stat().st_size:,} bytes)")

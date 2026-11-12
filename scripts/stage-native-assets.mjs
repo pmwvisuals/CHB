@@ -12,5 +12,6 @@ const pairs=[
 await fs.mkdir('native/assets',{recursive:true});
 const assets=[];
 for(const [source,name] of pairs){const bytes=await fs.readFile(source);await fs.writeFile(path.join('native/assets',name),bytes);assets.push({source,file:'assets/'+name,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
-await fs.writeFile('native/assets-manifest.json',JSON.stringify({assets},null,2));
+const previous=await fs.readFile('native/assets-manifest.json','utf8').then(JSON.parse).catch(()=>({assets:[]}));
+await fs.writeFile('native/assets-manifest.json',JSON.stringify({assets:[...assets,...previous.assets.filter(a=>a.file.startsWith('assets/camp/'))]},null,2));
 console.log('Staged six existing assets:',assets.reduce((sum,a)=>sum+a.bytes,0),'bytes.');

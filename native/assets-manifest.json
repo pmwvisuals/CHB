@@ -35,6 +35,54 @@
       "file": "assets/boar.glb",
       "bytes": 20940520,
       "sha256": "f7a0782dc6c311328c360844841264232759647ebd30c2e74b98d3eee739b56c"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/camp-static.glb",
+      "bytes": 103671552,
+      "sha256": "a689aae1e82c466fac4dbcbe7b1bbda45f8ae02e91bea934c65b16efd355c2f3"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/camp-prototypes.glb",
+      "bytes": 14134896,
+      "sha256": "df7efa15eef165f3fbcef111a514ad4a0f7dae19fd2dce4f731f5c92890dc22f"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/camp-collision.glb",
+      "bytes": 34258136,
+      "sha256": "5f6ce093d598fc582932cc1ca79098e6dbc551662ab777217bf121f96619495d"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/habitat.png",
+      "bytes": 71212,
+      "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/ground-albedo.png",
+      "bytes": 770172,
+      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/ground-normal.png",
+      "bytes": 1268157,
+      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/ground-roughness.png",
+      "bytes": 498771,
+      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289"
+    },
+    {
+      "source": "generated from lib/game browser sources",
+      "file": "assets/camp/camp-layout.json",
+      "bytes": 8361219,
+      "sha256": "592198f00202ede3bb2345215bea1bba1abda09d80c0a80a0852c4e486fdaca4"
     }
   ]
 }

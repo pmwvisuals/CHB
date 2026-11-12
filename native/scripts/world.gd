@@ -14,6 +14,7 @@ var sun_disc:MeshInstance3D
 var moon_disc:MeshInstance3D
 var environment:Environment
 var autosave := 0.0
+var daylight := 1.0
 
 func material(color:String,roughness:float=.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -43,6 +44,15 @@ func height(x:float,z:float) -> float:
 		rolls *= smoothstep(9.0,21.0,Vector2(x,z).length())
 	return rolls*(1-road*.65)
 
+func bounds() -> float:
+	return 44.0
+
+func spawn_position() -> Vector3:
+	return Vector3(0,height(0,18)+.2,18)
+
+func interaction_text() -> String:
+	return ("Return to camp" if forest else "Enter the woodland") if near_gate() else ""
+
 func prepare():
 	rng.seed = 72191 if forest else 41256
 	build_sky()
@@ -53,22 +63,23 @@ func prepare():
 	player = preload("res://scripts/player.gd").new()
 	player.world = self
 	add_child(player)
-	player.position = Vector3(0,height(0,18)+.2,18)
+	player.position = spawn_position()
 	var saved = Session.data.positions.get(Session.data.zone,[])
 	if saved is Array and saved.size() == 3:
 		if saved.all(func(v): return (v is float or v is int) and is_finite(float(v))):
-			if absf(saved[0]) < 44 and absf(saved[2]) < 44:
+			if absf(saved[0]) < bounds() and absf(saved[2]) < bounds():
 				player.position = Vector3(saved[0],maxf(saved[1],height(saved[0],saved[2])+.1),saved[2])
 	var hud = preload("res://scripts/hud.gd").new()
 	hud.world = self
 	add_child(hud)
+	player.hud = hud
 	if forest and beast_scene:
 		enemy = preload("res://scripts/boar.gd").new()
 		enemy.player = player
 		enemy.model = beast_scene.instantiate()
 		add_child(enemy)
 		enemy.position = Vector3(3,height(3,-8)+.3,-8)
-	Session.message = "Follow the trail. Step away when the boar lowers its head." if forest else "Safe haven. Follow the northern path to the woodland gate."
+	Session.message = "Follow the trail. Step away when the boar lowers its head." if forest else "Welcome home. Open the camp map to find the temples and woodland gate."
 
 func build_sky():
 	var world := WorldEnvironment.new()
@@ -274,9 +285,11 @@ func _process(delta):
 	sun_disc.position = direction*65
 	moon_disc.position = -direction*65
 	var day := smoothstep(-.08,.22,direction.y)
-	sun.light_energy = day*1.15
+	daylight = day
+	sun.light_color = Color("ffd1a8").lerp(Color("fff5e8"),smoothstep(.08,.65,direction.y))
+	sun.light_energy = day*.88
 	moon.light_energy = (1-day)*.32
-	environment.ambient_light_energy = lerpf(.16,.44 if forest else .7,day)
+	environment.ambient_light_energy = lerpf(.16,.36 if forest else .44,day)
 	var sky_mat = environment.sky.sky_material
 	sky_mat.sky_top_color = Color("071220").lerp(Color("345f71"),day)
 	sky_mat.sky_horizon_color = Color("152836").lerp(Color("a4b7ac"),day)

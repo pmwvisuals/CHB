@@ -7,6 +7,7 @@ var touch_move := Vector2.ZERO
 var jump_requested := false
 var attack_requested := false
 var interact_requested := false
+var sprint_requested := false
 var paused := false
 var message := "Welcome to Asterion. Follow the northern path to the forest."
 var app
@@ -14,9 +15,9 @@ var touch_controls := OS.has_feature("mobile") or "--touch-controls" in OS.get_c
 
 func _ready():
 	Engine.max_fps = 30 if touch_controls else 60
-	for action in ["left","right","forward","back","jump","attack","interact","pause"]:
+	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint"]:
 		InputMap.add_action(action)
-	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE]}
+	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT]}
 	for action in keys:
 		for code in keys[action]:
 			var key := InputEventKey.new()
@@ -69,6 +70,7 @@ func clear_touch():
 	jump_requested = false
 	attack_requested = false
 	interact_requested = false
+	sprint_requested = false
 
 func change_zone(zone:String):
 	if is_instance_valid(app):

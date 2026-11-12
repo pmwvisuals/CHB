@@ -2,26 +2,28 @@
 
 Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset import to finish, then press **F5** and choose **Enter Sanctuary**. No Blender plug-ins are required to run it.
 
-This is the first playable native migration checkpoint. Its small camp and forest are test regions. The browser game's full camp, twelve temples, training yard, landscape detail, quests and bow still need to be transferred. They have not been replaced in the browser project.
+This checkpoint transfers the browser camp's exterior layout into Godot: the original terrain and roads, all twelve decorated temple exteriors at their unique sites, the four-door Great Hall, Wayfarer Hall, dining pavilion, training-yard structures, gardens, docks and lakeside pavilion. The playable camp spans roughly 470 metres. Temple interiors, training drills, the bow and the large deep-forest region remain to be migrated. The separate forest encounter is still a small test region.
 
 ## Included
 
-- First-person walking, jumping, terrain and trunk collision, and a practice sword.
-- Android controls: left movement stick, right-side drag to look, Jump, Strike, Travel and Pause. Two fingers can move and look together.
+- First-person walking, sprinting, jumping, physical roads, ramps, structures and a practice sword.
+- Android controls: movement stick, right-side drag to look, Run, Jump, Strike, Map, Travel and Pause. Movement, looking and action buttons support simultaneous fingers.
 - Separate camp and forest scenes with a loading screen. The previous scene is released before the next is loaded.
-- Existing olive, laurel, fir, oak, fern and corrected animated boar assets.
+- The camp's existing trees, dense forest border, shrubs, flowers, grass, rocks, carved road borders and corrected animated boar assets. Repeated scenery uses shared mesh batches, spatial culling and automatic mesh LOD.
+- An interactive camp map with eighteen destinations, the original road network and safe arrivals that face each temple. Open it with **M** or **Map**.
+- Opaque blue lake water with animated ripples, temple inscriptions and nearby lantern light pools at night.
 - Boar idle, walk and tusk attack; timed damage, health, defeat rewards and recovery at camp.
 - Device-local position, health, coins, XP and clock saving. The browser save is separate.
 - A 24-minute day and 8-minute night, moving sun and moon, shadows and distance fog.
 - Compatibility renderer and a 30 FPS cap when using phone controls. There is one visual configuration.
 
-On desktop, use **WASD**, **mouse**, **Space**, **left click**, **E** and **Esc**. The woodland gate is at the northern end of the camp trail. Defeating the test boar grants 15 coins and 25 XP; it respawns when you revisit the test forest. Combat is single player.
+On desktop, use **WASD**, **Shift**, **mouse**, **Space**, **left click**, **E**, **M** and **Esc**. The camp map includes **Deepwood Gate**, beyond the forgotten shrine. Defeating the test boar grants 15 coins and 25 XP; it respawns when you revisit the test forest. Combat is single player.
 
 ## Files and assets
 
-The supplied `asterion-native-project.zip` contains all six GLB files. Extract the complete archive before importing it. Godot generates its own texture and import files on first opening; these do not need to be downloaded separately.
+The supplied `asterion-native-project.zip` contains every required asset, including the camp scenery, collision and shared-mesh GLBs, terrain maps and layout data. Extract the complete archive before importing it. Godot generates its own import and extracted-texture files on first opening.
 
-The source repository keeps the large model binaries out of Git. When using a source checkout, copy the six GLBs from the supplied native archive into this folder's `assets/` directory. Alternatively, if the original local `assets-source` files are present, run `node scripts/stage-native-assets.mjs` from the repository root. `assets-manifest.json` records their sizes and SHA-256 hashes. The source project alone cannot load the regions without these assets.
+The source repository keeps the large model binaries out of Git. For a source checkout, copy the complete `assets/` directory from the supplied native archive. Alternatively, run `node scripts/stage-native-assets.mjs` to copy the original local creature/plant files, then `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake the camp from the browser sources. The latter uses Node and the existing project dependencies, and does not require Blender. `assets-manifest.json` records file sizes and SHA-256 hashes. The source project needs these assets to load its regions.
 
 ## Build an Android APK
 
@@ -40,6 +42,7 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 ```powershell
 & 'Godot.exe' --headless --path . --import
 & 'Godot.exe' --headless --path . --script res://tests/smoke.gd
+& 'Godot.exe' --headless --path . --script res://tests/camp.gd
 & 'Godot.exe' --path . --resolution 1280x720 --script res://tests/touch.gd
 ```
 
@@ -52,3 +55,5 @@ For visual previews, create `builds/` and run:
 ```
 
 See `VALIDATION.md` for the current results and limits.
+
+`tests/camp_preview.gd` captures Arrival Ridge, the Great Hall, Wayfarer Hall, training yard, lakeside, Poseidon, Ares, Hephaestus, the map and night lighting. Use the same preview command with that script to inspect the transferred scenery.

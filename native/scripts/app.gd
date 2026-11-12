@@ -1,5 +1,8 @@
 extends Node
 
+# Compile scripts on the main thread before requesting heavy scene resources.
+const REGION_SCRIPTS = [preload("res://scripts/camp_region.gd"),preload("res://scripts/world.gd")]
+
 var world
 var loading_path := ""
 var layer:CanvasLayer
@@ -80,18 +83,21 @@ func _process(_delta):
 	if status == ResourceLoader.THREAD_LOAD_LOADED:
 		var packed = ResourceLoader.load_threaded_get(loading_path)
 		loading_path = ""
-		world = packed.instantiate()
-		add_child(world)
 		set_process(false)
-		await world.prepare()
-		transitioning = false
-		Session.paused = false
-		backdrop.visible = false
-		set_process(true)
-		if not Session.touch_controls:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		finish_travel.call_deferred(packed)
 	elif status == ResourceLoader.THREAD_LOAD_FAILED or status == ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 		load_failed()
+
+func finish_travel(packed:PackedScene):
+	world = packed.instantiate()
+	add_child(world)
+	await world.prepare()
+	transitioning = false
+	Session.paused = false
+	backdrop.visible = false
+	set_process(true)
+	if not Session.touch_controls:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func load_failed():
 	transitioning = false
@@ -101,10 +107,14 @@ func load_failed():
 	play.text = "RETRY"
 	progress.visible = false
 
+func build_progress(value:float,description:String):
+	progress.value = value*100
+	detail.text = description
+
 func _notification(what):
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		if is_instance_valid(world):
 			Session.save_game(world.player)
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST and is_instance_valid(world) and not transitioning:
-		Session.paused = not Session.paused
-		Session.clear_touch()
+		if is_instance_valid(world.player) and is_instance_valid(world.player.hud):
+			world.player.hud.handle_back()

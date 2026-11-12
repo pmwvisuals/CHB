@@ -44,7 +44,7 @@ func run():
 		if stick.get_script() == load("res://scripts/joystick.gd"):
 			print("Joystick rectangle ",stick.get_global_rect()," visible=",stick.is_visible_in_tree())
 	for b in app.world.find_children("*","Button",true,false):
-		if b.text in ["STRIKE","JUMP","Ⅱ"]:
+		if b.text in ["STRIKE","JUMP","Ⅱ","RUN","MAP"]:
 			check(screen.encloses(b.get_global_rect()),b.text+" fits inside the screen")
 	await touch(0,true,Vector2(140,580))
 	await drag(0,Vector2(140,520),Vector2(0,-60))
@@ -56,6 +56,16 @@ func run():
 	check(absf(player.rotation.y-yaw)>.05,"Second finger turns camera while moving")
 	await touch(1,false,Vector2(1184,630))
 	check(player.look_finger == -1,"Releasing camera over a button releases its finger")
+	await touch(1,true,Vector2(1057,640))
+	check(session.jump_requested and session.touch_move.y<-.5,"Second finger can jump while the joystick stays held")
+	await touch(1,false,Vector2(1057,640))
+	await touch(1,true,Vector2(1184,630))
+	check(session.attack_requested and session.touch_move.y<-.5,"Second finger can strike while moving")
+	await touch(1,false,Vector2(1184,630))
+	await touch(1,true,Vector2(318,653))
+	check(session.sprint_requested and session.touch_move.y<-.5,"Run can be held together with the joystick")
+	await touch(1,false,Vector2(318,653))
+	check(not session.sprint_requested,"Releasing Run clears sprint")
 	await touch(0,false,Vector2(140,520))
 	check(session.touch_move == Vector2.ZERO,"Joystick release stops movement")
 	await touch(0,true,Vector2(1057,640))
@@ -64,6 +74,15 @@ func run():
 	await touch(0,true,Vector2(1184,630))
 	await touch(0,false,Vector2(1184,630))
 	check(session.attack_requested,"Touching Strike requests an attack")
+	await touch(0,true,Vector2(1135,49))
+	await touch(0,false,Vector2(1135,49))
+	check(session.paused and is_instance_valid(player.hud.map_panel),"Touching Map opens the camp map")
+	if "--capture-map" in OS.get_cmdline_user_args():
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://builds/native-map.png")
+	await touch(0,true,Vector2(1133,146))
+	await touch(0,false,Vector2(1133,146))
+	check(not session.paused and absf(player.position.x-77)<.1,"Touching Poseidon travels to the island approach")
 	app.queue_free()
 	await process_frame
 	DirAccess.remove_absolute(session.save_path)

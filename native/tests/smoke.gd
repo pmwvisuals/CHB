@@ -122,7 +122,7 @@ func run():
 	app.world._process(.2)
 	check(is_equal_approx(session.data.time,.1),"Night lasts 8 minutes and cycle wraps")
 	app.queue_free()
-	await process_frame
+	await frames(4)
 	DirAccess.remove_absolute(session.save_path)
 	print("NATIVE SMOKE: %d failure(s)" % failures.size())
 	quit(0 if failures.is_empty() else 1)

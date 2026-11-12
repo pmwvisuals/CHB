@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3]
-[ext_resource type="Script" path="res://scripts/world.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/camp_olive.glb" id="2"]
-[ext_resource type="PackedScene" path="res://assets/camp_laurel.glb" id="3"]
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/camp_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-static.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-prototypes.glb" id="3"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-collision.glb" id="4"]
 [node name="Camp" type="Node3D"]
 script = ExtResource("1")
-tree_scenes = Array[PackedScene]([ExtResource("2")])
-shrub_scene = ExtResource("3")
+scenery_scene = ExtResource("2")
+prototypes_scene = ExtResource("3")
+collision_scene = ExtResource("4")

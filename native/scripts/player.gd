@@ -79,8 +79,9 @@ func _physics_process(delta):
 	var direction := Input.get_vector("left","right","forward","back") + Session.touch_move
 	direction = direction.limit_length()
 	var movement := global_basis * Vector3(direction.x,0,direction.y)
-	velocity.x = move_toward(velocity.x,movement.x*4.2,delta*22)
-	velocity.z = move_toward(velocity.z,movement.z*4.2,delta*22)
+	var speed := 7.2 if Input.is_action_pressed("sprint") or Session.sprint_requested else 4.2
+	velocity.x = move_toward(velocity.x,movement.x*speed,delta*22)
+	velocity.z = move_toward(velocity.z,movement.z*speed,delta*22)
 	if not is_on_floor():
 		velocity.y -= 20*delta
 	elif Input.is_action_just_pressed("jump") or Session.jump_requested:
@@ -94,7 +95,8 @@ func _physics_process(delta):
 		world.interact()
 	Session.interact_requested = false
 	if global_position.y < -12:
-		global_position = Vector3(0,3,18)
+		global_position = world.spawn_position()
+		velocity = Vector3.ZERO
 	if Session.data.health <= 0:
 		Session.data.health = 100.0
 		Session.message = "You recovered at the sanctuary."
