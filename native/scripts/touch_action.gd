@@ -19,7 +19,7 @@ func _input(event):
 	if not event.pressed and event.index == finger:
 		release_finger()
 		get_viewport().set_input_as_handled()
-	elif event.pressed and finger == -1 and not Session.paused and is_visible_in_tree() and get_global_rect().has_point(event.position):
+	elif event.pressed and finger == -1 and not disabled and not Session.paused and is_visible_in_tree() and get_global_rect().has_point(event.position):
 		finger = event.index
 		set_pressed_no_signal(true)
 		button_down.emit()
@@ -27,5 +27,5 @@ func _input(event):
 		get_viewport().set_input_as_handled()
 
 func _process(_delta):
-	if Session.paused:
+	if Session.paused or disabled or not is_visible_in_tree():
 		release_finger()

@@ -6,24 +6,26 @@ This checkpoint transfers the browser camp's exterior layout into Godot: the ori
 
 ## Included
 
-- First-person walking, sprinting, jumping, physical roads, ramps, structures and a practice sword.
+- First-person walking, sprinting, jumping, physical roads, ramps and structures. The practice sword equips only inside the training ground and sheathes immediately on leaving, including map travel.
 - Android controls: movement stick, right-side drag to look, Run, Jump, Strike, Map, Travel and Pause. Movement, looking and action buttons support simultaneous fingers.
 - Separate camp and forest scenes with a loading screen. The previous scene is released before the next is loaded.
 - The camp's existing trees, dense forest border, shrubs, flowers, grass, rocks, carved road borders and corrected animated boar assets. Repeated scenery uses shared mesh batches, spatial culling and automatic mesh LOD.
 - An interactive camp map with eighteen destinations, the original road network and safe arrivals that face each temple. Open it with **M** or **Map**.
 - Opaque blue lake water with animated ripples, temple inscriptions and nearby lantern light pools at night.
-- Boar idle, walk and tusk attack; timed damage, health, defeat rewards and recovery at camp.
+- Combat is currently enabled only in the training-ground footprint. Sword strikes register on the three existing practice dummies. Practice hits do not award coins or XP. The forest boar is passive in this mode; its idle, walk and tusk-attack animation assets remain available for future encounters.
 - Device-local position, health, coins, XP and clock saving. The browser save is separate.
 - A 24-minute day and 8-minute night, moving sun and moon, shadows and distance fog.
 - Compatibility renderer and a 30 FPS cap when using phone controls. There is one visual configuration.
+- Cinzel headings and architectural inscriptions, with Barlow Semi Condensed for the interface. Temple names have mounted stone plaques ahead of the projecting frieze ribs; lettering fits its backing, respects depth and has a limited viewing distance. Notices wrap in compact panels and expire after a few seconds.
+- Imported surfaces apply their original vertex colors, including sand, ground details and planting. Nonmetallic highlights are softened to prevent the former white wash over the training yard.
 
-On desktop, use **WASD**, **Shift**, **mouse**, **Space**, **left click**, **E**, **M** and **Esc**. The camp map includes **Deepwood Gate**, beyond the forgotten shrine. Defeating the test boar grants 15 coins and 25 XP; it respawns when you revisit the test forest. Combat is single player.
+On desktop, use **WASD**, **Shift**, **mouse**, **Space**, **left click**, **E**, **M** and **Esc**. Left click practices with the sword inside the training ground. On touchscreens, **Strike** appears only there. The camp map includes **Deepwood Gate**, beyond the forgotten shrine; the forest currently supports peaceful exploration.
 
 ## Files and assets
 
 The supplied `asterion-native-project.zip` contains every required asset, including the camp scenery, collision and shared-mesh GLBs, terrain maps and layout data. Extract the complete archive before importing it. Godot generates its own import and extracted-texture files on first opening.
 
-The source repository keeps the large model binaries out of Git. For a source checkout, copy the complete `assets/` directory from the supplied native archive. Alternatively, run `node scripts/stage-native-assets.mjs` to copy the original local creature/plant files, then `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake the camp from the browser sources. The latter uses Node and the existing project dependencies, and does not require Blender. `assets-manifest.json` records file sizes and SHA-256 hashes. The source project needs these assets to load its regions.
+The archive includes both the complete `assets/` and `fonts/` directories. For a source checkout, copy both directories from that archive. Alternatively, run `node scripts/fetch-native-fonts.mjs` for the verified original fonts; `node scripts/stage-native-assets.mjs` for the original local creature/plant files; and `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake the camp from the browser sources. The camp exporter uses Node and the existing project dependencies, and does not require Blender. `assets-manifest.json` records art file sizes and hashes. The fonts include their original SIL Open Font License files, also included by the Android export preset.
 
 ## Build an Android APK
 
@@ -43,6 +45,7 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 & 'Godot.exe' --headless --path . --import
 & 'Godot.exe' --headless --path . --script res://tests/smoke.gd
 & 'Godot.exe' --headless --path . --script res://tests/camp.gd
+& 'Godot.exe' --headless --path . --script res://tests/polish.gd
 & 'Godot.exe' --path . --resolution 1280x720 --script res://tests/touch.gd
 ```
 
@@ -57,3 +60,5 @@ For visual previews, create `builds/` and run:
 See `VALIDATION.md` for the current results and limits.
 
 `tests/camp_preview.gd` captures Arrival Ridge, the Great Hall, Wayfarer Hall, training yard, lakeside, Poseidon, Ares, Hephaestus, the map and night lighting. Use the same preview command with that script to inspect the transferred scenery.
+
+`tests/polish_preview.gd` captures the updated typography, colored training floor, fitted temple inscriptions and safe-zone weapon state. Restart the running game with F5 to load this update.

@@ -7,6 +7,7 @@ var map_scale := 1.08
 var marker_lines:Array = []
 
 func _ready():
+	theme = Session.ui_theme
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var backdrop := ColorRect.new()
 	backdrop.color = Color("101f1c")
@@ -15,8 +16,9 @@ func _ready():
 	add_child(backdrop)
 	var title := Label.new()
 	title.text = "ASTERION  /  THE SANCTUARY"
+	title.add_theme_font_override("font",preload("res://fonts/Cinzel.ttf"))
 	title.position = Vector2(34,24)
-	title.add_theme_font_size_override("font_size",30)
+	title.add_theme_font_size_override("font_size",26)
 	add_child(title)
 	var hint := Label.new()
 	hint.text = "Choose a place to travel."

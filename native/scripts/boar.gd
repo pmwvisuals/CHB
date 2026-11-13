@@ -46,6 +46,15 @@ func _physics_process(delta):
 		return
 	if animation:
 		animation.speed_scale = 2.4 if active_clip == "Walk" else 1.0
+	if not player.combat_enabled():
+		strike = -1
+		velocity.x = 0
+		velocity.z = 0
+		play("Idle")
+		if not is_on_floor():
+			velocity.y -= 20*delta
+		move_and_slide()
+		return
 	cooldown = maxf(0,cooldown-delta)
 	var to_player:Vector3 = player.global_position-global_position
 	to_player.y = 0
@@ -80,7 +89,7 @@ func _physics_process(delta):
 	move_and_slide()
 
 func hurt(amount:int):
-	if health <= 0:
+	if health <= 0 or not player.combat_enabled():
 		return
 	health = maxi(0,health-amount)
 	Session.message = "Boar hit. Watch for its counterattack."

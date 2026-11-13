@@ -9,6 +9,45 @@ var pending_collision:Array[MeshInstance3D] = []
 var destinations:Array[Dictionary] = []
 var light_slots:Array[OmniLight3D] = []
 var light_timer := 0.0
+var material_cache := {}
+var training_hits := 0
+
+func combat_allowed(at:Vector3) -> bool:
+	return absf(at.x+67)<23 and absf(at.z+34)<23
+
+func practice_attack(attacker) -> bool:
+	if not combat_allowed(attacker.position):
+		return false
+	for index in range(3):
+		var target := Vector3(-48.5,height(-48.5,-23-index*8)+1.48,-23-index*8)
+		var offset:Vector3 = target-attacker.camera.global_position
+		if offset.length()>3.3 or offset.normalized().dot(-attacker.camera.global_basis.z)<.72:
+			continue
+		var query := PhysicsRayQueryParameters3D.create(attacker.camera.global_position,target)
+		query.exclude = [attacker.get_rid()]
+		var hit := get_world_3d().direct_space_state.intersect_ray(query)
+		if not hit.is_empty() and hit.position.distance_to(target)>.75:
+			continue
+		training_hits += 1
+		Session.message = "CLEAN HIT  ·  Practice dummy %d  ·  %d hits" % [index+1,training_hits]
+		return true
+	return false
+
+func finish_import(part:MeshInstance3D):
+	for surface in range(part.mesh.get_surface_count()):
+		var original = part.get_active_material(surface)
+		if not original is BaseMaterial3D:
+			continue
+		var colors = part.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
+		var has_colors:bool = colors != null and colors.size()>0
+		var key := str(original.get_instance_id())+str(has_colors)
+		if not material_cache.has(key):
+			var corrected = original.duplicate()
+			corrected.vertex_color_use_as_albedo = has_colors
+			corrected.vertex_color_is_srgb = false
+			corrected.metallic_specular = .16 if corrected.metallic<.1 else .35
+			material_cache[key] = corrected
+		part.mesh.surface_set_material(surface,material_cache[key])
 
 func bounds() -> float:
 	return 233.0
@@ -38,6 +77,7 @@ func build_ground():
 	var water := ShaderMaterial.new()
 	water.shader = preload("res://shaders/lake.gdshader")
 	for part in scenery.find_children("*","MeshInstance3D",true,false):
+		finish_import(part)
 		if part.name.begins_with("CampTerrain"):
 			part.material_override = ground_shader
 			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -61,18 +101,39 @@ func build_landmarks():
 	block(gate+Vector3(0,4.1,0),Vector3(5.4,.4,.8),marble)
 	var label := Label3D.new()
 	label.text = "DEEPWOOD"
-	label.position = gate+Vector3(0,4.7,0)
-	label.font_size = 64
-	label.pixel_size = .008
+	label.position = gate+Vector3(0,4.12,.43)
+	preload("res://scripts/inscription.gd").fit(label,3.6,.26)
 	add_child(label)
 	for entry in layout.labels:
 		var sign := Label3D.new()
 		sign.text = entry.text
-		sign.font_size = 64
-		sign.pixel_size = entry.width/maxf(64,entry.text.length()*36)
+		preload("res://scripts/inscription.gd").fit(sign,entry.width*.85,.34)
 		sign.modulate = Color(entry.color)
+		for temple in layout.temples:
+			if temple.name.to_upper() == entry.text:
+				sign.modulate = Color("59472e") if Color(temple.stone).get_luminance()>.6 else Color("e1c991")
 		sign.position = Vector3(entry.position[0],entry.position[1],entry.position[2])
 		sign.quaternion = Quaternion(entry.quaternion[0],entry.quaternion[1],entry.quaternion[2],entry.quaternion[3])
+		for temple in layout.temples:
+			if temple.name.to_upper() != entry.text:
+				continue
+			# The source frieze has projecting bronze ribs. A mounted nameplate
+			# gives the lettering its own clear surface ahead of those ornaments.
+			var normal := Basis(sign.quaternion).z
+			var word_width := sign.font.get_string_size(sign.text,HORIZONTAL_ALIGNMENT_LEFT,-1,sign.font_size).x*sign.pixel_size
+			var width := clampf(word_width+.65,2.4,entry.width*.9)
+			var plaque_mat := material(temple.ivory,.94)
+			plaque_mat.metallic_specular = .08
+			var plaque := block(sign.position+normal*.17,Vector3(width,.52,.16),plaque_mat)
+			plaque.name = "TempleNameplate_"+temple.id
+			plaque.quaternion = sign.quaternion
+			plaque.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			sign.modulate = Color("59472e")
+			var edge_mat := material(temple.metal,.75)
+			for side in [-1,1]:
+				var edge := block(plaque.position+normal*.085+Vector3.UP*side*.245,Vector3(width-.08,.018,.018),edge_mat)
+				edge.quaternion = sign.quaternion
+			sign.position += normal*.265
 		sign.outline_size = 0
 		add_child(sign)
 	for temple in layout.temples:
@@ -104,6 +165,7 @@ func plant():
 	var prototypes = prototypes_scene.instantiate()
 	var meshes := {}
 	for part in prototypes.find_children("*","MeshInstance3D",true,false):
+		finish_import(part)
 		meshes[String(part.name)] = part
 	for i in range(layout.batches.size()):
 		var entry:Dictionary = layout.batches[i]
@@ -168,6 +230,7 @@ func travel_to(destination:Dictionary):
 	player.rotation.y = destination.yaw
 	player.pitch = 0.0
 	player.camera.rotation.x = 0
+	player.sync_combat()
 	Session.message = destination.name
 
 func _process(delta):

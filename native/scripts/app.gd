@@ -16,10 +16,12 @@ var transitioning := false
 
 func _ready():
 	Session.app = self
+	Session.ui_theme = load("res://themes/sanctuary.tres")
 	layer = CanvasLayer.new()
 	layer.layer = 20
 	add_child(layer)
 	backdrop = ColorRect.new()
+	backdrop.theme = Session.ui_theme
 	backdrop.color = Color("14231f")
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	layer.add_child(backdrop)
@@ -33,11 +35,12 @@ func _ready():
 	menu.add_child(box)
 	title = Label.new()
 	title.text = "ASTERION SANCTUARY"
+	title.add_theme_font_override("font",preload("res://fonts/Cinzel.ttf"))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size",30)
 	box.add_child(title)
 	detail = Label.new()
-	detail.text = "Native Android prototype\nCamp • Woodland • First encounter\n\nProgress is saved on this device."
+	detail.text = "A refuge beneath the ancient skies.\nExplore the sanctuary and hone your craft."
 	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(detail)
 	progress = ProgressBar.new()

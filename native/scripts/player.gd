@@ -7,6 +7,8 @@ var pitch := 0.0
 var look_finger := -1
 var hud
 var world
+var combat_active := false
+var swing:Tween
 
 func _ready():
 	var collision := CollisionShape3D.new()
@@ -23,6 +25,7 @@ func _ready():
 	add_child(camera)
 	camera.current = true
 	weapon = Node3D.new()
+	weapon.visible = false
 	weapon.position = Vector3(.38,-.36,-.65)
 	camera.add_child(weapon)
 	var blade := MeshInstance3D.new()
@@ -72,7 +75,25 @@ func look(amount:Vector2):
 	pitch = clampf(pitch - amount.y,-1.3,1.3)
 	camera.rotation.x = pitch
 
+func combat_enabled() -> bool:
+	return is_instance_valid(world) and world.combat_allowed(global_position)
+
+func sync_combat():
+	var active := combat_enabled()
+	weapon.visible = active
+	if active == combat_active:
+		return
+	combat_active = active
+	Session.attack_requested = false
+	if not active:
+		if swing and swing.is_running():
+			swing.kill()
+		weapon.rotation.z = 0
+		cooldown = 0
+	Session.message = "TRAINING GROUND  ·  Practice sword ready" if active else "SANCTUARY  ·  Weapon sheathed"
+
 func _physics_process(delta):
+	sync_combat()
 	if Session.paused:
 		return
 	cooldown = maxf(0,cooldown-delta)
@@ -88,6 +109,7 @@ func _physics_process(delta):
 		velocity.y = 6.8
 	Session.jump_requested = false
 	move_and_slide()
+	sync_combat()
 	if ((not Session.touch_controls and Input.is_action_just_pressed("attack")) or Session.attack_requested) and cooldown <= 0:
 		attack()
 	Session.attack_requested = false
@@ -104,10 +126,13 @@ func _physics_process(delta):
 		Session.change_zone("camp")
 
 func attack():
+	if not combat_enabled() or cooldown>0:
+		return false
 	cooldown = .65
-	var tween := create_tween()
-	tween.tween_property(weapon,"rotation:z",-1.1,.13)
-	tween.tween_property(weapon,"rotation:z",0.0,.30)
+	swing = create_tween()
+	swing.tween_property(weapon,"rotation:z",-1.1,.13)
+	swing.tween_property(weapon,"rotation:z",0.0,.30)
+	world.practice_attack(self)
 	if is_instance_valid(world.enemy):
 		var target:Vector3 = world.enemy.global_position + Vector3.UP
 		var offset := target-camera.global_position
@@ -117,3 +142,4 @@ func attack():
 			var hit := get_world_3d().direct_space_state.intersect_ray(query)
 			if hit.is_empty() or hit.collider == world.enemy:
 				world.enemy.hurt(25)
+	return true

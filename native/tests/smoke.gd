@@ -82,26 +82,24 @@ func run():
 	player.rotation = Vector3.ZERO
 	player.camera.rotation = Vector3.ZERO
 	await frames(8)
-	player.attack()
-	check(beast.health == 75,"Sword attack damages the boar in front")
-	player.rotation.y = PI
-	player.attack()
-	check(beast.health == 75,"Sword cannot hit a target behind the player")
-	player.rotation.y = 0
-	# Strike crosses the damage moment in the real enemy update.
+	check(not player.attack() and beast.health == 100,"Forest attacks are disabled")
+	check(not player.weapon.visible,"Forest exploration keeps the weapon sheathed")
 	beast.rotation.y = 0
 	beast.strike = .67
 	beast.hit_applied = false
 	beast.active_clip = "TuskAttack"
 	var before:float = session.data.health
 	beast._physics_process(.02)
-	check(session.data.health == before-18,"Tusk wind-up causes one timed hit")
+	check(session.data.health == before,"Passive forest boar cannot damage the player")
 	beast._physics_process(.02)
-	check(session.data.health == before-18,"Same strike cannot deal repeated damage")
+	check(beast.strike<0,"Leaving combat cancels the enemy strike")
 	beast.hurt(75)
 	await frames(2)
-	check(session.data.coins == 15 and session.data.xp == 25,"Defeat awards coins and XP once")
-	check(not is_instance_valid(forest.enemy),"Defeated enemy is released")
+	check(session.data.coins == 0 and session.data.xp == 0,"Disabled combat cannot award currency or XP")
+	check(is_instance_valid(forest.enemy) and beast.health == 100,"Forest creature stays unharmed")
+	# Verify progression serialization independently of currently disabled forest combat.
+	session.data.coins = 15
+	session.data.xp = 25
 	check(session.save_game(player),"Save writes successfully")
 	var saved_position:Vector3 = player.position
 	session.data.coins = 0
@@ -113,7 +111,7 @@ func run():
 	check(await travel("camp"),"Return to camp loads")
 	await frames(15)
 	check(app.world.get_parent().get_children().filter(func(n): return n is Node3D).size() == 1,"Only one world is active")
-	check(session.data.health>before-18,"Camp restores health")
+	check(session.data.health>=before,"Camp preserves or restores health")
 	# Check the requested day/night duration at their boundary.
 	session.data.time = 1439.9
 	app.world._process(.2)

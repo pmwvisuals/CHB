@@ -53,6 +53,12 @@ func spawn_position() -> Vector3:
 func interaction_text() -> String:
 	return ("Return to camp" if forest else "Enter the woodland") if near_gate() else ""
 
+func combat_allowed(_at:Vector3) -> bool:
+	return false
+
+func practice_attack(_attacker) -> bool:
+	return false
+
 func prepare():
 	rng.seed = 72191 if forest else 41256
 	build_sky()
@@ -79,7 +85,7 @@ func prepare():
 		enemy.model = beast_scene.instantiate()
 		add_child(enemy)
 		enemy.position = Vector3(3,height(3,-8)+.3,-8)
-	Session.message = "Follow the trail. Step away when the boar lowers its head." if forest else "Welcome home. Open the camp map to find the temples and woodland gate."
+	Session.message = "Explore the woodland. Combat is currently reserved for the training ground." if forest else "Welcome to the sanctuary. Open the map to explore."
 
 func build_sky():
 	var world := WorldEnvironment.new()
@@ -170,10 +176,9 @@ func build_landmarks():
 	block(gate+Vector3(0,3.5,0),Vector3(5,.45,.9),gold)
 	var sign := Label3D.new()
 	sign.text = "SANCTUARY" if forest else "DEEPWOOD"
-	sign.position = gate+Vector3(0,4.15,0)
-	sign.font_size = 64
-	sign.pixel_size = .009
-	sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.position = gate+Vector3(0,3.5,-.49 if forest else .49)
+	sign.rotation.y = PI if forest else 0.0
+	preload("res://scripts/inscription.gd").fit(sign,3.5,.25)
 	add_child(sign)
 	if forest:
 		for i in range(18):

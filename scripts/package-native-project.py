@@ -11,9 +11,9 @@ manifest = json.loads((native / "assets-manifest.json").read_text(encoding="utf-
 files = [native / name for name in (
     "project.godot", "export_presets.cfg", "README.md", "VALIDATION.md", "assets-manifest.json"
 )]
-for folder in ("scenes", "scripts", "tests", "shaders"):
+for folder in ("scenes", "scripts", "tests", "shaders", "themes", "fonts"):
     files += sorted(p for p in (native / folder).rglob("*")
-                    if p.is_file() and p.suffix in (".tscn", ".gd", ".uid", ".gdshader"))
+                    if p.is_file() and p.suffix in (".tscn", ".gd", ".uid", ".gdshader", ".tres", ".ttf", ".txt", ".md"))
 for item in manifest["assets"]:
     asset = native / item["file"]
     content = asset.read_bytes()

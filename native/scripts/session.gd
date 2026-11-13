@@ -11,6 +11,7 @@ var sprint_requested := false
 var paused := false
 var message := "Welcome to Asterion. Follow the northern path to the forest."
 var app
+var ui_theme:Theme
 var touch_controls := OS.has_feature("mobile") or "--touch-controls" in OS.get_cmdline_user_args()
 
 func _ready():

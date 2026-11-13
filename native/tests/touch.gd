@@ -29,6 +29,7 @@ func _initialize():
 func run():
 	var session = root.get_node("Session")
 	session.save_path = "res://tests/_touch-save.json"
+	session.data.positions = {}
 	session.touch_controls = true
 	var app = load("res://scenes/app.tscn").instantiate()
 	root.add_child(app)
@@ -38,6 +39,14 @@ func run():
 	var player = app.world.player
 	player.set_physics_process(false)
 	await process_frame
+	check(not player.weapon.visible and not player.hud.attack_button.visible,"Safe camp hides the weapon and Strike control")
+	await touch(0,true,Vector2(1184,630))
+	await touch(0,false,Vector2(1184,630))
+	check(not session.attack_requested,"Safe camp cannot trigger a touch attack")
+	var training:Dictionary = app.world.destinations.filter(func(d): return d.id == "training")[0]
+	app.world.travel_to(training)
+	await process_frame
+	check(player.weapon.visible and player.hud.attack_button.visible,"Training ground reveals the weapon and Strike control")
 	var screen := root.get_visible_rect()
 	print("Viewport ",screen," final=",root.get_final_transform()," mouse_from_touch=",Input.is_emulating_mouse_from_touch())
 	for stick in app.world.find_children("*","Control",true,false):
@@ -83,6 +92,7 @@ func run():
 	await touch(0,true,Vector2(1133,146))
 	await touch(0,false,Vector2(1133,146))
 	check(not session.paused and absf(player.position.x-77)<.1,"Touching Poseidon travels to the island approach")
+	check(not player.weapon.visible and not player.hud.attack_button.visible,"Map travel out of practice immediately sheathes the weapon")
 	app.queue_free()
 	await process_frame
 	DirAccess.remove_absolute(session.save_path)
