@@ -40,13 +40,19 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 ## Build an Android APK
 
-The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet. An APK has **not** been built yet. The current computer still needs the Android export dependencies:
+The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
+
+The first signed test APK has been built and installed on that tablet. The local file is `builds/asterion-debug.apk` (147,625,737 bytes), version 0.1.0. Its v2/v3 signatures verify; Android reports the installed ABI as `armeabi-v7a`. It supports Android API 24 and later. The tablet went to sleep before the first rendered frame could be verified, so gameplay performance remains untested. This is a debug build, not a store release; the APK is separate from the editable project ZIP and is not committed to Git.
+
+For another computer, set up the export dependencies:
 
 1. In Godot, open **Editor → Manage Export Templates** and install the templates matching **4.7.2**.
 2. Install **OpenJDK 17** and the **Android SDK**. In **Editor → Editor Settings → Export → Android**, set their two folder paths. Follow the [Godot 4.7 Android setup instructions](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html) for the matching SDK components. An Android emulator is unnecessary for testing on a physical phone.
 3. Create a `builds` folder here. Open **Project → Export → Android**, choose **Export Project**, keep **Export With Debug** checked and save the test APK there.
 
 Real Samsung testing is still required for frame rate, memory use, touch feel, heat and background/resume behavior. The laptop preview does not establish Android performance. A store release will also need its own signing key and release preparation.
+
+The restored local setup uses the existing Android Studio Java runtime, verified Android Build Tools 35.0.1 and Android Platform 35. Godot's template targets API 36 and reports a Build Tools version fallback; APK signing verification and installation on Android 11 nevertheless succeeded. No NDK or emulator was needed for this prebuilt-template export.
 
 ## Development checks
 
