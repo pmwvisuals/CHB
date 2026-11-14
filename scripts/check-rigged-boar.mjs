@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import * as T from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
-const runtime=process.argv.includes('--runtime'),variant=runtime?'runtime':'rigged';
+const runtime=process.argv.includes('--runtime')||process.argv.includes('--polished'),variant=process.argv.includes('--polished')?'polished':runtime?'runtime':'rigged';
 const folder=`assets-source/creatures/ash-tusk-boar/${variant}/`;
 const bytes=await fs.readFile(folder+`ash-tusk-boar-${variant}.glb`);
 assert.equal(bytes.readUInt32LE(0),0x46546c67);assert.equal(bytes.readUInt32LE(8),bytes.length);

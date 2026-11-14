@@ -2,7 +2,7 @@
 import bpy,sys,json
 import numpy as np
 from pathlib import Path
-runtime='--runtime' in sys.argv;variant='runtime' if runtime else 'rigged'
+runtime='--runtime' in sys.argv or '--polished' in sys.argv;variant='polished' if '--polished' in sys.argv else 'runtime' if runtime else 'rigged'
 root=Path(sys.argv[sys.argv.index('--')+1]);out=root/'assets-source/creatures/ash-tusk-boar'/variant;stem='ash-tusk-boar-'+variant;source=out/(stem+'.blend')
 def curves(action):
  return [fc for layer in action.layers for strip in layer.strips for bag in strip.channelbags for fc in bag.fcurves]

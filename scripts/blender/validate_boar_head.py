@@ -3,7 +3,7 @@ import bpy,bmesh,sys,json,numpy as np
 from pathlib import Path
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
-root=Path(sys.argv[sys.argv.index('--')+1]);variant='runtime' if '--runtime' in sys.argv else 'rigged';out=root/'assets-source/creatures/ash-tusk-boar'/variant
+root=Path(sys.argv[sys.argv.index('--')+1]);variant='polished' if '--polished' in sys.argv else 'runtime' if '--runtime' in sys.argv else 'rigged';out=root/'assets-source/creatures/ash-tusk-boar'/variant
 source=out/f'ash-tusk-boar-{variant}.blend';bpy.ops.wm.open_mainfile(filepath=str(source));scene=bpy.context.scene
 body=bpy.data.objects['Continuous skin · anatomy refinement'];crease=bpy.data.objects['Mouth crease · connected mandible'];assert not any(o.name.startswith(('02 · Lower jaw','Mouth · dark oral','Lower exposed tooth','Upper exposed tooth','Upper snarling lip','Lower lip')) for o in scene.objects)
 bm=bmesh.new();bm.from_mesh(body.data);assert all(e.is_manifold for e in bm.edges);unseen={v for v in bm.verts if v.link_faces};components=0

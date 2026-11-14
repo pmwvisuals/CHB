@@ -7,7 +7,7 @@ const pairs=[
  ['assets-source/vegetation/forest_fir.glb','forest_fir.glb'],
  ['assets-source/vegetation/forest_oak.glb','forest_oak.glb'],
  ['assets-source/vegetation/forest_fern.glb','forest_fern.glb'],
- ['assets-source/creatures/ash-tusk-boar/runtime/ash-tusk-boar-runtime.glb','boar.glb'],
+ ['assets-source/creatures/ash-tusk-boar/game/ash-tusk-boar-game.glb','boar.glb'],
 ];
 await fs.mkdir('native/assets',{recursive:true});
 const assets=[];
