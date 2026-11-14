@@ -15,7 +15,8 @@ func run():
 	while app.transitioning:
 		await process_frame
 	var camp = app.world
-	for id in ["arrival","hall","wayfarer","training","lake","poseidon","ares","hephaestus","aphrodite"]:
+	var surface_check := "--surface-check" in OS.get_cmdline_user_args()
+	for id in (["arrival","training","lake"] if surface_check else ["arrival","hall","wayfarer","training","lake","poseidon","ares","hephaestus","aphrodite"]):
 		session.paused = false
 		var destination:Dictionary = camp.destinations.filter(func(d): return d.id == id)[0]
 		camp.travel_to(destination)
@@ -29,7 +30,7 @@ func run():
 			push_error("Preview scenery was covered by a menu")
 			quit(1)
 			return
-	for id in ["ares","hephaestus","aphrodite"]:
+	for id in ([] if surface_check else ["ares","hephaestus","aphrodite"]):
 		camp.travel_to(camp.destinations.filter(func(d): return d.id==id)[0])
 		var temple:Dictionary = camp.layout.temples.filter(func(t): return t.id==id)[0]
 		var centre := Vector3(temple.x,temple.height+2,temple.z)

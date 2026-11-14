@@ -42,7 +42,8 @@ func run():
 	var player = camp.player
 	await frames(40)
 	check(player.is_on_floor(),"Player stands on terrain")
-	check(absf(player.position.y-camp.height(player.position.x,player.position.z))<.12,"Feet and camera stay at correct terrain height")
+	var floor_hit = camp.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(player.global_position+Vector3.UP*.1,player.global_position-Vector3.UP,1,[player.get_rid()]))
+	check(not floor_hit.is_empty() and absf(player.camera.global_position.y-floor_hit.position.y-1.82)<.04,"Standing eyes remain 1.82 metres above the actual walking surface")
 	var initial:Vector3 = player.position
 	Input.action_press("forward")
 	await frames(25)

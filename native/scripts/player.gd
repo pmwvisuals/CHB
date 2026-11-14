@@ -22,12 +22,12 @@ func _ready():
 	var collision := CollisionShape3D.new()
 	var capsule := CapsuleShape3D.new()
 	capsule.radius = .32
-	capsule.height = 1.75
+	capsule.height = 1.95
 	collision.shape = capsule
-	collision.position.y = .875
+	collision.position.y = .975
 	add_child(collision)
 	camera = Camera3D.new()
-	camera.position.y = 1.64
+	camera.position.y = 1.82
 	camera.fov = 75
 	camera.far = 110
 	add_child(camera)

@@ -1,3 +1,4 @@
+import {terrainSurface} from './terrain-surface';
 import {buildForestBorder,forestAtmosphere} from './forest-border';
 import * as T from 'three';
 import { Octree } from 'three/addons/math/Octree.js';
@@ -59,6 +60,7 @@ export function buildWorld(): World {
   }
   // Broad, softly rolling landscape with a raised arrival hill.
   const terrain=terrainGeometry();
+  const surface=terrainSurface(terrain);scene.userData.terrainSurface=surface;
   const ground=mesh(terrain,groundMaterial(),scene);ground.name='Rolling sanctuary terrain';ground.castShadow=false;
   collision.add(new T.Mesh(terrain));
   const atmosphere=buildAtmosphere(scene),sun=atmosphere.sun;
@@ -68,10 +70,10 @@ export function buildWorld(): World {
   const paths: { points:T.Vector3[]; width:number }[]=[];
   const paving=limestoneRoadMaterial();
   function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});
-    const geo=pavedRoadGeometry(points,width),road=mesh(geo,paving,scene);road.name='Walkable limestone road';road.castShadow=false;collision.add(new T.Mesh(geo));
+    const footprint=pavedRoadGeometry(points,width),geo=surface.stamp(footprint,.11),road=mesh(geo,paving,scene);road.name='Walkable limestone road';road.castShadow=false;collision.add(new T.Mesh(geo));
   }
   for(const route of campRoutes)path(route.points,route.width);
-  function circleGround(x:number,z:number,r:number,color:string){ const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);const p=geo.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,h(x+p.getX(i),z+p.getZ(i))+.075);const m=mesh(geo,mat(color),scene,x,0,z);m.castShadow=false;return m; }
+  function circleGround(x:number,z:number,r:number,color:string){const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);geo.translate(x,0,z);geo.userData.surfacePolygons=[Array.from({length:64},(_,i)=>i+1)];const fitted=surface.stamp(geo,.025),m=mesh(fitted,mat(color),scene);m.castShadow=false;return m;}
   // The communal green shares the living terrain, rather than two flat coloured discs.
 
   // Twelve individually decorated cabins face the communal green.
@@ -93,7 +95,7 @@ export function buildWorld(): World {
   // Invisible barrier follows the shore, leaving the dock walkable.
   for(let i=0;i<80;i++){const a=i/80*Math.PI*2;const x=91+Math.cos(a)*30,z=Math.sin(a)*46;if(x<75&&(Math.abs(z-5)<3||Math.abs(z+18)<3))continue;const b=new T.Mesh(boxGeo);b.matrixAutoUpdate=false;b.matrix.copy(new T.Matrix4().compose(new T.Vector3(x,1,z),new T.Quaternion(),new T.Vector3(3,3,3)));collision.add(b);}
   // Stone causeway leads from the western shore to Poseidon's island.
-  {const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([55,h(55,5)+.05,3.2,55,h(55,5)+.05,6.8,64,1.15,3.2,64,1.15,6.8],3));g.setIndex([0,1,2,1,3,2]);g.computeVertexNormals();mesh(g,stone,scene);collision.add(new T.Mesh(g));}
+  {const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute([55,h(55,5)+.05,3.2,55,h(55,5)+.05,6.8,64,1.15,3.2,64,1.15,6.8],3));g.setIndex([0,1,2,1,3,2]);g.computeVertexNormals();const ramp=surface.stamp(g,.14,(x)=>{const t=(x-55)/9;return (h(55,5)+.14)*(1-t)+1.15*t;});mesh(ramp,stone,scene);collision.add(new T.Mesh(ramp));}
   for(let i=0;i<38;i++){const x=64+i*.55,g=new T.Group();g.position.set(x,1.09,5);scene.add(g);box(g,0,0,0,.57,.12,3.6,stone,true);if(i%5===0)for(const side of [-1,1]){box(g,0,.65,side*1.8,.22,1.3,.22,trim,true);}}
   for(let i=0;i<44;i++){const angle=i/44*Math.PI*2,x=94+Math.cos(angle)*14.5,z=5+Math.sin(angle)*14.5;if(x<84&&Math.abs(z-5)<3)continue;const c=new T.Mesh(new T.BoxGeometry(2.3,3,2.3));c.position.set(x,2,z);collision.add(c);}
   // Surface waves are shaded continuously; preserve the old decal random stream.
@@ -166,6 +168,7 @@ export function buildWorld(): World {
   for(const batch of batches.values()){if(batch.meshes.length<3)continue;const pieces=batch.meshes.map(m=>{const geo=m.geometry.clone().applyMatrix4(m.matrixWorld);return geo.index?geo.toNonIndexed():geo;});const merged=mergeGeometries(pieces,false);if(merged){const m=new T.Mesh(merged,batch.material);m.castShadow=batch.meshes.some(o=>o.castShadow);m.receiveShadow=true;scene.add(m);batch.meshes.forEach(m=>m.removeFromParent());}pieces.forEach(g=>g.dispose());}
   forestAtmosphere(scene);
   atmosphere.applyCloudShadows();
+  surface.dispose();delete scene.userData.terrainSurface;
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps];
   return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
