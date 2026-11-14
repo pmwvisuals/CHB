@@ -1,121 +1,121 @@
 {
   "assets": [
     {
-      "bytes": 1061228.0,
+      "bytes": 1061228,
       "file": "assets/camp_olive.glb",
       "sha256": "c7f9b3813cabbbf103fd2570adffc2665f18019019686c606da69593124606d6",
       "source": "assets-source/vegetation/camp_olive.glb"
     },
     {
-      "bytes": 1061240.0,
+      "bytes": 1061240,
       "file": "assets/camp_laurel.glb",
       "sha256": "89d27b04aad7921c827919a5ecc37efee62206ad6bf7ce69e6c2ec1487c667e9",
       "source": "assets-source/vegetation/camp_laurel.glb"
     },
     {
-      "bytes": 1046308.0,
+      "bytes": 1046308,
       "file": "assets/forest_fir.glb",
       "sha256": "6d92e6dff4f7b0830962b95fd175c9e8bfc3fc7e65a45565f97a624d40e49a99",
       "source": "assets-source/vegetation/forest_fir.glb"
     },
     {
-      "bytes": 1061216.0,
+      "bytes": 1061216,
       "file": "assets/forest_oak.glb",
       "sha256": "926216985e8c9c0e4cd721e67902cb1b229a140625c710bd06258bdc97b36481",
       "source": "assets-source/vegetation/forest_oak.glb"
     },
     {
-      "bytes": 17956.0,
+      "bytes": 17956,
       "file": "assets/forest_fern.glb",
       "sha256": "9bef2708c506af940753920646b8783caed11715a7c01645dbb37c6ff5d47a45",
       "source": "assets-source/vegetation/forest_fern.glb"
     },
     {
-      "bytes": 24213160.0,
+      "bytes": 24213160,
       "file": "assets/boar.glb",
       "sha256": "ccc37c07225a7f7668b0eed5a1bd74d517337487203638f0ce38ef34623de27c",
       "source": "assets-source/creatures/ash-tusk-boar/game/ash-tusk-boar-game.glb"
     },
     {
-      "bytes": 38192.0,
+      "bytes": 38192,
       "file": "assets/weapons/practice-sword.glb",
       "sha256": "04a40387099d4d7dbdf27946bad9b036e753b31257f2f498755f1b2250c20ac1",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 20800.0,
+      "bytes": 20800,
       "file": "assets/weapons/practice-bow.glb",
       "sha256": "23c9136dedb509e29e7424ac9fcaab9a1d6117e2110c7c3302685e65bb3c138e",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 8340.0,
+      "bytes": 8340,
       "file": "assets/weapons/practice-arrow.glb",
       "sha256": "38bf4781767cb2d592d3d961cf717e608530d87f90e6417eb157c8d45ec1b2a0",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 54919360.0,
+      "bytes": 54919360,
       "file": "assets/camp/camp-static.glb",
       "sha256": "a2b0c9ed27837f57bce85b59159be1c993aefac80a416b8f45571891386acdc5",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 13625052.0,
+      "bytes": 13625052,
       "file": "assets/camp/camp-prototypes.glb",
       "sha256": "a46e40a45a0c30008698450807bc8189c782f050425955e14d78c38ac949b462",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 19930080.0,
+      "bytes": 19930080,
       "file": "assets/camp/camp-collision.glb",
       "sha256": "e7fbaa68dd94c60aa6b9cb6d0c15412fe93fba794c49b2d78c338ee2b2f27ff5",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 71212.0,
+      "bytes": 71212,
       "file": "assets/camp/habitat.png",
       "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 770172.0,
+      "bytes": 770172,
       "file": "assets/camp/ground-albedo.png",
       "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 1268157.0,
+      "bytes": 1268157,
       "file": "assets/camp/ground-normal.png",
       "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 498771.0,
+      "bytes": 498771,
       "file": "assets/camp/ground-roughness.png",
       "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 6429745.0,
+      "bytes": 6429745,
       "file": "assets/camp/camp-layout.json",
       "sha256": "56ba8723587ca4e8d10d3e4b89b94b8f652b11929804bb045442906d87654417",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 563.0,
+      "bytes": 563,
       "file": "assets/atmosphere/bake-report.json",
       "sha256": "1ecb2a1b7a7b89650481dabd11d4643d921dfa96a653ba93cb024c60e38b5b90",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "bytes": 81676.0,
+      "bytes": 81676,
       "file": "assets/atmosphere/cloud-banks.png",
       "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "bytes": 1875072.0,
+      "bytes": 1875072,
       "file": "assets/atmosphere/ground-light.png",
       "sha256": "d3a95eb71439f9f20c231a147a96b56f2ab2b708fdd698c2bed4d937f8ed9888",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
@@ -125,6 +125,72 @@
       "file": "assets/camp/camp-physics.scn",
       "sha256": "6f7bc09763ee0ed8c1e622384585a12333d5975696b14c96df60fd42d5f09747",
       "source": "exact collision faces from camp-collision.glb; physics only"
+    },
+    {
+      "file": "assets/plants/imported-plants.glb",
+      "source": "User supplied packs; scripts/blender/prepare_imported_plants.py",
+      "bytes": 13693788,
+      "sha256": "abfc057ea74447458e0bdf455f4e071e7e4011945d4a25162de591067d1021b0"
+    },
+    {
+      "file": "assets/plants/import-report.json",
+      "source": "User supplied packs; scripts/blender/prepare_imported_plants.py",
+      "bytes": 2073,
+      "sha256": "5f427dc6e7677aa1cd06f522b904ee8fdd845aadaffae567adb5a0250e1901af"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_0.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 2623819,
+      "sha256": "0b78ca6710dfcf58d3f63d8c4613d9cd30b02488363793fb054846434e22fd27"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_0_5.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 371665,
+      "sha256": "d91b2ab204902e84c76400201849254da0ab41dd6b109fa2ad7bc4017ebe3927"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_1.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 2421038,
+      "sha256": "bd417eb67166158ac507392656b16df50c1fd766900a460e8ccfc4a6b521a208"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_1_4.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 320295,
+      "sha256": "85ed0c78f7303c5015431c8818a88018e1be3ee14d201b9b3c6f1c7c755ccb93"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_2.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 4078850,
+      "sha256": "39b9f886b23b869323031efbea959062cf382358b6534b367392781b7af799c2"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_2_3.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 410511,
+      "sha256": "2f83a76ee2defa4e214f139cdca684eba5b346a6d93ff6a65decbf929567856b"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_3.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 1222592,
+      "sha256": "518b9973a47534a896d1a5d41f8cb2363dd5a80a013946d5cf3703134d684405"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_4.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 655282,
+      "sha256": "7bb6c00839b46f1189de0a6c3ef887f7954dd4e2e8b0872e6ebe91468302754e"
+    },
+    {
+      "file": "assets/plants/imported-plants_Image_5.png",
+      "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
+      "bytes": 1390883,
+      "sha256": "853befe53647d63a04d7e799716f50d8476ed8d634eaed9b573f4a2670815911"
     }
   ]
 }

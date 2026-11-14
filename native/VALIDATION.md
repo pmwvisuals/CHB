@@ -78,3 +78,15 @@ Further physical-device checks are required for loading, sustained FPS, memory, 
 ## Remaining migration work
 
 The native app includes camp exteriors and functional practice. Temple interiors, quests and the large deep-forest landscape remain to be migrated. The separate forest is a small encounter test region; its boar remains passive because combat is enabled only at the training ground. The native baked cloud panorama and limited canopy rays approximate the browser atmosphere. Full browser volumetric clouds, localized mist, wind and advanced water reflections are not fully reproduced in Godot. Animated hands, combat audio, future creature encounters and death/charge animations remain future work.
+
+## Supplied planting replacement � 15 November 2026
+
+The native camp now replaces its ground-cover grass and multipart camp myrtle/laurel shrubs using the two supplied GLB packs. Fifteen rooted grass variants and two whole bushes are prepared. There are 33,912 grass placements, 155 camp shrubs and 265 sparse flowering-bed bushes; flowering bushes are excluded by the forest habitat mask. All original dark forest and bramble trunk counts are preserved. Root heights follow terrain with a 2.5 cm inset. Buildings, roads and collision data remain unchanged.
+
+The new materials use alpha cutout rather than alpha blending, two-sided leaves, alpha-to-coverage and softened highlights. Nine shared maps retain their original 1024/2048 resolution; their import settings generate desktop S3TC and Android ETC2 compression with mipmaps. Source PNGs and import metadata are included in the editable package. The original input packs are retained separately with hashes and are documented as user-supplied third-party assets.
+
+Ten display-driven plant assertions, 57 camp assertions and 32 display-driven graphics assertions passed. The plant checks cover rooted scale, cutout textures, population, exclusive replacement counts, terrain contact, forest exclusion and preservation. Godot captures include a small sample patch, garden and lakeside close views, Arrival Ridge and training under both graphics settings. Initial laptop samples were 26�28 FPS at 1280x720, depending on view/preset; these are short samples rather than a controlled performance comparison.
+
+The separate Android candidate is builds/asterion-plants-test.apk. Its v2/v3 signatures verify. Physical-device frame rate, memory use and loading stability have not been tested for this planting change. The previous default test APK is retained. See the repositorys IMPORTED-PLANTS.md for source files and rebuild steps.
+
+The 144-file editable planting archive was extracted into a separate directory, imported from scratch, and passed all ten display-driven plant checks. All nine plant texture import configurations are included and retain GPU compression. The final planting APK is 158,693,551 bytes; independent verification confirms v2/v3 signatures. SHA-256: 5e9ac2d0c329a2e64c9c900dca8897cc2cbfe5580e75f777dc5423cd836133f4. It has not been installed on the tablet in this pass.

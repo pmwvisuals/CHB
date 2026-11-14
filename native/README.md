@@ -8,6 +8,10 @@ Standing eye height is now 1.82 m above the physical walking surface. Roads and 
 
 ## Included
 
+The native camp now uses the supplied grass and flower-bush packs: 33,912 grass placements, 155 camp shrubs and 265 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles, ferns and bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets, rather than project-authored models. The plant-replacement Android candidate is `builds/asterion-plants-test.apk`; its device performance has not yet been measured.
+
+The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
+
 - First-person walking, sprinting, jumping, physical roads, ramps and structures. The practice sword equips only inside the training ground and sheathes immediately on leaving, including map travel.
 - Android controls: movement stick, right-side drag to look, Run, Jump, Strike/Draw, Sword/Bow selection, Drill, Map, Travel and Pause. Movement, looking and action buttons support simultaneous fingers.
 - Separate camp and forest scenes with a loading screen. The previous scene is released before the next is loaded.

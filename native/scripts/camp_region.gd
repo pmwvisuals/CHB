@@ -11,6 +11,7 @@ var material_cache := {}
 var training_hits := 0
 var foliage_stream
 var collision_root:Node3D
+var imported_plants
 
 func apply_graphics():
 	super.apply_graphics()
@@ -236,6 +237,9 @@ func plant():
 		var kind:String = plant_kinds.get(String(part.name),"")
 		finish_import(part,true,kind=="ground cover" or "grass" in kind)
 		meshes[String(part.name)] = part
+	imported_plants = preload("res://scripts/imported_plants.gd").new()
+	meshes.merge(imported_plants.load_prototypes())
+	layout.batches = imported_plants.remap(layout.batches,self)
 	for i in range(layout.batches.size()):
 		var entry:Dictionary = layout.batches[i]
 		if not meshes.has(entry.proto):
@@ -251,13 +255,15 @@ func plant():
 			multi.set_instance_transform(index,Transform3D(Basis(Vector3(m[0],m[1],m[2]),Vector3(m[3],m[4],m[5]),Vector3(m[6],m[7],m[8])),Vector3(m[9],m[10],m[11])))
 		var node := MultiMeshInstance3D.new()
 		node.name = entry.kind
+		node.set_meta("plant_kind",entry.kind)
+		node.set_meta("plant_proto",entry.proto)
 		node.set_meta("foliage_detail","foliage high" in entry.kind)
 		node.multimesh = multi
 		node.position = Vector3(entry.center[0],entry.center[1],entry.center[2])
 		node.material_override = original.material_override
 		node.lod_bias = .6
 		var ground_cover:bool = entry.kind == "ground cover" or "grass" in entry.kind or "flowers" in entry.kind or "litter" in entry.kind
-		var bushes:bool = "fern" in entry.kind or "bracken" in entry.kind or "bramble" in entry.kind or "laurel" in entry.kind or "myrtle" in entry.kind
+		var bushes:bool = "fern" in entry.kind or "bracken" in entry.kind or "bramble" in entry.kind or "laurel" in entry.kind or "myrtle" in entry.kind or "bushes" in entry.kind
 		node.visibility_range_end = 60 if ground_cover else 110 if bushes else 350
 		node.visibility_range_end_margin = 8
 		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if entry.shadow and "foliage" not in entry.kind and not ground_cover else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -267,6 +273,7 @@ func plant():
 			Session.app.build_progress(.67+float(i)/layout.batches.size()*.30,"Planting the sanctuary…")
 			await get_tree().process_frame
 	prototypes.free()
+	imported_plants.dispose()
 	prototypes_scene = null
 	foliage_stream.finish()
 	# Transforms now live in shared instance buffers and the distance streamer.

@@ -21,6 +21,12 @@ for item in manifest["assets"]:
     assert hashlib.sha256(content).hexdigest() == item["sha256"], f"Asset hash mismatch: {asset}"
     files.append(asset)
 
+# Preserve explicit plant compression settings without treating Godot's
+# mutable import/cache metadata as immutable art payloads in the manifest.
+for settings in sorted((native / "assets/plants").glob("*.png.import")):
+    assert "compress/mode=2" in settings.read_text(), f"Plant texture compression disabled: {settings}"
+    files.append(settings)
+
 with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as package:
     for source in files:
         package.write(source, "asterion-native/" + source.relative_to(native).as_posix())
