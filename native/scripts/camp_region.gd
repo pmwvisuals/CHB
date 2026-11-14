@@ -28,6 +28,7 @@ func apply_graphics():
 
 func finish_preparation():
 	player.camera.far = 430
+	preload("res://scripts/sun_shafts.gd").add_to(self)
 	training = preload("res://scripts/training.gd").new()
 	training.world = self
 	add_child(training)
@@ -59,7 +60,7 @@ func practice_attack(attacker) -> bool:
 		training.sword_result(-1)
 	return false
 
-func finish_import(part:MeshInstance3D):
+func finish_import(part:MeshInstance3D,vegetation:bool=false,meadow:bool=false):
 	for surface in range(part.mesh.get_surface_count()):
 		var original = part.get_active_material(surface)
 		if not original is BaseMaterial3D:
@@ -75,12 +76,33 @@ func finish_import(part:MeshInstance3D):
 					palette.shader = two_sided
 				palette.set_shader_parameter("textured",original.albedo_texture!=null)
 				palette.set_shader_parameter("stone_texture",original.albedo_texture)
+				palette.set_shader_parameter("ground_light",preload("res://assets/atmosphere/ground-light.png"))
 				material_cache[palette_key] = palette
 			part.mesh.surface_set_material(surface,material_cache[palette_key])
 			continue
 		var colors = part.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
 		var has_colors:bool = colors != null and colors.size()>0
 		var key := str(original.get_instance_id())+str(has_colors)
+		if vegetation:
+			key += "vegetation"+str(meadow)
+			if not material_cache.has(key):
+				var plant_mat := ShaderMaterial.new()
+				plant_mat.shader = preload("res://shaders/vegetation.gdshader")
+				if original.cull_mode != BaseMaterial3D.CULL_DISABLED:
+					var closed := Shader.new()
+					closed.code = plant_mat.shader.code.replace("render_mode cull_disabled;","")
+					plant_mat.shader = closed
+				plant_mat.set_shader_parameter("ground_light",preload("res://assets/atmosphere/ground-light.png"))
+				plant_mat.set_shader_parameter("albedo_tint",original.albedo_color)
+				plant_mat.set_shader_parameter("albedo_map",original.albedo_texture)
+				plant_mat.set_shader_parameter("textured",original.albedo_texture!=null)
+				plant_mat.set_shader_parameter("vertex_tint",has_colors)
+				plant_mat.set_shader_parameter("leaf",original.cull_mode==BaseMaterial3D.CULL_DISABLED)
+				plant_mat.set_shader_parameter("fresh_grass",meadow)
+				plant_mat.set_shader_parameter("roughness",original.roughness)
+				material_cache[key] = plant_mat
+			part.mesh.surface_set_material(surface,material_cache[key])
+			continue
 		if not material_cache.has(key):
 			var corrected = original.duplicate()
 			corrected.vertex_color_use_as_albedo = has_colors
@@ -120,6 +142,7 @@ func build_ground():
 	ground_shader.set_shader_parameter("cover_albedo",preload("res://assets/camp/ground-albedo.png"))
 	ground_shader.set_shader_parameter("cover_normal",preload("res://assets/camp/ground-normal.png"))
 	ground_shader.set_shader_parameter("cover_roughness",preload("res://assets/camp/ground-roughness.png"))
+	ground_shader.set_shader_parameter("ground_light",preload("res://assets/atmosphere/ground-light.png"))
 	var water := ShaderMaterial.new()
 	water.shader = preload("res://shaders/lake.gdshader")
 	for part in scenery.find_children("*","MeshInstance3D",true,false):
@@ -130,11 +153,16 @@ func build_ground():
 		elif part.name == "MirrorLake":
 			part.material_override = water
 			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		elif part.name.begins_with("CampRoad"):
+			var worn = part.get_active_material(0).duplicate()
+			worn.albedo_color = Color("c8c2b2")
+			worn.roughness = .98
+			worn.metallic_specular = .045
+			part.material_override = worn
 		part.visibility_range_end = 390
 	collision_root = collision_scene.instantiate()
 	collision_scene = null
 	add_child(collision_root)
-	environment.fog_density = .0035
 
 func build_landmarks():
 	gate = Vector3(-40,height(-40,-121),-121)
@@ -201,8 +229,12 @@ func plant():
 	collision_root = null
 	var prototypes = prototypes_scene.instantiate()
 	var meshes := {}
+	var plant_kinds := {}
+	for entry in layout.batches:
+		plant_kinds[entry.proto] = entry.kind
 	for part in prototypes.find_children("*","MeshInstance3D",true,false):
-		finish_import(part)
+		var kind:String = plant_kinds.get(String(part.name),"")
+		finish_import(part,true,kind=="ground cover" or "grass" in kind)
 		meshes[String(part.name)] = part
 	for i in range(layout.batches.size()):
 		var entry:Dictionary = layout.batches[i]

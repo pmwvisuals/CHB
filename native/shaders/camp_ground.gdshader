@@ -1,4 +1,5 @@
 shader_type spatial;
+#include "res://shaders/ground_light.gdshaderinc"
 uniform sampler2D habitat : repeat_disable, filter_linear;
 uniform sampler2D cover_albedo : source_color, repeat_enable, filter_linear_mipmap;
 uniform sampler2D cover_normal : hint_normal, repeat_enable, filter_linear_mipmap;
@@ -24,8 +25,17 @@ void fragment(){
  vec3 grain=cover_sample(cover_albedo,a,b,blend,forest).rgb/mix(vec3(.25,.32,.105),vec3(.17,.25,.085),forest);
  float soil=.86+.10*sin(place.x*33.7+place.z*19.3)*sin(place.z*71.3-place.x*51.7);
  ALBEDO=COLOR.rgb*mix(vec3(soil),clamp(grain,vec3(.34),vec3(1.45)),weights.x);
+ // Lift living turf itself, without increasing exposure or whitening paths.
+ vec3 fresh=min(ALBEDO*mix(1.75,1.20,forest)+vec3(.009,.024,.006)*(1.-forest*.7),vec3(.30,.42,.19));
+ ALBEDO=mix(ALBEDO,fresh,weights.x);
  ROUGHNESS=mix(.96,cover_sample(cover_roughness,a,b,blend,forest).g,weights.x);
  NORMAL_MAP=mix(vec3(.5,.5,1.),cover_sample(cover_normal,a,b,blend,forest).rgb,weights.x);
  NORMAL_MAP_DEPTH=.55;
  SPECULAR=.12;
+ vec3 contact=sanctuary_occlusion(place);
+ AO=contact.r*contact.b*contact.g;
+ AO_LIGHT_AFFECT=.45;
+ // A restrained material fill approximates broad sky bounce in the meadow.
+ // Texture variation and baked root/canopy shade remain visible in this term.
+ EMISSION=ALBEDO*.16*weights.x*(1.-forest*.8)*contact.r*contact.b*contact.g;
 }

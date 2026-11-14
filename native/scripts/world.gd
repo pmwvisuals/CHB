@@ -12,6 +12,8 @@ var rng := RandomNumberGenerator.new()
 var key_light:DirectionalLight3D
 var environment:Environment
 var autosave := 0.0
+var weather_time := 0.0
+var weather_tick := 0.0
 
 func material(color:String,roughness:float=.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -100,33 +102,55 @@ func build_sky():
 	environment = Environment.new()
 	environment.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color("345f71")
-	sky_mat.sky_horizon_color = Color("a4b7ac")
-	sky_mat.ground_bottom_color = Color("14291d")
+	var sky_mat := ShaderMaterial.new()
+	sky_mat.shader = preload("res://shaders/sanctuary_sky.gdshader")
+	sky_mat.set_shader_parameter("cloud_banks",preload("res://assets/atmosphere/cloud-banks.png"))
+	sky_mat.set_shader_parameter("zenith_tint",Color("5986aa"))
+	sky_mat.set_shader_parameter("horizon_tint",Color("dbc7a9"))
+	sky_mat.set_shader_parameter("ground_tint",Color("4a5144"))
+	sky_mat.set_shader_parameter("key_direction",Vector3(-.78,.40,-.48).normalized())
+	sky_mat.set_shader_parameter("sun_radius",.0135)
 	sky.sky_material = sky_mat
+	sky.radiance_size = Sky.RADIANCE_SIZE_128
+	sky.process_mode = Sky.PROCESS_MODE_QUALITY
 	environment.sky = sky
-	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color("9bbaa6")
+	environment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+	environment.ambient_light_sky_contribution = .75
+	environment.ambient_light_color = Color("c4d2de")
+	environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+	environment.tonemap_mode = Environment.TONE_MAPPER_ACES
+	environment.tonemap_exposure = .62
+	environment.adjustment_enabled = true
+	environment.adjustment_contrast = 1.0
+	environment.adjustment_saturation = 1.0
 	environment.fog_enabled = true
-	environment.fog_light_color = Color("748b7b")
-	environment.fog_density = .013 if forest else .005
-	environment.fog_sky_affect = .10
+	environment.fog_mode = Environment.FOG_MODE_DEPTH
+	environment.fog_light_color = Color("8a9a93") if forest else Color("b6bfc0")
+	environment.fog_light_energy = .8
+	environment.fog_density = .82
+	environment.fog_depth_begin = 16 if forest else 78
+	environment.fog_depth_end = 125 if forest else 430
+	environment.fog_depth_curve = 1.65
+	environment.fog_sky_affect = 0
+	environment.fog_sun_scatter = .12
 	world.environment = environment
 	add_child(world)
-	environment.ambient_light_energy = .36 if forest else .44
+	environment.ambient_light_energy = .42 if forest else .62
 	# The key provides fixed natural daylight without a visible sun or moon.
 	key_light = DirectionalLight3D.new()
 	key_light.name = "FixedDaylight"
 	key_light.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
-	key_light.light_color = Color("fff0dc")
-	key_light.light_energy = .88
+	key_light.light_color = Color("ffdbaf")
+	key_light.light_energy = .72
 	key_light.shadow_enabled = true
 	key_light.directional_shadow_max_distance = 45
 	key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	key_light.shadow_bias = .035
+	key_light.shadow_normal_bias = .45
 	add_child(key_light)
-	key_light.position = Vector3(.62,.72,.25).normalized()*65
+	key_light.position = Vector3(-.78,.40,-.48).normalized()*65
 	key_light.look_at(Vector3.ZERO)
+	RenderingServer.global_shader_parameter_set("sanctuary_weather_time",0.0)
 
 func build_ground():
 	var tool := SurfaceTool.new()
@@ -271,6 +295,11 @@ func interact():
 func _process(delta):
 	if Session.paused or not is_instance_valid(player):
 		return
+	weather_time += delta
+	weather_tick += delta
+	if weather_tick>=.2:
+		weather_tick = 0
+		RenderingServer.global_shader_parameter_set("sanctuary_weather_time",weather_time)
 	autosave += delta
 	if not forest:
 		Session.data.health = minf(100,Session.data.health+delta*4)

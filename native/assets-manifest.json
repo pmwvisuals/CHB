@@ -107,6 +107,24 @@
       "file": "assets/camp/camp-physics.scn",
       "sha256": "e6ff29e30dd19ad2837ade395f4db71f40ccee1058b43b46a243748f8797e250",
       "source": "exact collision faces from camp-collision.glb; physics only"
+    },
+    {
+      "file": "assets/atmosphere/bake-report.json",
+      "bytes": 563,
+      "sha256": "4be723490d77cd29b25650e7dbf7003c66330704c38a2dee3485f8234f9f2ddd",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/cloud-banks.png",
+      "bytes": 81676,
+      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/ground-light.png",
+      "bytes": 1875072,
+      "sha256": "d3a95eb71439f9f20c231a147a96b56f2ab2b708fdd698c2bed4d937f8ed9888",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     }
   ]
 }

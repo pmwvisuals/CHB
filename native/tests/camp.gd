@@ -66,7 +66,7 @@ func run():
 	session.data.time = 1680.0
 	var light_pose:Transform3D = camp.key_light.transform
 	camp._process(.4)
-	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.key_light.light_energy>.8,"Legacy night saves cannot change the fixed daylight")
+	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.key_light.light_energy>.6,"Legacy night saves cannot change the fixed evening light")
 	session.data.time = 720.0
 	camp._process(.4)
 	check(camp.find_children("*","OmniLight3D",true,false).is_empty(),"Removed night-light slots do not remain in the scene")

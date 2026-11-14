@@ -66,16 +66,16 @@ func run():
 			await physics_frame
 		check(camp.inside_bounds(camp.player.position) and camp.player.is_on_floor(),id+" retains its walkable approach beside the closer forest")
 	var light_pose:Transform3D = camp.key_light.transform
-	var sky_color:Color = camp.environment.sky.sky_material.sky_top_color
+	var sky_color:Color = camp.environment.sky.sky_material.get_shader_parameter("zenith_tint")
 	session.data.time = 1800.0
 	camp._process(60)
-	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.environment.sky.sky_material.sky_top_color==sky_color,"Time changes do not move the light or darken the sky")
-	check(camp.key_light.sky_mode==DirectionalLight3D.SKY_MODE_LIGHT_ONLY,"The fixed lighting does not draw a procedural sun")
+	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.environment.sky.sky_material.get_shader_parameter("zenith_tint")==sky_color,"Time changes do not move the light or darken the sky")
+	check(camp.key_light.sky_mode==DirectionalLight3D.SKY_MODE_LIGHT_ONLY,"The built-in second solar disc remains disabled")
 	var spheres := 0
 	for part in camp.find_children("*","MeshInstance3D",true,false):
 		if part.mesh is SphereMesh:
 			spheres += 1
-	check(spheres==0,"Sun/moon sphere models are absent")
+	check(spheres==0,"No moon or celestial orbit meshes return")
 	app.queue_free()
 	for i in range(4):
 		await process_frame

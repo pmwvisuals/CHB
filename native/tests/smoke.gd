@@ -118,7 +118,7 @@ func run():
 	check(is_equal_approx(session.data.time,1439.9),"The day/night clock no longer advances")
 	session.data.time = 1919.9
 	app.world._process(.2)
-	check(is_equal_approx(session.data.time,1919.9) and app.world.key_light.light_energy>.8,"Legacy night time retains fixed natural daylight")
+	check(is_equal_approx(session.data.time,1919.9) and app.world.key_light.light_energy>.6,"Legacy night time retains fixed natural evening light")
 	app.queue_free()
 	await frames(4)
 	DirAccess.remove_absolute(session.save_path)
