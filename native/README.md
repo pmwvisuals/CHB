@@ -16,7 +16,7 @@ This checkpoint transfers the browser camp's exterior layout into Godot: the ori
 - Free sword/archery practice, three-hit combos, a 30-second sword drill and a five-arrow archery drill. Practice does not award coins or XP.
 - Device-local position, health, coins, XP, clock, practice statistics and personal-best saving. Older saves receive the new practice fields automatically. The browser save is separate.
 - A 24-minute day and 8-minute night, moving sun and moon, shadows and distance fog.
-- Compatibility renderer and a 30 FPS cap when using phone controls. There is one visual configuration.
+- Compatibility renderer and a 30 FPS cap when using phone controls. Exactly two graphics options, **Balanced** and **High**, apply immediately and save on this device.
 - Cinzel headings and architectural inscriptions, with Barlow Semi Condensed for the interface. Temple names have mounted stone plaques ahead of the projecting frieze ribs; lettering fits its backing, respects depth and has a limited viewing distance. Notices wrap in compact panels and expire after a few seconds.
 - Imported surfaces apply their original vertex colors, including sand, ground details and planting. Nonmetallic highlights are softened to prevent the former white wash over the training yard.
 
@@ -32,6 +32,21 @@ Travel to **Training Ground** on the map. The straw dummies occupy the eastern s
 
 Pause freezes arrows and the drill timer. Opening the map cancels a held draw; switching weapons or leaving the yard cancels the current drill and removes its arrows. Shots cannot pass through a wall at the muzzle, and hitting a target from behind gives no points. At most sixteen arrows remain in the scene, and lodged arrows are removed after fourteen seconds.
 
+## Graphics settings
+
+Choose **Graphics** on the welcome screen, or **Pause → Graphics** during play. Both options use the same camp, models, textures, nearby planting and gameplay. High retains more distant leaf detail and longer shadows. Balanced reduces distant detail and the 3D rendering resolution while keeping the interface at full resolution.
+
+| Setting | Balanced | High |
+| --- | --- | --- |
+| 3D resolution per axis | 80% | 100% |
+| Detailed leaf cells | 55 m | 85 m |
+| Nearby trunk/crown cells | 80 m | 112 m |
+| Directional shadow distance | 45 m | 65 m |
+
+Distant trunks and crowns retain their original placements and shapes, grouped into larger shared cells. Full-screen menus stop drawing covered 3D scenery. Temporary collision meshes and converted placement arrays are freed after setup; physical collision remains active.
+
+On first launch, mobile devices with less than 6 GiB physical memory or a 32-bit runtime receive Balanced; other devices receive High. This is a conservative starting recommendation, not a GPU benchmark or minimum-requirements guarantee. Players can override it, and the choice persists. The SM-T515 receives Balanced automatically. Further optimization is still needed for comfortable play on this old 2 GB tablet.
+
 ## Files and assets
 
 The supplied `asterion-native-project.zip` contains every required asset, including the camp scenery, collision and shared-mesh GLBs, terrain maps and layout data. Extract the complete archive before importing it. Godot generates its own import and extracted-texture files on first opening.
@@ -42,7 +57,9 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The first signed test APK has been built and installed on that tablet. The local file is `builds/asterion-debug.apk` (147,625,737 bytes), version 0.1.0. Its v2/v3 signatures verify; Android reports the installed ABI as `armeabi-v7a`. It supports Android API 24 and later. On the physical tablet, the camp renders and the map, travel to training, joystick movement and bow selection respond. However, short SurfaceFlinger samples measured about **1.4 FPS at Arrival Ridge and 2.6 FPS near training**. This build needs mobile performance work before comfortable play. This is a debug build, not a store release; the APK is separate from the editable project ZIP and is not committed to Git.
+The current installed test APK is `builds/asterion-test.apk` (142,436,125 bytes), version 0.1.0. It uses the optimized export template and the local testing key; it is not a store-signed release. Its v2/v3 signatures verify, and Android reports `armeabi-v7a`. Minimum Android API is 24. The APK is separate from the editable project ZIP and is not committed to Git. The original debug build remains an earlier diagnostic artifact.
+
+On the physical SM-T515, the camp, map, travel, joystick movement, weapon selection and both graphics choices respond. In short samples from the same Arrival Ridge view, the optimized build measured **3.14 FPS on Balanced and 2.40 FPS on High**. The initial unoptimized debug sample was 1.45 FPS. These results do not meet a comfortable-play target on this tablet and do not predict performance on stronger phones.
 
 For another computer, set up the export dependencies:
 
@@ -64,6 +81,7 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 & 'Godot.exe' --headless --path . --script res://tests/camp.gd
 & 'Godot.exe' --headless --path . --script res://tests/polish.gd
 & 'Godot.exe' --headless --path . --script res://tests/training.gd
+& 'Godot.exe' --headless --path . --script res://tests/graphics.gd
 & 'Godot.exe' --path . --resolution 1280x720 --script res://tests/touch.gd
 ```
 
@@ -82,3 +100,5 @@ See `VALIDATION.md` for the current results and limits.
 `tests/polish_preview.gd` captures the updated typography, colored training floor, fitted temple inscriptions and safe-zone weapon state. Restart the running game with F5 to load this update.
 
 `tests/training_preview.gd` captures a sword combo, the drawn bow and a completed archery drill, using the actual renderer.
+
+`tests/graphics_preview.gd` captures the same Arrival Ridge and training views under both graphics choices. `tests/graphics.gd -- --capture` also captures the settings screen.

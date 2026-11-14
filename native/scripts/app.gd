@@ -51,6 +51,17 @@ func _ready():
 	play.custom_minimum_size.y = 60
 	play.pressed.connect(func(): travel(Session.data.zone))
 	box.add_child(play)
+	var graphics := Button.new()
+	graphics.text = "GRAPHICS"
+	graphics.custom_minimum_size.y = 48
+	graphics.pressed.connect(func():
+		var panel = preload("res://scripts/graphics_settings.gd").new()
+		panel.closed.connect(func(): panel.queue_free())
+		backdrop.add_child(panel)
+	)
+	box.add_child(graphics)
+	if Session.render_profile.get("autostart",false):
+		travel.call_deferred("camp")
 
 func travel(zone:String):
 	if transitioning or zone not in ["camp","forest"]:

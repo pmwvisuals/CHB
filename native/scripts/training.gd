@@ -166,4 +166,4 @@ func status_text(kind:String) -> String:
 		return "%02d SECONDS   ·   %d POINTS\nCOMBO   %d / 3" % [ceili(remaining),score,combo]
 	if kind == "bow":
 		return "FREE ARCHERY   ·   HOLD, THEN RELEASE\nPERSONAL BEST   %d / 50" % Session.data.training.archery_best
-	return "FREE SWORD PRACTICE   ·   THREE-HIT COMBOS\nPERSONAL BEST   %d" % Session.data.training.sword_best
+	return "FREE SWORD PRACTICE\n3-HIT COMBOS   ·   BEST %d" % Session.data.training.sword_best

@@ -18,6 +18,7 @@ var sword_button:Button
 var bow_button:Button
 var drill_button:Button
 var draw_meter:ProgressBar
+var graphics_panel:Control
 
 func label_at(parent,text:String,at:Vector2,font_size:int=20) -> Label:
 	var label := Label.new()
@@ -151,9 +152,10 @@ func _ready():
 	root.add_child(pause_panel)
 	var pause_title := label_at(pause_panel,"REST A MOMENT",Vector2(420,180),30)
 	pause_title.add_theme_font_override("font",preload("res://fonts/Cinzel.ttf"))
-	button(pause_panel,"RESUME",Vector2(460,280),Vector2(360,58),toggle_pause)
-	button(pause_panel,"SAVE PROGRESS",Vector2(460,354),Vector2(360,58),save_progress)
-	button(pause_panel,"RETURN TO SANCTUARY",Vector2(460,428),Vector2(360,58),func(): Session.paused=false;Session.change_zone("camp"))
+	button(pause_panel,"RESUME",Vector2(460,260),Vector2(360,58),toggle_pause)
+	button(pause_panel,"GRAPHICS",Vector2(460,332),Vector2(360,58),open_graphics)
+	button(pause_panel,"SAVE PROGRESS",Vector2(460,404),Vector2(360,58),save_progress)
+	button(pause_panel,"RETURN TO SANCTUARY",Vector2(460,476),Vector2(360,58),func(): Session.paused=false;Session.change_zone("camp"))
 	pause_panel.visible = false
 
 func toggle_pause():
@@ -166,6 +168,14 @@ func toggle_pause():
 func save_progress():
 	if Session.save_game(world.player):
 		Session.message = "Progress saved on this device."
+
+func open_graphics():
+	graphics_panel = preload("res://scripts/graphics_settings.gd").new()
+	graphics_panel.closed.connect(func():
+		graphics_panel.queue_free()
+		graphics_panel = null
+	)
+	add_child(graphics_panel)
 
 func open_map():
 	if world.forest or Session.paused:
@@ -188,7 +198,9 @@ func close_map():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func handle_back():
-	if is_instance_valid(map_panel):
+	if is_instance_valid(graphics_panel):
+		graphics_panel.closed.emit()
+	elif is_instance_valid(map_panel):
 		close_map()
 	else:
 		toggle_pause()
@@ -199,6 +211,8 @@ func _unhandled_input(event):
 		open_map()
 
 func _process(delta):
+	# Full-screen menus cover the scene; avoid drawing it underneath them.
+	world.visible = not Session.paused
 	var armed:bool = world.player.combat_enabled()
 	health.text = "VITALITY %d   ·   %d GOLD   ·   %d XP" % [Session.data.health,Session.data.coins,Session.data.xp]
 	info.text = "TRAINING GROUND  ·  PRACTICE ENABLED" if armed else "WOODLAND  ·  EXPLORATION" if world.forest else "SANCTUARY  ·  WEAPONS SHEATHED"
@@ -237,4 +251,4 @@ func _process(delta):
 	toast_panel.visible = toast_time>0 and not Session.paused
 	prompt.text = world.interaction_text()
 	prompt.visible = prompt.text != "" and not Session.paused
-	pause_panel.visible = Session.paused and not is_instance_valid(map_panel)
+	pause_panel.visible = Session.paused and not is_instance_valid(map_panel) and not is_instance_valid(graphics_panel)

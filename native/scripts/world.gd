@@ -81,6 +81,7 @@ func prepare():
 	add_child(hud)
 	player.hud = hud
 	finish_preparation()
+	apply_graphics()
 	if forest and beast_scene:
 		enemy = preload("res://scripts/boar.gd").new()
 		enemy.player = player
@@ -91,6 +92,9 @@ func prepare():
 
 func finish_preparation():
 	pass
+
+func apply_graphics():
+	sun.directional_shadow_max_distance = Session.graphics_preset().shadow_range
 
 func build_sky():
 	var world := WorldEnvironment.new()
@@ -129,6 +133,7 @@ func build_sky():
 	var lunar = material("c8d9e9")
 	lunar.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	moon_disc = mesh_node(disc,Vector3(-45,-40,0),lunar)
+	update_daylight()
 
 func build_ground():
 	var tool := SurfaceTool.new()
@@ -285,6 +290,14 @@ func _process(delta):
 		return
 	autosave += delta
 	Session.data.time = fmod(Session.data.time+delta,1920.0)
+	update_daylight()
+	if not forest:
+		Session.data.health = minf(100,Session.data.health+delta*4)
+	if autosave>20:
+		autosave = 0
+		Session.save_game(player)
+
+func update_daylight():
 	var t:float = Session.data.time
 	var angle := PI*(t/1440.0) if t<1440 else PI+PI*(t-1440)/480.0
 	var direction := Vector3(cos(angle),sin(angle),.15).normalized()
@@ -303,8 +316,3 @@ func _process(delta):
 	var sky_mat = environment.sky.sky_material
 	sky_mat.sky_top_color = Color("071220").lerp(Color("345f71"),day)
 	sky_mat.sky_horizon_color = Color("152836").lerp(Color("a4b7ac"),day)
-	if not forest:
-		Session.data.health = minf(100,Session.data.health+delta*4)
-	if autosave>20:
-		autosave = 0
-		Session.save_game(player)

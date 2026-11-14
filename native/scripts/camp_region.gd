@@ -11,11 +11,29 @@ var light_slots:Array[OmniLight3D] = []
 var light_timer := 0.0
 var material_cache := {}
 var training_hits := 0
+var foliage_stream
+var collision_visuals:Node3D
+
+func apply_graphics():
+	super.apply_graphics()
+	var preset:Dictionary = Session.graphics_preset()
+	for node in get_children():
+		if node is MultiMeshInstance3D and not node.has_meta("distant_crown"):
+			node.lod_bias = preset.lod
+			if node.get_meta("foliage_detail",false):
+				node.visibility_range_end = preset.leaf_range
+	if is_instance_valid(foliage_stream):
+		foliage_stream.refresh(true)
 
 func finish_preparation():
 	training = preload("res://scripts/training.gd").new()
 	training.world = self
 	add_child(training)
+	if not Session.render_profile.is_empty():
+		var arrival:Dictionary = destinations.filter(func(d): return d.id == "arrival")[0]
+		travel_to(arrival)
+		Session.data.time = 600.0
+		update_daylight()
 
 func combat_allowed(at:Vector3) -> bool:
 	return absf(at.x+67)<23 and absf(at.z+34)<23
@@ -75,6 +93,7 @@ func height(x:float,z:float) -> float:
 
 func build_ground():
 	scenery = scenery_scene.instantiate()
+	scenery_scene = null
 	add_child(scenery)
 	var ground_shader := ShaderMaterial.new()
 	ground_shader.shader = preload("res://shaders/camp_ground.gdshader")
@@ -93,10 +112,11 @@ func build_ground():
 			part.material_override = water
 			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		part.visibility_range_end = 390
-	var collision_root = collision_scene.instantiate()
-	add_child(collision_root)
-	collision_root.hide()
-	for part in collision_root.find_children("*","MeshInstance3D",true,false):
+	collision_visuals = collision_scene.instantiate()
+	collision_scene = null
+	add_child(collision_visuals)
+	collision_visuals.hide()
+	for part in collision_visuals.find_children("*","MeshInstance3D",true,false):
 		pending_collision.append(part)
 	environment.fog_density = .0035
 	sun.directional_shadow_max_distance = 65
@@ -164,12 +184,20 @@ func build_landmarks():
 		light_slots.append(lamp)
 
 func plant():
+	foliage_stream = preload("res://scripts/foliage_stream.gd").new()
+	foliage_stream.world = self
+	add_child(foliage_stream)
 	for i in range(pending_collision.size()):
 		pending_collision[i].create_trimesh_collision()
+		for body in pending_collision[i].get_children():
+			if body is StaticBody3D:
+				body.reparent(self,true)
 		if i%4 == 0:
 			Session.app.build_progress(.55+float(i)/pending_collision.size()*.12,"Preparing walkways…")
 			await get_tree().process_frame
 	pending_collision.clear()
+	collision_visuals.free()
+	collision_visuals = null
 	var prototypes = prototypes_scene.instantiate()
 	var meshes := {}
 	for part in prototypes.find_children("*","MeshInstance3D",true,false):
@@ -190,6 +218,7 @@ func plant():
 			multi.set_instance_transform(index,Transform3D(Basis(Vector3(m[0],m[1],m[2]),Vector3(m[3],m[4],m[5]),Vector3(m[6],m[7],m[8])),Vector3(m[9],m[10],m[11])))
 		var node := MultiMeshInstance3D.new()
 		node.name = entry.kind
+		node.set_meta("foliage_detail","foliage high" in entry.kind)
 		node.multimesh = multi
 		node.position = Vector3(entry.center[0],entry.center[1],entry.center[2])
 		node.material_override = original.material_override
@@ -200,10 +229,15 @@ func plant():
 		node.visibility_range_end_margin = 8
 		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if entry.shadow and "foliage" not in entry.kind and not ground_cover else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(node)
+		foliage_stream.register_cell(node,entry)
 		if i%90 == 0:
 			Session.app.build_progress(.67+float(i)/layout.batches.size()*.30,"Planting the sanctuary…")
 			await get_tree().process_frame
 	prototypes.free()
+	prototypes_scene = null
+	foliage_stream.finish()
+	# Transforms now live in shared instance buffers and the distance streamer.
+	layout.erase("batches")
 
 func near_temple() -> Dictionary:
 	for destination in destinations:
