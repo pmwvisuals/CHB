@@ -6,6 +6,7 @@ extends Node3D
 @export var beast_scene:PackedScene
 var player
 var enemy
+var training
 var gate := Vector3.ZERO
 var rng := RandomNumberGenerator.new()
 var sun:DirectionalLight3D
@@ -79,6 +80,7 @@ func prepare():
 	hud.world = self
 	add_child(hud)
 	player.hud = hud
+	finish_preparation()
 	if forest and beast_scene:
 		enemy = preload("res://scripts/boar.gd").new()
 		enemy.player = player
@@ -86,6 +88,9 @@ func prepare():
 		add_child(enemy)
 		enemy.position = Vector3(3,height(3,-8)+.3,-8)
 	Session.message = "Explore the woodland. Combat is currently reserved for the training ground." if forest else "Welcome to the sanctuary. Open the map to explore."
+
+func finish_preparation():
+	pass
 
 func build_sky():
 	var world := WorldEnvironment.new()

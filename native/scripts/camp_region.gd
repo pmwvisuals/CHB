@@ -12,6 +12,11 @@ var light_timer := 0.0
 var material_cache := {}
 var training_hits := 0
 
+func finish_preparation():
+	training = preload("res://scripts/training.gd").new()
+	training.world = self
+	add_child(training)
+
 func combat_allowed(at:Vector3) -> bool:
 	return absf(at.x+67)<23 and absf(at.z+34)<23
 
@@ -29,8 +34,11 @@ func practice_attack(attacker) -> bool:
 		if not hit.is_empty() and hit.position.distance_to(target)>.75:
 			continue
 		training_hits += 1
-		Session.message = "CLEAN HIT  ·  Practice dummy %d  ·  %d hits" % [index+1,training_hits]
+		if is_instance_valid(training):
+			training.sword_result(index)
 		return true
+	if is_instance_valid(training):
+		training.sword_result(-1)
 	return false
 
 func finish_import(part:MeshInstance3D):

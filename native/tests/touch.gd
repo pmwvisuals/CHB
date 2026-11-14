@@ -83,6 +83,33 @@ func run():
 	await touch(0,true,Vector2(1184,630))
 	await touch(0,false,Vector2(1184,630))
 	check(session.attack_requested,"Touching Strike requests an attack")
+	await touch(0,true,Vector2(1101,127))
+	await touch(0,false,Vector2(1101,127))
+	check(session.weapon_requested == "bow","The training Bow selector responds to touch")
+	player.equip("bow")
+	session.weapon_requested = ""
+	session.attack_requested = false
+	await process_frame
+	await touch(0,true,Vector2(140,580))
+	await drag(0,Vector2(140,520),Vector2(0,-60))
+	await touch(1,true,Vector2(1184,630))
+	check(session.bow_held and session.touch_move.y<-.5 and not session.attack_requested,"Bow drawing supports a second finger while moving")
+	await touch(1,false,Vector2(1184,630))
+	check(not session.bow_held,"Releasing the bow button clears the held input")
+	await touch(0,false,Vector2(140,520))
+	player.set_physics_process(true)
+	await touch(0,true,Vector2(1184,630))
+	for i in range(24):
+		await physics_frame
+		await process_frame
+	check(player.draw_time>.12,"Holding the touch button visibly charges the bow")
+	var shots:int = session.data.training.arrows_fired
+	await touch(0,false,Vector2(1184,630))
+	for i in range(3):
+		await physics_frame
+		await process_frame
+	check(session.data.training.arrows_fired == shots+1,"Releasing touch fires exactly one physical arrow")
+	player.set_physics_process(false)
 	await touch(0,true,Vector2(1135,49))
 	await touch(0,false,Vector2(1135,49))
 	check(session.paused and is_instance_valid(player.hud.map_panel),"Touching Map opens the camp map")

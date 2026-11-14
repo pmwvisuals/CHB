@@ -9,6 +9,14 @@ var hud
 var world
 var combat_active := false
 var swing:Tween
+var weapon_kind := "sword"
+var sword_model:Node3D
+var bow_model:Node3D
+var nocked_arrow:Node3D
+var bow_strings:Array[MeshInstance3D] = []
+var draw_time := 0.0
+var primary_held := false
+var primary_pressed := false
 
 func _ready():
 	var collision := CollisionShape3D.new()
@@ -26,26 +34,36 @@ func _ready():
 	camera.current = true
 	weapon = Node3D.new()
 	weapon.visible = false
-	weapon.position = Vector3(.38,-.36,-.65)
 	camera.add_child(weapon)
-	var blade := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(.055,.65,.025)
-	blade.mesh = box
-	var steel := StandardMaterial3D.new()
-	steel.albedo_color = Color("abbfc0")
-	steel.metallic = .7
-	steel.roughness = .3
-	blade.material_override = steel
-	blade.position.y = .25
-	blade.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	weapon.add_child(blade)
-	var guard := MeshInstance3D.new()
-	var guard_mesh := BoxMesh.new()
-	guard_mesh.size = Vector3(.22,.045,.06)
-	guard.mesh = guard_mesh
-	guard.material_override = steel
-	weapon.add_child(guard)
+	sword_model = preload("res://assets/weapons/practice-sword.glb").instantiate()
+	sword_model.position = Vector3(.44,-.46,-.85)
+	sword_model.scale = Vector3.ONE*.68
+	sword_model.rotation.z = -.12
+	weapon.add_child(sword_model)
+	bow_model = preload("res://assets/weapons/practice-bow.glb").instantiate()
+	bow_model.position = Vector3(-.28,-.19,-.72)
+	bow_model.scale = Vector3.ONE*.8
+	weapon.add_child(bow_model)
+	bow_model.hide()
+	nocked_arrow = preload("res://assets/weapons/practice-arrow.glb").instantiate()
+	nocked_arrow.position.x = .04
+	bow_model.add_child(nocked_arrow)
+	var cord := StandardMaterial3D.new()
+	cord.albedo_color = Color("e4d9b9")
+	cord.roughness = .95
+	for i in range(2):
+		var segment := MeshInstance3D.new()
+		var cylinder := CylinderMesh.new()
+		cylinder.top_radius = .003
+		cylinder.bottom_radius = .003
+		cylinder.radial_segments = 4
+		segment.mesh = cylinder
+		segment.material_override = cord
+		bow_model.add_child(segment)
+		bow_strings.append(segment)
+	for mesh in weapon.find_children("*","MeshInstance3D",true,false):
+		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	update_bow()
 	floor_snap_length = .35
 
 func _unhandled_input(event):
@@ -57,6 +75,15 @@ func _unhandled_input(event):
 		return
 	if Session.paused:
 		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		primary_held = true
+		primary_pressed = true
+	if event.is_action_pressed("sword"):
+		equip("sword")
+	if event.is_action_pressed("bow"):
+		equip("bow")
+	if event.is_action_pressed("drill") and combat_enabled():
+		world.training.start_round(weapon_kind)
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		look(event.relative * .0022)
 	if event is InputEventScreenTouch:
@@ -66,6 +93,8 @@ func _unhandled_input(event):
 		look(event.relative * .003)
 
 func _input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		primary_held = false
 	# A release over a HUD button must still release the camera finger.
 	if event is InputEventScreenTouch and not event.pressed and event.index == look_finger:
 		look_finger = -1
@@ -85,16 +114,69 @@ func sync_combat():
 		return
 	combat_active = active
 	Session.attack_requested = false
+	cancel_draw()
 	if not active:
 		if swing and swing.is_running():
 			swing.kill()
 		weapon.rotation.z = 0
 		cooldown = 0
-	Session.message = "TRAINING GROUND  ·  Practice sword ready" if active else "SANCTUARY  ·  Weapon sheathed"
+		if is_instance_valid(world.training):
+			world.training.cancel_round()
+	Session.message = "TRAINING GROUND  ·  1 Sword  ·  2 Bow  ·  R Start drill" if active else "SANCTUARY  ·  Weapon sheathed"
+
+func cancel_draw():
+	draw_time = 0
+	primary_held = false
+	primary_pressed = false
+	Session.bow_held = false
+	update_bow()
+
+func update_bow():
+	if not is_instance_valid(bow_model):
+		return
+	var pull := clampf(draw_time/1.2,0,1)*.32
+	nocked_arrow.position.z = pull
+	for i in range(bow_strings.size()):
+		var end := Vector3(0,.58 if i == 0 else -.58,0)
+		var nock := Vector3(0,0,pull)
+		var segment := bow_strings[i]
+		segment.position = (end+nock)/2
+		segment.scale.y = end.distance_to(nock)/2
+		segment.quaternion = Quaternion(Vector3.UP,(end-nock).normalized())
+
+func equip(kind:String) -> bool:
+	if not combat_enabled() or Session.paused or kind not in ["sword","bow"]:
+		return false
+	if kind == weapon_kind:
+		return true
+	cancel_draw()
+	if swing and swing.is_running():
+		swing.kill()
+	weapon.rotation.z = 0
+	cooldown = 0
+	weapon_kind = kind
+	sword_model.visible = kind == "sword"
+	bow_model.visible = kind == "bow"
+	world.training.cancel_round()
+	Session.message = "ASH BOW  ·  Hold to draw, release to fire. Stand on the archery line." if kind == "bow" else "PRACTICE SWORD  ·  Face a dummy and land three quick hits."
+	return true
+
+func release_bow() -> bool:
+	var charge := clampf(draw_time/1.2,0,1)
+	var ready := draw_time>=.12 and cooldown<=0 and is_instance_valid(world.training)
+	cancel_draw()
+	if not ready:
+		return false
+	var arrow = world.training.shoot(camera,charge)
+	if arrow == null:
+		return false
+	cooldown = .35
+	return true
 
 func _physics_process(delta):
 	sync_combat()
 	if Session.paused:
+		cancel_draw()
 		return
 	cooldown = maxf(0,cooldown-delta)
 	var direction := Input.get_vector("left","right","forward","back") + Session.touch_move
@@ -110,8 +192,21 @@ func _physics_process(delta):
 	Session.jump_requested = false
 	move_and_slide()
 	sync_combat()
-	if ((not Session.touch_controls and Input.is_action_just_pressed("attack")) or Session.attack_requested) and cooldown <= 0:
+	if Session.weapon_requested != "":
+		equip(Session.weapon_requested)
+		Session.weapon_requested = ""
+	if Session.drill_requested and combat_enabled():
+		world.training.start_round(weapon_kind)
+	Session.drill_requested = false
+	if combat_enabled() and weapon_kind == "bow":
+		if (primary_held or Session.bow_held) and cooldown<=0 and world.training.can_shoot():
+			draw_time = minf(1.2,draw_time+delta)
+			update_bow()
+		elif draw_time>0:
+			release_bow()
+	elif (primary_pressed or Session.attack_requested) and cooldown<=0:
 		attack()
+	primary_pressed = false
 	Session.attack_requested = false
 	if Input.is_action_just_pressed("interact") or Session.interact_requested:
 		world.interact()
@@ -126,9 +221,11 @@ func _physics_process(delta):
 		Session.change_zone("camp")
 
 func attack():
-	if not combat_enabled() or cooldown>0:
+	if not combat_enabled() or cooldown>0 or Session.paused or weapon_kind != "sword":
 		return false
-	cooldown = .65
+	cooldown = .4
+	if swing and swing.is_running():
+		swing.kill()
 	swing = create_tween()
 	swing.tween_property(weapon,"rotation:z",-1.1,.13)
 	swing.tween_property(weapon,"rotation:z",0.0,.30)

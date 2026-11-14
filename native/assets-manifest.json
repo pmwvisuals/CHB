@@ -83,6 +83,24 @@
       "file": "assets/camp/camp-layout.json",
       "bytes": 8361219,
       "sha256": "592198f00202ede3bb2345215bea1bba1abda09d80c0a80a0852c4e486fdaca4"
+    },
+    {
+      "source": "lib/game/practice-weapons.ts",
+      "file": "assets/weapons/practice-sword.glb",
+      "bytes": 38192,
+      "sha256": "04a40387099d4d7dbdf27946bad9b036e753b31257f2f498755f1b2250c20ac1"
+    },
+    {
+      "source": "lib/game/practice-weapons.ts",
+      "file": "assets/weapons/practice-bow.glb",
+      "bytes": 20800,
+      "sha256": "23c9136dedb509e29e7424ac9fcaab9a1d6117e2110c7c3302685e65bb3c138e"
+    },
+    {
+      "source": "lib/game/practice-weapons.ts",
+      "file": "assets/weapons/practice-arrow.glb",
+      "bytes": 8340,
+      "sha256": "38bf4781767cb2d592d3d961cf717e608530d87f90e6417eb157c8d45ec1b2a0"
     }
   ]
 }

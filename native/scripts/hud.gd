@@ -12,6 +12,12 @@ var controls:Label
 var toast_panel:PanelContainer
 var last_message := ""
 var toast_time := 0.0
+var training_panel:Control
+var training_info:Label
+var sword_button:Button
+var bow_button:Button
+var drill_button:Button
+var draw_meter:ProgressBar
 
 func label_at(parent,text:String,at:Vector2,font_size:int=20) -> Label:
 	var label := Label.new()
@@ -86,11 +92,43 @@ func _ready():
 	if not world.forest:
 		var map_button := button(root,"MAP",Vector2.ZERO,Vector2(90,54),open_map)
 		pin(map_button,Control.PRESET_TOP_RIGHT,Rect2(-190,22,90,54))
+	training_panel = Control.new()
+	training_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(training_panel)
+	pin(training_panel,Control.PRESET_TOP_RIGHT,Rect2(-326,96,302,140))
+	var training_plate := Panel.new()
+	training_plate.size = Vector2(302,140)
+	training_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	training_panel.add_child(training_plate)
+	sword_button = button(training_panel,"1  SWORD",Vector2(8,8),Vector2(92,46),func(): Session.weapon_requested="sword",Session.touch_controls)
+	bow_button = button(training_panel,"2  BOW",Vector2(104,8),Vector2(86,46),func(): Session.weapon_requested="bow",Session.touch_controls)
+	drill_button = button(training_panel,"R  DRILL",Vector2(194,8),Vector2(100,46),func(): Session.drill_requested=true,Session.touch_controls)
+	for b in [sword_button,bow_button,drill_button]:
+		b.add_theme_font_size_override("font_size",17)
+	if Session.touch_controls:
+		sword_button.text = "SWORD"
+		bow_button.text = "BOW"
+	training_info = label_at(training_panel,"",Vector2(14,66),16)
+	training_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	draw_meter = ProgressBar.new()
+	draw_meter.max_value = 1.2
+	draw_meter.show_percentage = false
+	draw_meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(draw_meter)
+	pin(draw_meter,Control.PRESET_CENTER,Rect2(-70,32,140,8))
 	if Session.touch_controls:
 		var stick = preload("res://scripts/joystick.gd").new()
 		root.add_child(stick)
 		pin(stick,Control.PRESET_BOTTOM_LEFT,Rect2(20,-260,240,240))
-		attack_button = button(root,"STRIKE",Vector2.ZERO,Vector2(112,80),func(): Session.attack_requested=true,true)
+		attack_button = button(root,"STRIKE",Vector2.ZERO,Vector2(112,80),func():
+			if world.player.weapon_kind == "sword":
+				Session.attack_requested=true
+		,true)
+		attack_button.button_down.connect(func():
+			if world.player.weapon_kind == "bow":
+				Session.bow_held=true
+		)
+		attack_button.button_up.connect(func(): Session.bow_held=false)
 		attack_button.visible = false
 		pin(attack_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-130,112,80))
 		var jump = button(root,"JUMP",Vector2.ZERO,Vector2(94,64),func(): Session.jump_requested=true,true)
@@ -121,6 +159,7 @@ func _ready():
 func toggle_pause():
 	Session.paused = not Session.paused
 	Session.clear_touch()
+	world.player.cancel_draw()
 	if not Session.touch_controls:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Session.paused else Input.MOUSE_MODE_CAPTURED
 
@@ -133,6 +172,7 @@ func open_map():
 		return
 	Session.paused = true
 	Session.clear_touch()
+	world.player.cancel_draw()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	map_panel = preload("res://scripts/camp_map.gd").new()
 	map_panel.world = world
@@ -167,8 +207,20 @@ func _process(delta):
 	if is_instance_valid(attack_button):
 		attack_button.visible = armed and not Session.paused
 		attack_button.disabled = not armed or Session.paused
+		attack_button.text = "RELEASE" if world.player.draw_time>0 else "DRAW" if world.player.weapon_kind == "bow" else "STRIKE"
+		if armed and world.player.weapon_kind == "bow" and is_instance_valid(world.training) and not world.training.can_shoot():
+			attack_button.disabled = true
+			attack_button.text = "5 / 5"
+	training_panel.visible = armed and not Session.paused
+	draw_meter.visible = armed and not Session.paused and world.player.draw_time>0
+	draw_meter.value = world.player.draw_time
+	if armed and is_instance_valid(world.training):
+		training_info.text = world.training.status_text(world.player.weapon_kind)
+		sword_button.modulate = Color("e9cc88") if world.player.weapon_kind == "sword" else Color.WHITE
+		bow_button.modulate = Color("e9cc88") if world.player.weapon_kind == "bow" else Color.WHITE
+		drill_button.text = ("" if Session.touch_controls else "R  ")+("RETRY" if world.training.completed else "DRILL")
 	if is_instance_valid(controls):
-		controls.text = "WASD  Move    SHIFT  Run    MOUSE  Look    SPACE  Jump    E  Interact    M  Map    ESC  Pause"+("    CLICK  Practice" if armed else "")
+		controls.text = "WASD  Move   SHIFT  Run   MOUSE  Look   SPACE  Jump   E  Interact   M  Map   ESC  Pause"+("   1/2 Weapon   R Drill" if armed else "")
 	if last_message != Session.message:
 		last_message = Session.message
 		toast_time = 5.5

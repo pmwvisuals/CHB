@@ -2,10 +2,14 @@ extends Node
 
 const SAVE := "user://sanctuary-save.json"
 var save_path := SAVE
-var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":360.0, "positions":{}}
+var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":360.0, "positions":{}, "training":{}}
+const TRAINING_KEYS := ["archery_best","sword_best","archery_rounds","sword_rounds","arrows_fired","target_hits","sword_hits","combos"]
 var touch_move := Vector2.ZERO
 var jump_requested := false
 var attack_requested := false
+var bow_held := false
+var weapon_requested := ""
+var drill_requested := false
 var interact_requested := false
 var sprint_requested := false
 var paused := false
@@ -16,9 +20,9 @@ var touch_controls := OS.has_feature("mobile") or "--touch-controls" in OS.get_c
 
 func _ready():
 	Engine.max_fps = 30 if touch_controls else 60
-	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint"]:
+	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint","sword","bow","drill"]:
 		InputMap.add_action(action)
-	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT]}
+	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT],"sword":[KEY_1],"bow":[KEY_2],"drill":[KEY_R]}
 	for action in keys:
 		for code in keys[action]:
 			var key := InputEventKey.new()
@@ -28,10 +32,23 @@ func _ready():
 	mouse.button_index = MOUSE_BUTTON_LEFT
 	InputMap.action_add_event("attack",mouse)
 	load_game()
+	ensure_training()
+
+func ensure_training():
+	if not data.get("training") is Dictionary:
+		data.training = {}
+	for key in TRAINING_KEYS:
+		var value = data.training.get(key,0)
+		data.training[key] = clampi(int(value),0,100000000) if (value is float or value is int) and is_finite(float(value)) else 0
+	data.training.archery_best = mini(50,data.training.archery_best)
 
 func load_game():
 	if FileAccess.file_exists(save_path):
-		var parsed = JSON.parse_string(FileAccess.get_file_as_string(save_path))
+		var reader := JSON.new()
+		if reader.parse(FileAccess.get_file_as_string(save_path)) != OK:
+			ensure_training()
+			return
+		var parsed = reader.data
 		if parsed is Dictionary and parsed.get("version",0) == 1:
 			for key in data:
 				if not parsed.has(key):
@@ -44,6 +61,7 @@ func load_game():
 				data.zone = "camp"
 			data.health = clampf(data.health,1,100) if is_finite(data.health) else 100.0
 			data.time = fposmod(data.time,1920.0) if is_finite(data.time) else 360.0
+	ensure_training()
 
 func save_game(player = null):
 	if is_instance_valid(player):
@@ -70,6 +88,9 @@ func clear_touch():
 	touch_move = Vector2.ZERO
 	jump_requested = false
 	attack_requested = false
+	bow_held = false
+	weapon_requested = ""
+	drill_requested = false
 	interact_requested = false
 	sprint_requested = false
 
