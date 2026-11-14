@@ -1,5 +1,6 @@
-/** Irregular inner canopy line; the outer scenery disappears into fog before it ends. */
-export function forestEdge(angle:number){return 197+12*Math.sin(angle*3+.4)+8*Math.sin(angle*7);}
+import {forestInnerRadius} from './camp-boundary';
+/** The tree line, terrain shading and mist share the compact camp outline. */
+export const forestEdge=forestInnerRadius;
 export function forestDepth(x:number,z:number){return Math.hypot(x,z)-forestEdge(Math.atan2(z,x));}
 export function forestShade(x:number,z:number){const t=Math.max(0,Math.min(1,(forestDepth(x,z)+4)/22));return t*t*(3-2*t);}
 /** Continuous pockets of thick growth and small clearings, shared by each layer. */

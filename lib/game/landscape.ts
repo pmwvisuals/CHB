@@ -1,4 +1,5 @@
 import {forestShade} from './forest-border-layout';
+import {insideCampTerrain} from './camp-boundary';
 import * as T from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {templeSites} from './sanctuary-layout';
@@ -40,6 +41,7 @@ export function terrainGeometry(width=500,depth=500,cx=0,cz=0,spacing=1.6){
  }
  function fine(ix:number,iz:number){return ix>=0&&ix<nx&&iz>=0&&iz<nz&&refined[iz*nx+ix]===1;}
  for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
+  if(width===500&&depth===500&&!insideCampTerrain(cx-width/2+(ix+.5)*dx,cz-depth/2+(iz+.5)*dz,spacing*1.5))continue;
   const x=ix*2,z=iz*2,self=fine(ix,iz),north=self||fine(ix,iz-1),east=self||fine(ix+1,iz),south=self||fine(ix,iz+1),west=self||fine(ix-1,iz);
   const nw=vertex(x,z),ne=vertex(x+2,z),se=vertex(x+2,z+2),sw=vertex(x,z+2);
   if(!north&&!east&&!south&&!west){indices.push(nw,sw,ne,ne,sw,se);continue;}

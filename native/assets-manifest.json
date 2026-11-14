@@ -1,111 +1,111 @@
 {
   "assets": [
     {
-      "bytes": 1061228,
+      "bytes": 1061228.0,
       "file": "assets/camp_olive.glb",
       "sha256": "c7f9b3813cabbbf103fd2570adffc2665f18019019686c606da69593124606d6",
       "source": "assets-source/vegetation/camp_olive.glb"
     },
     {
-      "bytes": 1061240,
+      "bytes": 1061240.0,
       "file": "assets/camp_laurel.glb",
       "sha256": "89d27b04aad7921c827919a5ecc37efee62206ad6bf7ce69e6c2ec1487c667e9",
       "source": "assets-source/vegetation/camp_laurel.glb"
     },
     {
-      "bytes": 1046308,
+      "bytes": 1046308.0,
       "file": "assets/forest_fir.glb",
       "sha256": "6d92e6dff4f7b0830962b95fd175c9e8bfc3fc7e65a45565f97a624d40e49a99",
       "source": "assets-source/vegetation/forest_fir.glb"
     },
     {
-      "bytes": 1061216,
+      "bytes": 1061216.0,
       "file": "assets/forest_oak.glb",
       "sha256": "926216985e8c9c0e4cd721e67902cb1b229a140625c710bd06258bdc97b36481",
       "source": "assets-source/vegetation/forest_oak.glb"
     },
     {
-      "bytes": 17956,
+      "bytes": 17956.0,
       "file": "assets/forest_fern.glb",
       "sha256": "9bef2708c506af940753920646b8783caed11715a7c01645dbb37c6ff5d47a45",
       "source": "assets-source/vegetation/forest_fern.glb"
     },
     {
-      "bytes": 24213160,
+      "bytes": 24213160.0,
       "file": "assets/boar.glb",
       "sha256": "ccc37c07225a7f7668b0eed5a1bd74d517337487203638f0ce38ef34623de27c",
       "source": "assets-source/creatures/ash-tusk-boar/game/ash-tusk-boar-game.glb"
     },
     {
-      "bytes": 77606036,
-      "file": "assets/camp/camp-static.glb",
-      "sha256": "cf1cf2421aa3bcf72fdca0ccac5a09908a6e39bc82703d4588712d3495447681",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 14134896,
-      "file": "assets/camp/camp-prototypes.glb",
-      "sha256": "df7efa15eef165f3fbcef111a514ad4a0f7dae19fd2dce4f731f5c92890dc22f",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 34258136,
-      "file": "assets/camp/camp-collision.glb",
-      "sha256": "5f6ce093d598fc582932cc1ca79098e6dbc551662ab777217bf121f96619495d",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 71212,
-      "file": "assets/camp/habitat.png",
-      "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 770172,
-      "file": "assets/camp/ground-albedo.png",
-      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 1268157,
-      "file": "assets/camp/ground-normal.png",
-      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 498771,
-      "file": "assets/camp/ground-roughness.png",
-      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 8361219,
-      "file": "assets/camp/camp-layout.json",
-      "sha256": "592198f00202ede3bb2345215bea1bba1abda09d80c0a80a0852c4e486fdaca4",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 38192,
+      "bytes": 38192.0,
       "file": "assets/weapons/practice-sword.glb",
       "sha256": "04a40387099d4d7dbdf27946bad9b036e753b31257f2f498755f1b2250c20ac1",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 20800,
+      "bytes": 20800.0,
       "file": "assets/weapons/practice-bow.glb",
       "sha256": "23c9136dedb509e29e7424ac9fcaab9a1d6117e2110c7c3302685e65bb3c138e",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 8340,
+      "bytes": 8340.0,
       "file": "assets/weapons/practice-arrow.glb",
       "sha256": "38bf4781767cb2d592d3d961cf717e608530d87f90e6417eb157c8d45ec1b2a0",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 4135917,
+      "bytes": 50627304.0,
+      "file": "assets/camp/camp-static.glb",
+      "sha256": "df767fcb33f18cf538d4767adfba77004432c2ba9e760c9d5231aff8416b5565",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 13625052.0,
+      "file": "assets/camp/camp-prototypes.glb",
+      "sha256": "a46e40a45a0c30008698450807bc8189c782f050425955e14d78c38ac949b462",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 16866192.0,
+      "file": "assets/camp/camp-collision.glb",
+      "sha256": "94aed5fb491153e691aca468936ce29c2383ae68ccddf08f490d33829d94c6b7",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 71212.0,
+      "file": "assets/camp/habitat.png",
+      "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 770172.0,
+      "file": "assets/camp/ground-albedo.png",
+      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1268157.0,
+      "file": "assets/camp/ground-normal.png",
+      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 498771.0,
+      "file": "assets/camp/ground-roughness.png",
+      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 6429745.0,
+      "file": "assets/camp/camp-layout.json",
+      "sha256": "aadfe5fa216b5c3e7015b8cd244edb1bcb361060734b41349c270e48d7c42e9b",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1920702,
       "file": "assets/camp/camp-physics.scn",
-      "sha256": "3d78fdc4d8f5b874ab3004aa5626326ab3b2732df5a1c56f217b6e8a773074b3",
+      "sha256": "e6ff29e30dd19ad2837ade395f4db71f40ccee1058b43b46a243748f8797e250",
       "source": "exact collision faces from camp-collision.glb; physics only"
     }
   ]

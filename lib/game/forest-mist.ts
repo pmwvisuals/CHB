@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {deepForestMistDensityGLSL} from './deep-forest-layout';
+import {forestEdgeGLSL,forestEdgeSamples} from './camp-boundary';
 
 /** Depth-aware, world-space participating mist. Integrates only the air between
  * the camera and the visible surface, including the sky, so foreground objects
@@ -13,16 +14,17 @@ export class ForestMist {
   this.material=new T.ShaderMaterial({depthTest:false,depthWrite:false,uniforms:{
    sceneColor:{value:this.target.texture},sceneDepth:{value:this.target.depthTexture},
    inverseProjection:{value:new T.Matrix4()},cameraWorld:{value:new T.Matrix4()},
-   eye:{value:new T.Vector3()},mistTime:{value:0},mistDaylight:{value:1},
+   eye:{value:new T.Vector3()},mistTime:{value:0},mistDaylight:{value:1},compactForestEdge:{value:forestEdgeSamples},
   },vertexShader:'varying vec2 mistUV;void main(){mistUV=uv;gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:`
    varying vec2 mistUV;uniform sampler2D sceneColor;uniform sampler2D sceneDepth;
    uniform mat4 inverseProjection;uniform mat4 cameraWorld;uniform vec3 eye;uniform float mistTime;uniform float mistDaylight;
+   ${forestEdgeGLSL}
    float hash(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
    float noise3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
     return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
      mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
    float density(vec3 p){
-    float angle=atan(p.z,p.x),edge=197.+12.*sin(angle*3.+.4)+8.*sin(angle*7.);
+    float angle=atan(p.z,p.x),edge=campForestEdge(angle);
     float depth=length(p.xz)-edge;
     float belt=smoothstep(-9.,13.,depth);if(belt<.001)return 0.;
     vec3 drift=p*vec3(.065,.16,.065)+vec3(mistTime*.012,0.,mistTime*.007);

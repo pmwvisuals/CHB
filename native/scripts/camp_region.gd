@@ -6,8 +6,7 @@ extends "res://scripts/world.gd"
 var layout:Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/camp/camp-layout.json"))
 var scenery:Node3D
 var destinations:Array[Dictionary] = []
-var light_slots:Array[OmniLight3D] = []
-var light_timer := 0.0
+var boundary := PackedVector2Array()
 var material_cache := {}
 var training_hits := 0
 var foliage_stream
@@ -28,14 +27,13 @@ func apply_graphics():
 		foliage_stream.refresh(true)
 
 func finish_preparation():
+	player.camera.far = 430
 	training = preload("res://scripts/training.gd").new()
 	training.world = self
 	add_child(training)
 	if not Session.render_profile.is_empty():
 		var arrival:Dictionary = destinations.filter(func(d): return d.id == "arrival")[0]
 		travel_to(arrival)
-		Session.data.time = 600.0
-		update_daylight()
 
 func combat_allowed(at:Vector3) -> bool:
 	return absf(at.x+67)<23 and absf(at.z+34)<23
@@ -92,7 +90,10 @@ func finish_import(part:MeshInstance3D):
 		part.mesh.surface_set_material(surface,material_cache[key])
 
 func bounds() -> float:
-	return 233.0
+	return float(layout.extent)
+
+func inside_bounds(at:Vector3) -> bool:
+	return Geometry2D.is_point_in_polygon(Vector2(at.x,at.z),boundary)
 
 func spawn_position() -> Vector3:
 	return Vector3(0,height(0,113)+.2,113)
@@ -108,6 +109,8 @@ func height(x:float,z:float) -> float:
 	return lerpf(lerpf(grid.values[index],grid.values[index+1],xx-ix),lerpf(grid.values[index+row],grid.values[index+row+1],xx-ix),zz-iz)
 
 func build_ground():
+	for point in layout.boundary:
+		boundary.append(Vector2(point[0],point[1]))
 	scenery = scenery_scene.instantiate()
 	scenery_scene = null
 	add_child(scenery)
@@ -132,7 +135,6 @@ func build_ground():
 	collision_scene = null
 	add_child(collision_root)
 	environment.fog_density = .0035
-	sun.directional_shadow_max_distance = 65
 
 func build_landmarks():
 	gate = Vector3(-40,height(-40,-121),-121)
@@ -186,15 +188,6 @@ func build_landmarks():
 		entry.yaw = -PI/2 if entry.id == "lake" else 0.0
 		entry.temple = false
 		destinations.append(entry)
-	for i in range(8):
-		var lamp := OmniLight3D.new()
-		lamp.light_color = Color("ffc889")
-		lamp.omni_range = 20
-		lamp.light_energy = 0
-		lamp.visible = false
-		lamp.shadow_enabled = false
-		add_child(lamp)
-		light_slots.append(lamp)
 
 func plant():
 	foliage_stream = preload("res://scripts/foliage_stream.gd").new()
@@ -283,22 +276,3 @@ func travel_to(destination:Dictionary):
 	player.sync_combat()
 	Session.message = destination.name
 
-func _process(delta):
-	super._process(delta)
-	if not is_instance_valid(player) or Session.paused:
-		return
-	player.camera.far = 900
-	sun_disc.position = player.position+sun.position.normalized()*600
-	moon_disc.position = player.position+moon.position.normalized()*600
-	sun_disc.scale = Vector3.ONE*(600.0/65)
-	moon_disc.scale = sun_disc.scale
-	light_timer -= delta
-	if light_timer<=0:
-		light_timer = .3
-		var nearby:Array = layout.lights.duplicate()
-		nearby.sort_custom(func(a,b): return Vector3(a[0],a[1],a[2]).distance_squared_to(player.position)<Vector3(b[0],b[1],b[2]).distance_squared_to(player.position))
-		for i in range(light_slots.size()):
-			var p:Array = nearby[i]
-			light_slots[i].position = Vector3(p[0],p[1],p[2])
-			light_slots[i].light_energy = (1-daylight)*1.8 if light_slots[i].position.distance_to(player.position)<55 else 0.0
-			light_slots[i].visible = light_slots[i].light_energy>.01

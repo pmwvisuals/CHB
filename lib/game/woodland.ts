@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { plantCollection, forestTreeIds, type PlantPlacement } from './vegetation';
 import { groundHeight as h, type Settings } from './data';
-import { groundMaterial,groundHabitat,weatheredRockGeometry,weatheredRockMaterial } from './landscape';
+import { groundMaterial,groundHabitat } from './landscape';
 
 export const woodlandSample={x:-40,z:-96,radius:29};
 export const inWoodland=(x:number,z:number)=>Math.hypot(x+40,z+96)<29;
@@ -25,7 +25,7 @@ export function buildWoodland(scene:T.Scene,collision:T.Group,blocked:(x:number,
  const d=new T.Object3D(),trees:{x:number;z:number}[]=[],plants:PlantPlacement[]=[];
  for(let attempt=0;attempt<800&&trees.length<24;attempt++){
   const x=-40+(rand()-.5)*55,z=-96+(rand()-.5)*55;if(!inWoodland(x,z)||blocked(x,z,3)||trees.some(p=>Math.hypot(p.x-x,p.z-z)<7))continue;
-  trees.push({x,z});const scale=.9+rand()*.1;plants.push({id:forestTreeIds[Math.floor(rand()*forestTreeIds.length)],x,y:h(x,z),z,scale,rotation:rand()*Math.PI*2});
+  trees.push({x,z});const scale=.9+rand()*.1;plants.push({id:'camp_olive',x,y:h(x,z),z,scale,rotation:rand()*Math.PI*2});
   const collider=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));collider.position.set(x,h(x,z)+1.2,z);collision.add(collider);
  }
  for(let i=0;i<1000;i++){const x=-40+(rand()-.5)*56,z=-96+(rand()-.5)*56;if(!inWoodland(x,z)||blocked(x,z,.8)||rand()>groundHabitat(x,z).bush*.9)continue;plants.push({id:i%4===0?'forest_bramble':i%4===1?'forest_fern':i%4===2?'forest_bracken':'forest_litter',x,y:h(x,z),z,scale:.65+rand()*.7,rotation:rand()*6.28});}
@@ -42,9 +42,6 @@ export function buildWoodland(scene:T.Scene,collision:T.Group,blocked:(x:number,
   const transforms:T.Matrix4[]=[];for(let i=0;i<420;i++){const x=gx+rand()*8,z=gz+rand()*8;if(!inWoodland(x,z)||blocked(x,z,.35)||rand()>groundHabitat(x,z).grass*.9)continue;d.position.set(x,h(x,z)-.015,z);d.rotation.set(0,rand()*6.28,0);const size=.65+rand()*.65;d.scale.set(size,size,size);d.updateMatrix();transforms.push(d.matrix.clone());}
   if(!transforms.length)continue;const patch=new T.InstancedMesh(grassGeo,grassMat,transforms.length);patch.name='Woodland grass patch';transforms.forEach((m,i)=>patch.setMatrixAt(i,m));patch.receiveShadow=true;patch.computeBoundingSphere();patch.boundingSphere!.radius+=.4;patch.userData.fullCount=transforms.length;scene.add(patch);patches.push(patch);centers.push(new T.Vector3(gx+4,h(gx+4,gz+4),gz+4));
  }
- const rockMat=weatheredRockMaterial(),rockGeo=weatheredRockGeometry(2);
- const rocks=new T.InstancedMesh(rockGeo,rockMat,65);let count=0;
- for(let i=0;i<300&&count<65;i++){const x=-40+(rand()-.5)*53,z=-96+(rand()-.5)*53;if(!inWoodland(x,z)||blocked(x,z,1.5))continue;d.position.set(x,h(x,z)-.1,z);d.rotation.set((rand()-.5)*.3,rand()*6,(rand()-.5)*.3);const size=.3+rand()*.85;d.scale.set(size*1.4,size*.8,size);d.updateMatrix();rocks.setMatrixAt(count++,d.matrix);if(size>.6){const solid=new T.Mesh(rockGeo);solid.matrixAutoUpdate=false;solid.matrix.copy(d.matrix);collision.add(solid);}}rocks.count=count;rocks.castShadow=rocks.receiveShadow=true;scene.add(rocks);
  const stats={trees:trees.length,plantTypes:planting.stats.types,grassClumps:patches.reduce((sum,p)=>sum+p.count,0),patches:patches.length};scene.userData.woodland=stats;
  let quality:Settings['quality']='medium';
  return {stats,setQuality(q:Settings['quality']){quality=q;planting.setQuality(q);},update(t:number,camera?:T.Vector3){time.value=t;planting.update(t,camera);if(!camera)return;patches.forEach((p,i)=>{const distance=centers[i].distanceTo(camera),range=quality==='high'?65:quality==='medium'?42:25;p.visible=distance<range;p.count=Math.floor(p.userData.fullCount*(quality==='low'?.2:distance>25?.45:1));});},dispose(){planting.dispose();}};

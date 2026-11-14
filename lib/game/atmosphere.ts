@@ -1,8 +1,7 @@
 import * as T from 'three';
 import {Sky} from 'three/addons/objects/Sky.js';
 import {cloudBanks,cloudLobes,cloudCenter,cloudFootprintSource} from './atmosphere-layout';
-import {sampleDayCycle,updateDayCycle,dayCycleDuration} from './day-cycle';
-import {buildNightSky,celestialDiscAngularRadius} from './celestial-sky';
+import {sampleDayCycle} from './day-cycle';
 
 const glslVec=(values:readonly number[])=>'vec3('+values.map(v=>Number.isInteger(v)?v+'.':String(v)).join(',')+')';
 const cloudShapeGLSL=`float cloudShape(vec3 q){float shape=-1.;${cloudLobes.map(l=>`shape=max(shape,1.-length((q-${glslVec(l.center)})/${glslVec(l.radius)}));`).join('')}return shape;}`;
@@ -15,19 +14,14 @@ const cloudNoiseGLSL=`
 `;
 
 export function buildAtmosphere(scene:T.Scene,options:{clock?:()=>number;ambientScale?:number}={}){
- const state=sampleDayCycle(options.clock?.()??0),nightSky=buildNightSky(scene),nightLights:T.PointLight[]=[];
- // One shadow atlas follows the dominant sun/moon source, avoiding two complete
- // forest shadow renders. Both bodies fade to zero direct light at the horizon.
- const sun=new T.DirectionalLight('#fff0d8',2.9);sun.name='Moving solar and lunar shadow light';sun.position.copy(state.lightDirection).multiplyScalar(350);sun.castShadow=true;
+ const state=sampleDayCycle(480),nightLights:T.PointLight[]=[];
+ // Keep natural directional shading; celestial models and their cycle are absent.
+ const sun=new T.DirectionalLight('#fff0d8',2.9);sun.name='Fixed daylight key';sun.position.copy(state.lightDirection).multiplyScalar(350);sun.castShadow=true;
  sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-250,right:250,top:250,bottom:-250,near:1,far:800});sun.shadow.camera.updateProjectionMatrix();sun.shadow.bias=-.00025;sun.shadow.normalBias=.035;scene.add(sun,sun.target);
  const ambient=new T.HemisphereLight('#c4ddf3','#69734d',1.65);ambient.name='Cool sky fill';scene.add(ambient);
- const sky=new Sky();sky.name='Cycling atmospheric sky and solar disc';sky.scale.setScalar(10000);sky.renderOrder=-1000;sky.frustumCulled=false;
+ const sky=new Sky();sky.name='Fixed daylight sky';sky.scale.setScalar(10000);sky.renderOrder=-1000;sky.frustumCulled=false;
  const skyMaterial=sky.material as T.ShaderMaterial,u=skyMaterial.uniforms;u.turbidity.value=3.6;u.rayleigh.value=2.3;u.mieCoefficient.value=.004;u.mieDirectionalG.value=.82;u.sunPosition.value.copy(state.sunDirection).multiplyScalar(450000);
- u.cycleDaylight={value:state.daylight};u.sunDiscEdgeCos={value:Math.cos(celestialDiscAngularRadius)};u.sunDiscCoreCos={value:Math.cos(celestialDiscAngularRadius*.96)};
- skyMaterial.fragmentShader='uniform float cycleDaylight;uniform float sunDiscEdgeCos;uniform float sunDiscCoreCos;\n'+skyMaterial.fragmentShader;
- skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('float sundisk = smoothstep( sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta );','float sundisk = smoothstep( sunDiscEdgeCos, sunDiscCoreCos, cosTheta );');
- skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('gl_FragColor = vec4( retColor, 1.0 );',`vec3 nightColor=mix(vec3(.008,.015,.033),vec3(.0015,.0035,.012),pow(max(direction.y,0.),.45));
-  gl_FragColor=vec4(mix(nightColor,retColor,cycleDaylight),1.);`);scene.add(sky);
+ skyMaterial.fragmentShader=skyMaterial.fragmentShader.replace('float sundisk = smoothstep( sunAngularDiameterCos, sunAngularDiameterCos + 0.00002, cosTheta );','float sundisk = 0.;');scene.add(sky);
  const centers=cloudBanks.map((_,i)=>cloudCenter(i,0)),sizes=cloudBanks.map(c=>c.size.clone()),clock={value:0};
  const cube=new T.BoxGeometry(1,1,1),clouds:T.Mesh[]=[];
  for(let index=0;index<cloudBanks.length;index++){
@@ -80,22 +74,22 @@ export function buildAtmosphere(scene:T.Scene,options:{clock?:()=>number;ambient
    };material.customProgramCacheKey=()=>cache+'-celestial-cloud-shadows-v2';material.needsUpdate=true;
   }});
  }
- scene.userData.dayCycle=state;scene.userData.atmosphere={cloudBanks:4,sunMotion:true,moonMotion:true,cycleSeconds:dayCycleDuration,cloudShadowMode:'moving solar/lunar projected columns on scene materials'};
+ scene.userData.dayCycle=state;scene.userData.atmosphere={cloudBanks:4,sunMotion:false,moonMotion:false,cycleSeconds:0,fixedDaylight:true,cloudShadowMode:'moving solar/lunar projected columns on scene materials'};
  let lastShadow=-Infinity,shadowDirty=true;
  function update(time:number,camera?:T.Vector3){
-  const seconds=options.clock?.()??time;updateDayCycle(state,seconds);clock.value=time;
+  const seconds=time;clock.value=time;
   sun.position.copy(sun.target.position).addScaledVector(state.lightDirection,350);sun.color.copy(state.lightColor);sun.intensity=state.lightIntensity;
   ambient.color.copy(state.ambientSky);ambient.groundColor.copy(state.ambientGround);ambient.intensity=state.ambientIntensity*(options.ambientScale??1);
-  u.sunPosition.value.copy(state.sunDirection).multiplyScalar(450000);u.cycleDaylight.value=state.daylight;nightSky.update(state,time,camera);
+  u.sunPosition.value.copy(state.sunDirection).multiplyScalar(450000);
   if(scene.fog)scene.fog.color.copy(state.fogColor);if(scene.background instanceof T.Color)scene.background.copy(state.fogColor);
   nightLights.forEach(light=>light.intensity=light.userData.nightIntensity*state.nightLights);
   clouds.forEach((cloud,i)=>{cloudCenter(i,time,centers[i]);cloud.position.copy(centers[i]);(cloud.material as T.ShaderMaterial).uniforms.cloudDirectStrength.value=state.sunDirection.y>=0?state.solarStrength:state.lunarStrength;});if(camera)sky.position.copy(camera);
   if(Math.abs(seconds-lastShadow)>=.1){shadowDirty=true;lastShadow=seconds;}
  }
  update(0);
- return {sun,ambient,sky,clouds,state,moon:nightSky.moon,stars:nightSky.stars,applyCloudShadows,update,
+ return {sun,ambient,sky,clouds,state,applyCloudShadows,update,
   registerNightLight(light:T.PointLight){light.userData.nightIntensity=light.intensity;light.intensity*=state.nightLights;nightLights.push(light);},
   prepareRenderer(renderer:T.WebGLRenderer){renderer.toneMappingExposure=1.03+(1-state.daylight)*.08;if(shadowDirty){renderer.shadowMap.needsUpdate=true;shadowDirty=false;}},
-  dispose(){sun.shadow.dispose();nightSky.stars.geometry.dispose();(nightSky.stars.material as T.Material).dispose();nightLights.length=0;},
+  dispose(){sun.shadow.dispose();nightLights.length=0;},
  };
 }

@@ -1,5 +1,5 @@
 /** Shared by terrain, architecture, paths, navigation and the illustrated map. */
-export const sanctuaryExtent=235;
+export const sanctuaryExtent=215;
 export const templeSites={
  zeus:{x:0,z:-170,region:'Stormwatch Ridge',height:14},
  hera:{x:-43,z:146,region:'The Royal Gardens',height:3},

@@ -11,7 +11,7 @@ import { optimizeScenery } from './optimize-native-scenery.mjs';
 installCanvas();
 await fs.mkdir('.tools/native-export',{recursive:true});
 await fs.mkdir('native/assets/camp',{recursive:true});
-await build({stdin:{contents:`export {buildWorld} from './lib/game/world';export {groundHeight} from './lib/game/data';export {templeSites,sitePlacement,templeTrails,sitePoint} from './lib/game/sanctuary-layout';export {templeCatalog} from './lib/game/temple-catalog';export {campRoutes,routePoints} from './lib/game/camp-layout';export {groundHabitat} from './lib/game/landscape';export {campLampPositions} from './lib/game/camp-lighting';export {groundCover} from './lib/game/generated/ground-cover';`,resolveDir:process.cwd()},outfile:'.tools/native-export/source.mjs',bundle:true,platform:'node',format:'esm',packages:'external',plugins:[{name:'export-collision',setup(b){b.onLoad({filter:/[\\/]lib[\\/]game[\\/]world\.ts$/},async args=>({contents:(await fs.readFile(args.path,'utf8')).replace('const octree=new Octree().fromGraphNode(collision);','const octree=new Octree();').replace('return {scene,octree,water','return {scene,collision,octree,water'),loader:'ts'}));}}]});
+await build({stdin:{contents:`export {buildWorld} from './lib/game/world';export {boundaryContour,forestContour,insideCampTerrain} from './lib/game/camp-boundary';export {groundHeight} from './lib/game/data';export {templeSites,sitePlacement,templeTrails,sitePoint} from './lib/game/sanctuary-layout';export {templeCatalog} from './lib/game/temple-catalog';export {campRoutes,routePoints} from './lib/game/camp-layout';export {groundHabitat} from './lib/game/landscape';export {campLampPositions} from './lib/game/camp-lighting';export {groundCover} from './lib/game/generated/ground-cover';`,resolveDir:process.cwd()},outfile:'.tools/native-export/source.mjs',bundle:true,platform:'node',format:'esm',packages:'external',plugins:[{name:'export-collision',setup(b){b.onLoad({filter:/[\\/]lib[\\/]game[\\/]world\.ts$/},async args=>({contents:(await fs.readFile(args.path,'utf8')).replace('const octree=new Octree().fromGraphNode(collision);','const octree=new Octree();').replace('return {scene,octree,water','return {scene,collision,octree,water'),loader:'ts'}));}}]});
 const source=await import(pathToFileURL(path.resolve('.tools/native-export/source.mjs')).href);
 const mapRoutes=[...source.campRoutes,...Object.entries(source.templeTrails).filter(([id])=>id!=='poseidon').map(([id,points])=>{const p=source.sitePoint(id,0,16);return{name:id+' approach',points:[...points,[p.x,p.z]]};}),{name:'Island causeway',points:[[55,5],[84,5]]}].map(r=>({name:r.name,points:source.routePoints(r.points).map(p=>[p.x,p.z])}));
 if(process.argv.includes('--refresh-map-routes')){
@@ -21,7 +21,7 @@ console.log('Building the original browser camp…');
 const world=source.buildWorld(),scene=world.scene;
 scene.updateMatrixWorld(true);world.collision.updateMatrixWorld(true);
 const staticScene=new T.Scene(),prototypes=new T.Scene(),colliders=new T.Scene();
-const data={version:2,extent:235,spawn:[0,0,113],gate:[-40,0,-121],temples:source.templeCatalog.map(t=>({...t,...source.sitePlacement(t.id)})),labels:[],batches:[],lights:source.campLampPositions().map(p=>[p.x,source.groundHeight(p.x,p.z)+2.19,p.z]),routes:mapRoutes};
+const data={version:3,extent:Math.ceil(Math.max(...source.boundaryContour().flat().map(Math.abs)))+2,boundary:source.boundaryContour(),forestEdge:source.forestContour(),spawn:[0,0,113],gate:[-40,0,-121],temples:source.templeCatalog.map(t=>({...t,...source.sitePlacement(t.id)})),labels:[],batches:[],lights:source.campLampPositions().map(p=>[p.x,source.groundHeight(p.x,p.z)+2.19,p.z]),routes:mapRoutes};
 const protoCache=new Map(),batches=new Map(),geometryHashes=new WeakMap(),materialHashes=new WeakMap();
 function geometryHash(g){if(!geometryHashes.has(g)){const hash=crypto.createHash('sha256');for(const [name,a] of Object.entries(g.attributes)){hash.update(name);hash.update(Buffer.from(a.array.buffer,a.array.byteOffset,a.array.byteLength));}if(g.index)hash.update(Buffer.from(g.index.array.buffer,g.index.array.byteOffset,g.index.array.byteLength));geometryHashes.set(g,hash.digest('hex'));}return geometryHashes.get(g);}
 function materialHash(m){if(!materialHashes.has(m)){const hash=crypto.createHash('sha256');hash.update(JSON.stringify({color:m.color?.toArray(),metalness:m.metalness,roughness:m.roughness,side:m.side,alphaTest:m.alphaTest,opacity:m.opacity,emissive:m.emissive?.toArray(),emissiveIntensity:m.emissiveIntensity,vertexColors:m.vertexColors}));for(const name of ['map','normalMap','roughnessMap','metalnessMap']){const image=m[name]?.image;if(image?.data)hash.update(Buffer.from(image.data.buffer,image.data.byteOffset,image.data.byteLength));else if(image?.pixels)hash.update(Buffer.from(image.pixels()));}materialHashes.set(m,hash.digest('hex'));}return materialHashes.get(m);}
@@ -39,7 +39,7 @@ scene.traverse(o=>{
   const proto=protoCache.get(key);
   for(let i=0;i<o.count;i++){
    o.getMatrixAt(i,matrix);combined.multiplyMatrices(o.matrixWorld,matrix);
-   const m=combined.elements,x=m[12],z=m[14];if(Math.abs(x)>260||Math.abs(z)>260)continue;
+   const m=combined.elements,x=m[12],z=m[14];if(!source.insideCampTerrain(x,z,-1))continue;
    const cx=Math.floor(x/32)*32+16,cz=Math.floor(z/32)*32+16,k=proto+':'+cx+':'+cz;
    if(!batches.has(k))batches.set(k,{proto,center:[cx,0,cz],kind:o.name||'ground cover',shadow:o.castShadow,instances:[]});
    const a=[m[0],m[1],m[2],m[4],m[5],m[6],m[8],m[9],m[10],x-cx,m[13],z-cz].map(v=>Math.round(v*100000)/100000);
@@ -64,7 +64,8 @@ const saved=[];
 async function write(name,content){const file='native/assets/camp/'+name,buffer=Buffer.isBuffer(content)?content:Buffer.from(content);await fs.writeFile(file,buffer);saved.push({source:'generated from lib/game browser sources',file:'assets/camp/'+name,bytes:buffer.length,sha256:crypto.createHash('sha256').update(buffer).digest('hex')});}
 const exporter=new GLTFExporter();
 for(const [name,root] of [['camp-static.glb',staticScene],['camp-prototypes.glb',prototypes],['camp-collision.glb',colliders]]){console.log('Exporting',name,root.children.length,'meshes');const binary=await exporter.parseAsync(root,{binary:true,onlyVisible:true,trs:false,maxTextureSize:1024});await write(name,Buffer.from(binary));}
-await optimizeScenery();
+const optimization=await optimizeScenery();
+data.statistics={sceneryTriangles:optimization.triangles,collisionTriangles:colliders.children.reduce((sum,o)=>sum+(o.geometry.index?.count||o.geometry.attributes.position.count)/3,0),collisionChunks:colliders.children.length,instances:instanceCount,forestTrees:scene.userData.forestBorder.trees,blockyRockInstances:0};
 const optimized=await fs.readFile('native/assets/camp/camp-static.glb');
 Object.assign(saved.find(a=>a.file==='assets/camp/camp-static.glb'),{bytes:optimized.length,sha256:crypto.createHash('sha256').update(optimized).digest('hex')});
 // A shared height grid and habitat mask preserve the original camp terrain rules.

@@ -2,11 +2,15 @@ import {campRoutes,routePoints,gardenCourts} from '@/lib/game/camp-layout';
 import {templeCatalog} from '@/lib/game/temple-catalog';
 import {templeSites,templeTrails,sitePoint,type SiteId} from '@/lib/game/sanctuary-layout';
 import {landmarks} from '@/lib/game/data';
+import {boundaryContour,forestContour} from '@/lib/game/camp-boundary';
 const map=(n:number)=>320+n*1.12;
+const perimeter=boundaryContour().map(([x,z])=>`${map(x)},${map(z)}`).join(' ');
+const forestEdge=forestContour().map(([x,z])=>`${map(x)},${map(z)}`).join(' ');
 export default function SanctuaryMap({x,z,selected,onSelect,onVisit}:{x:number;z:number;selected:string;onSelect:(id:string)=>void;onVisit:(id:SiteId)=>void}){
  return <svg viewBox="0 0 640 640" role="img" aria-label="Map of twelve temples in their unique landscapes. Select a temple to visit its grounds.">
   <rect width="640" height="640" fill="#d9d2ae"/><rect x="24" y="24" width="592" height="592" fill="#bdc3a0" stroke="#82927b"/>
-  <path d="M75 210Q180 95 360 80L565 105L575 310Q470 260 400 230Q180 300 75 420Z" fill="#8ea181"/>
+  <polygon points={perimeter} fill="#607c60" stroke="#4b6752" strokeWidth="2"/>
+  <polygon points={forestEdge} fill="#bdc3a0"/>
   <ellipse cx={map(91)} cy={map(0)} rx={31*1.12} ry={47*1.12} fill="#80aaa8" stroke="#5b8583"/>
   {Object.entries(templeTrails).map(([id,points])=>{const end=sitePoint(id as SiteId,0,16);return <polyline key={id} points={[...points,[end.x,end.z]].map(([px,pz])=>`${map(px)},${map(pz)}`).join(' ')} fill="none" stroke="#ae966d" strokeWidth="3" strokeLinecap="round"/>;})}
   {gardenCourts.map((g,i)=><ellipse key={'garden'+i} cx={map(g.x)} cy={map(g.z)} rx={g.rx*1.12} ry={g.rz*1.12} fill="#7b9270"/>)}

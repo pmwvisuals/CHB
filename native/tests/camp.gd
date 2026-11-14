@@ -29,9 +29,9 @@ func run():
 	var player = camp.player
 	await frames(20)
 	check(camp.layout.temples.size()==12,"Twelve original temple sites are present")
-	check(camp.bounds()>230 and player.position.z>100,"Camp retains the full layout and Arrival Ridge spawn")
+	check(camp.bounds()<220 and camp.bounds()>200 and player.position.z>100,"Compact camp retains Arrival Ridge and the original landmark coordinates")
 	var cells:Array = camp.find_children("*","MultiMeshInstance3D",true,false)
-	check(cells.size()>4000,"Original vegetation, flowers, rocks and road edging use shared instances")
+	check(cells.size()>2000 and cells.size()<4000,"Retained vegetation, flowers and road edging use fewer shared cells")
 	check(camp.scenery.find_children("MirrorLake","MeshInstance3D",true,false).size()==1,"Original lake has its native opaque water material")
 	for destination in camp.destinations:
 		camp.travel_to(destination)
@@ -64,11 +64,12 @@ func run():
 	await process_frame
 	check(not session.paused and not is_instance_valid(hud.map_panel),"Android Back closes the map cleanly")
 	session.data.time = 1680.0
+	var light_pose:Transform3D = camp.key_light.transform
 	camp._process(.4)
-	check(camp.light_slots.any(func(light): return light.light_energy>0),"Nearby lanterns illuminate the camp at night")
+	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.key_light.light_energy>.8,"Legacy night saves cannot change the fixed daylight")
 	session.data.time = 720.0
 	camp._process(.4)
-	check(camp.light_slots.all(func(light): return light.light_energy<.01),"Lantern pools switch off during daylight")
+	check(camp.find_children("*","OmniLight3D",true,false).is_empty(),"Removed night-light slots do not remain in the scene")
 	app.queue_free()
 	await frames(4)
 	DirAccess.remove_absolute(session.save_path)

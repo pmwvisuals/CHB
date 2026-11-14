@@ -3,7 +3,7 @@ extends Control
 signal closed
 var world
 var map_center := Vector2(332,386)
-var map_scale := 1.08
+var map_scale := 1.15
 var marker_lines:Array = []
 
 func _ready():
@@ -72,8 +72,16 @@ func _ready():
 	add_child(footer)
 
 func draw_map(canvas:Control):
-	canvas.draw_circle(map_center,254,Color("263f30"))
-	canvas.draw_arc(map_center,254,0,TAU,96,Color("9d926f"),2,true)
+	var perimeter := PackedVector2Array()
+	for point in world.layout.boundary:
+		perimeter.append(map_center+Vector2(point[0],point[1])*map_scale)
+	canvas.draw_colored_polygon(perimeter,Color("193b2b"))
+	var clearing := PackedVector2Array()
+	for point in world.layout.forestEdge:
+		clearing.append(map_center+Vector2(point[0],point[1])*map_scale)
+	canvas.draw_colored_polygon(clearing,Color("354d32"))
+	perimeter.append(perimeter[0])
+	canvas.draw_polyline(perimeter,Color("9d926f"),2,true)
 	var lake := PackedVector2Array()
 	for i in range(64):
 		var angle := i*TAU/64

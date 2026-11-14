@@ -9,14 +9,9 @@ var enemy
 var training
 var gate := Vector3.ZERO
 var rng := RandomNumberGenerator.new()
-var sun:DirectionalLight3D
-var moon:DirectionalLight3D
-var sun_disc:MeshInstance3D
-var moon_disc:MeshInstance3D
+var key_light:DirectionalLight3D
 var environment:Environment
 var autosave := 0.0
-var daylight := 1.0
-var daylight_timer := 0.0
 
 func material(color:String,roughness:float=.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -49,6 +44,9 @@ func height(x:float,z:float) -> float:
 func bounds() -> float:
 	return 44.0
 
+func inside_bounds(at:Vector3) -> bool:
+	return absf(at.x)<bounds() and absf(at.z)<bounds()
+
 func spawn_position() -> Vector3:
 	return Vector3(0,height(0,18)+.2,18)
 
@@ -75,7 +73,7 @@ func prepare():
 	var saved = Session.data.positions.get(Session.data.zone,[])
 	if saved is Array and saved.size() == 3:
 		if saved.all(func(v): return (v is float or v is int) and is_finite(float(v))):
-			if absf(saved[0]) < bounds() and absf(saved[2]) < bounds():
+			if inside_bounds(Vector3(saved[0],saved[1],saved[2])):
 				player.position = Vector3(saved[0],maxf(saved[1],height(saved[0],saved[2])+.1),saved[2])
 	var hud = preload("res://scripts/hud.gd").new()
 	hud.world = self
@@ -95,7 +93,7 @@ func finish_preparation():
 	pass
 
 func apply_graphics():
-	sun.directional_shadow_max_distance = Session.graphics_preset().shadow_range
+	key_light.directional_shadow_max_distance = Session.graphics_preset().shadow_range
 
 func build_sky():
 	var world := WorldEnvironment.new()
@@ -116,25 +114,19 @@ func build_sky():
 	environment.fog_sky_affect = .10
 	world.environment = environment
 	add_child(world)
-	sun = DirectionalLight3D.new()
-	sun.light_color = Color("ffe3b1")
-	sun.shadow_enabled = true
-	sun.directional_shadow_max_distance = 45
-	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	add_child(sun)
-	moon = DirectionalLight3D.new()
-	moon.light_color = Color("9db6dc")
-	add_child(moon)
-	var disc := SphereMesh.new()
-	disc.radius = 1.4
-	disc.height = 2.8
-	var glow = material("ffe8b7")
-	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	sun_disc = mesh_node(disc,Vector3(45,40,0),glow)
-	var lunar = material("c8d9e9")
-	lunar.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	moon_disc = mesh_node(disc,Vector3(-45,-40,0),lunar)
-	update_daylight()
+	environment.ambient_light_energy = .36 if forest else .44
+	# The key provides fixed natural daylight without a visible sun or moon.
+	key_light = DirectionalLight3D.new()
+	key_light.name = "FixedDaylight"
+	key_light.sky_mode = DirectionalLight3D.SKY_MODE_LIGHT_ONLY
+	key_light.light_color = Color("fff0dc")
+	key_light.light_energy = .88
+	key_light.shadow_enabled = true
+	key_light.directional_shadow_max_distance = 45
+	key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+	add_child(key_light)
+	key_light.position = Vector3(.62,.72,.25).normalized()*65
+	key_light.look_at(Vector3.ZERO)
 
 func build_ground():
 	var tool := SurfaceTool.new()
@@ -192,16 +184,6 @@ func build_landmarks():
 	preload("res://scripts/inscription.gd").fit(sign,3.5,.25)
 	add_child(sign)
 	if forest:
-		for i in range(18):
-			var at := Vector3(rng.randf_range(-38,38),0,rng.randf_range(-35,35))
-			if absf(at.x)<5:
-				continue
-			at.y = height(at.x,at.z)
-			var rock := SphereMesh.new()
-			rock.radial_segments = 8
-			rock.rings = 4
-			var node = mesh_node(rock,at,material("424c40"))
-			node.scale = Vector3(rng.randf_range(.8,1.8),rng.randf_range(.5,1.2),rng.randf_range(.7,1.5))
 		return
 	# Four open approaches echo the central hall, without pretending to port its final art.
 	block(Vector3(0,.2,0),Vector3(11,.4,9),marble,true)
@@ -290,33 +272,9 @@ func _process(delta):
 	if Session.paused or not is_instance_valid(player):
 		return
 	autosave += delta
-	Session.data.time = fmod(Session.data.time+delta,1920.0)
-	daylight_timer += delta
-	if daylight_timer>=.25:
-		daylight_timer = fmod(daylight_timer,.25)
-		update_daylight()
 	if not forest:
 		Session.data.health = minf(100,Session.data.health+delta*4)
 	if autosave>20:
 		autosave = 0
 		Session.save_game(player)
 
-func update_daylight():
-	var t:float = Session.data.time
-	var angle := PI*(t/1440.0) if t<1440 else PI+PI*(t-1440)/480.0
-	var direction := Vector3(cos(angle),sin(angle),.15).normalized()
-	sun.position = direction*65
-	sun.look_at(Vector3.ZERO)
-	moon.position = -direction*65
-	moon.look_at(Vector3.ZERO)
-	sun_disc.position = direction*65
-	moon_disc.position = -direction*65
-	var day := smoothstep(-.08,.22,direction.y)
-	daylight = day
-	sun.light_color = Color("ffd1a8").lerp(Color("fff5e8"),smoothstep(.08,.65,direction.y))
-	sun.light_energy = day*.88
-	moon.light_energy = (1-day)*.32
-	environment.ambient_light_energy = lerpf(.16,.36 if forest else .44,day)
-	var sky_mat = environment.sky.sky_material
-	sky_mat.sky_top_color = Color("071220").lerp(Color("345f71"),day)
-	sky_mat.sky_horizon_color = Color("152836").lerp(Color("a4b7ac"),day)

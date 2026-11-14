@@ -2,7 +2,7 @@ extends Node
 
 const SAVE := "user://sanctuary-save.json"
 var save_path := SAVE
-var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":360.0, "positions":{}, "training":{},"graphics_quality":""}
+var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":""}
 const GRAPHICS := preload("res://scripts/graphics_quality.gd")
 var graphics_recommended := "high"
 const TRAINING_KEYS := ["archery_best","sword_best","archery_rounds","sword_rounds","arrows_fired","target_hits","sword_hits","combos"]
@@ -98,7 +98,8 @@ func load_game():
 			if data.zone not in ["camp","forest"]:
 				data.zone = "camp"
 			data.health = clampf(data.health,1,100) if is_finite(data.health) else 100.0
-			data.time = fposmod(data.time,1920.0) if is_finite(data.time) else 360.0
+	# Retain the legacy save field without restoring the removed sky cycle.
+	data.time = 480.0
 	ensure_training()
 
 func save_game(player = null):

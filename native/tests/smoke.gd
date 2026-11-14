@@ -112,13 +112,13 @@ func run():
 	await frames(15)
 	check(app.world.get_parent().get_children().filter(func(n): return n is Node3D).size() == 1,"Only one world is active")
 	check(session.data.health>=before,"Camp preserves or restores health")
-	# Check the requested day/night duration at their boundary.
+	# The retired save clock cannot advance or affect the fixed light.
 	session.data.time = 1439.9
 	app.world._process(.2)
-	check(is_equal_approx(session.data.time,1440.1),"Day lasts 24 minutes")
+	check(is_equal_approx(session.data.time,1439.9),"The day/night clock no longer advances")
 	session.data.time = 1919.9
 	app.world._process(.2)
-	check(is_equal_approx(session.data.time,.1),"Night lasts 8 minutes and cycle wraps")
+	check(is_equal_approx(session.data.time,1919.9) and app.world.key_light.light_energy>.8,"Legacy night time retains fixed natural daylight")
 	app.queue_free()
 	await frames(4)
 	DirAccess.remove_absolute(session.save_path)

@@ -2,20 +2,20 @@
 
 Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset import to finish, then press **F5** and choose **Enter Sanctuary**. No Blender plug-ins are required to run it.
 
-This checkpoint transfers the browser camp's exterior layout into Godot: the original terrain and roads, all twelve decorated temple exteriors at their unique sites, the four-door Great Hall, Wayfarer Hall, dining pavilion, training yard, gardens, docks and lakeside pavilion. The playable camp spans roughly 470 metres. The training ground now has functional sword and bow practice with scored drills. Temple interiors and the large deep-forest region remain to be migrated. The separate forest encounter is still a small test region.
+This checkpoint transfers the browser camp's exterior layout into Godot: terrain and roads, all twelve decorated temple exteriors at their unique sites, the four-door Great Hall, Wayfarer Hall, dining pavilion, training yard, gardens, docks and lakeside pavilion. The compact irregular camp spans approximately 409 by 394 metres and encloses 117,935 square metres, 46.6% less playable area than the former 470-metre square. Ares (map 5) and Hephaestus (map 9) lie fully inside forest clearings; Aphrodite is also surrounded by forest. Foundations, approach paths and temple placements are preserved. Terrain beyond the outline is removed, with a small nonwalkable skirt beneath the back trees. Old saved positions outside the new boundary return to Arrival Ridge without losing progression. Temple interiors and the large deep-forest region remain to be migrated; the separate forest encounter is a small test region.
 
 ## Included
 
 - First-person walking, sprinting, jumping, physical roads, ramps and structures. The practice sword equips only inside the training ground and sheathes immediately on leaving, including map travel.
 - Android controls: movement stick, right-side drag to look, Run, Jump, Strike/Draw, Sword/Bow selection, Drill, Map, Travel and Pause. Movement, looking and action buttons support simultaneous fingers.
 - Separate camp and forest scenes with a loading screen. The previous scene is released before the next is loaded.
-- The camp's existing trees, dense forest border, shrubs, flowers, grass, rocks, carved road borders and corrected animated boar assets. Repeated scenery uses shared mesh batches, spatial culling and automatic mesh LOD.
+- The camp's existing trees, dense forest border, shrubs, flowers, grass, carved road borders and corrected animated boar assets. Repeated scenery uses shared mesh batches, spatial culling and automatic mesh LOD.
 - An interactive camp map with eighteen destinations, the original road network and safe arrivals that face each temple. Open it with **M** or **Map**.
-- Opaque blue lake water with animated ripples, temple inscriptions and nearby lantern light pools at night.
+- Opaque blue lake water with animated ripples and fitted temple inscriptions. Large scattered rock props are removed.
 - Combat is enabled only in the training-ground footprint. The sword and ash bow reuse the browser weapon designs. Sword strikes register on the three existing dummies; arrows fly with gravity and lodge in the three visible targets or the scenery. The forest boar is passive; its idle, walk and tusk-attack animation assets remain available for future encounters.
 - Free sword/archery practice, three-hit combos, a 30-second sword drill and a five-arrow archery drill. Practice does not award coins or XP.
-- Device-local position, health, coins, XP, clock, practice statistics and personal-best saving. Older saves receive the new practice fields automatically. The browser save is separate.
-- A 24-minute day and 8-minute night, moving sun and moon, shadows and distance fog.
+- Device-local position, health, coins, XP, practice statistics and personal-best saving. Older saves receive the new practice fields automatically. The browser save is separate.
+- Fixed daylight, directional shadows and distance fog. No day/night cycle, sun/moon models or night point-light updates. The legacy save clock is retained for compatibility but stays fixed.
 - Compatibility renderer and a 30 FPS cap when using phone controls. Exactly two graphics options, **Balanced** and **High**, apply immediately and save on this device.
 - Cinzel headings and architectural inscriptions, with Barlow Semi Condensed for the interface. Temple names have mounted stone plaques ahead of the projecting frieze ribs; lettering fits its backing, respects depth and has a limited viewing distance. Notices wrap in compact panels and expire after a few seconds.
 - Imported surfaces apply their original vertex colors, including sand, ground details and planting. Nonmetallic highlights are softened to prevent the former white wash over the training yard.
@@ -45,9 +45,9 @@ Choose **Graphics** on the welcome screen, or **Pause → Graphics** during play
 
 Distant trunks and crowns retain their original placements and shapes, grouped into 96-metre shared cells. Fine cells retain nearby details. The conservative tree batching remains compatible with the physical tablet; larger forest submissions were not retained after device testing.
 
-Opaque architecture shares four palette materials and spatial groups while preserving every one of the original 985,778 scenery triangles. Vertex data retains each surface's color, roughness and metallic finish; identical stone textures share a draw material. Automatic architecture LOD prioritizes close details and simplifies distant subpixel geometry. The special ground, paved roads, water, transparent effects and emissive decorations retain their own materials. Scenery source data falls from 103,671,552 to 77,606,036 bytes.
+Opaque architecture shares four palette materials and spatial groups. After trimming unused outer ground and removing the large rock props, scenery contains 871,272 triangles in a 50,627,304-byte GLB. Vertex data retains surface color, roughness and metallic finish; identical stone textures share a draw material. Automatic architecture LOD prioritizes nearby details. Ground, paved roads, water, transparent effects and emissive decorations retain their own materials. The compact camp contains 54,915 placed instances in 2,518 batches using 44 prototypes, including 2,400 border trees. Tree roots begin on the forest side of the same edge used by terrain, map and physical perimeter; roads and temple grounds retain clearances.
 
-The device loads 61 physics chunks containing the exact original 475,218 collision triangles directly from a compressed 4,135,917-byte scene. It no longer loads a second graphics mesh copy to construct collision. The original collision GLB remains in the editable archive and is excluded from the APK. Full-screen menus and loading screens stop drawing covered scenery. Packed loading references and converted placement arrays are released after setup. The 24/8-minute cycle remains; light and sky updates run four times per second, sufficient for their slow movement, while movement and the clock continue each frame.
+The device loads 43 physics chunks containing 233,848 collision triangles directly from a compressed 1,920,702-byte scene. The bake compares every retained face and transform with the collision source. It does not load a second graphics mesh copy to construct collision. The collision GLB remains in the editable archive and is excluded from the APK. Full-screen menus and loading screens stop drawing covered scenery. Packed loading references and converted placement arrays are released after setup. Fixed lighting eliminates the former clock, orbit, sky-transition and night-light updates.
 
 On first launch, mobile devices with less than 6 GiB physical memory or a 32-bit runtime receive Balanced; other devices receive High. This is a conservative starting recommendation, not a GPU benchmark or minimum-requirements guarantee. Players can override it, and the choice persists. The SM-T515 receives Balanced automatically. Further optimization is still needed for comfortable play on this old 2 GB tablet.
 
@@ -61,9 +61,9 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The current installed test APK is `builds/asterion-test.apk` (126,187,245 bytes), version 0.1.0. It uses the optimized export template and the local testing key; it is not a store-signed release. Its v2/v3 signatures verify, and Android reports `armeabi-v7a`. Minimum Android API is 24. The APK is separate from the editable project ZIP and is not committed to Git. The original debug build remains an earlier diagnostic artifact.
+The current test APK is `builds/asterion-test.apk`, version 0.1.0. It uses the optimized export template and local testing key; it is not a store-signed release. Minimum Android API is 24. Its size, checksum and verification results are recorded in `VALIDATION.md`. The APK is separate from the editable project ZIP and is not committed to Git. The original debug build remains an earlier diagnostic artifact.
 
-On the physical SM-T515, the camp, map, travel, joystick movement, weapon selection and both graphics choices respond. The current controlled Arrival Ridge sample measured **3.07 FPS on Balanced**, compared with 3.14 FPS in the preceding checkpoint. This does not establish a frame-rate improvement. Drawing calls fell from about 670 to 555 and tracked graphics allocations from 154.56 to 135.44 MiB. The initial unoptimized debug sample was 1.45 FPS. These results do not meet a comfortable-play target on this tablet and do not predict performance on stronger phones. Larger forest batching experiments did not load reliably on this device and are excluded from the supplied build.
+The previous untrimmed build was tested on the physical SM-T515: camp, map, travel, joystick movement, weapon selection and both graphics choices responded. Its Arrival Ridge sample measured **3.07 FPS on Balanced**, which does not meet comfortable-play performance and does not predict performance on stronger phones. The new compact map has fewer instances, scenery triangles and collision faces, but has not yet been timed on Android. Larger forest batching experiments did not load reliably on this device and remain excluded.
 
 For another computer, set up the export dependencies:
 
@@ -83,6 +83,7 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 & 'Godot.exe' --headless --path . --import
 & 'Godot.exe' --headless --path . --script res://tests/smoke.gd
 & 'Godot.exe' --headless --path . --script res://tests/camp.gd
+& 'Godot.exe' --headless --path . --script res://tests/boundary.gd
 & 'Godot.exe' --headless --path . --script res://tests/polish.gd
 & 'Godot.exe' --headless --path . --script res://tests/training.gd
 & 'Godot.exe' --path . --script res://tests/graphics.gd

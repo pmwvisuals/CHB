@@ -1,9 +1,11 @@
 # Surrounding forest
 
-The camp is enclosed by an irregular, dense belt of existing Blender oak and fir assets. Large oaks form the upper canopy; smaller firs fill gaps beneath it. Overlapping leaf layers, dark green materials and shaded lower foliage make a continuous forest edge. The previous cone mountains are removed. The terrain extends underneath the outer scenery.
+The compact playable outline spans approximately 409 by 394 metres and encloses 117,935 square metres, 46.6% less than the former 470-metre square. Unused outer terrain and large scattered rock props are removed. A small ground skirt supports back trees outside the physical perimeter.
 
-All tree geometry is normalized to its bark base before placement. This corrects the fir's 2.4 m source offset. Border roots sample nearby ground and sink into the soil; trunk collisions remain active inside the playable bounds. Clearings around temples and roads remain open.
+Ares (map 5) and Hephaestus (map 9), including their forecourts, sit completely beyond the forest start. Aphrodite (map 10) is also embedded in forest. All buildings retain their locations, decorative grounds and walkable approach roads. Protected clearings prevent trunks from entering architecture. Overlapping crowns and 2,400 irregularly scattered border trees enclose those clearings; an adaptive rear layer follows the actual outer outline instead of stopping before the temple bulges.
 
-The forest's materials retain their existing wind/ground shaders. Additional world-space mist increases toward the outer belt and with viewing distance, reaching full concealment before the tree placements end. The effect includes the canopy when viewed from above. Under-canopy direct and ambient light are reduced. The camp's lighting remains bright.
+Five existing dark Blender tree varieties retain their model detail. Roots sample nearby soil and embed their bark bases. The shared `camp-boundary.ts` outline drives terrain clipping, physical walls, map artwork, forest planting and browser mist/shading. All dark border trunks begin on its forest side. Interior placements either use camp trees or are restricted to the true belt, eliminating misleading stray front trees.
 
-The border uses shared instanced geometry, high detail nearby and distant geometry behind mist. It is scenery for the surrounding PvE forest; the separate development expedition remains unchanged. Browser appearance and FPS need hands-on confirmation because the local preview infrastructure is unavailable.
+The browser floor contains 34,000 grass clumps and 5,500 shrubs, ferns and litter plants inside the smaller belt, with roads and temple grounds protected. It retains wind, distance-aware mist and canopy shading. The native version currently uses distance fog; browser volumetric mist is not fully ported. Native exports include currently rendered source placement groups and retain the conservative tablet-compatible streamer.
+
+This border is scenery for the surrounding PvE forest; the separate development forest is unchanged. See `native/VALIDATION.md` for engine tests, views and performance limits.

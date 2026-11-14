@@ -42,7 +42,7 @@ func run():
 		if body is StaticBody3D and String(body.name).begins_with("WalkableChunk_"):
 			collision_chunks += 1
 			collision_triangles += body.get_child(0).shape.get_faces().size()/3
-	check(collision_chunks==61 and collision_triangles==475218,"All original collision faces load directly as physics shapes")
+	check(collision_chunks==camp.layout.statistics.collisionChunks and collision_triangles==camp.layout.statistics.collisionTriangles,"All retained collision faces load directly as physics shapes")
 	var scenery_parts = camp.scenery.find_children("*","MeshInstance3D",true,false)
 	var scenery_triangles := 0
 	var palette_materials := {}
@@ -53,7 +53,7 @@ func run():
 			var material = part.get_active_material(i)
 			if material is ShaderMaterial and material.shader.code.contains("ROUGHNESS = UV2.x"):
 				palette_materials[material.get_instance_id()] = true
-	check(scenery_triangles==985778,"Scenery batching preserves all original rendered triangles")
+	check(scenery_triangles==camp.layout.statistics.sceneryTriangles,"Scenery batching preserves all retained rendered triangles")
 	check(scenery_parts.size()<180 and palette_materials.size()==4,"Opaque scenery shares four palette materials and spatial groups")
 	var stream = camp.foliage_stream
 	var source_count := 0
@@ -65,11 +65,11 @@ func run():
 				var source:Transform3D = cell.node.multimesh.get_instance_transform(i)
 				var far:Transform3D = cell.transforms[i]
 				positions_match = positions_match and (source.origin+cell.node.position).distance_to(far.origin+group.origin)<.001 and source.basis.is_equal_approx(far.basis)
-	check(source_count>10000 and positions_match,"Distant instances retain every original transform")
+	check(source_count>3000 and positions_match,"Distant instances retain every remaining transform")
 	for quality in ["balanced","high"]:
 		session.set_graphics_quality(quality)
 		check(is_equal_approx(root.scaling_3d_scale,policy.PRESETS[quality].scale),quality+" updates only the 3D resolution scale")
-		check(is_equal_approx(camp.sun.directional_shadow_max_distance,policy.PRESETS[quality].shadow_range),quality+" applies its shadow distance")
+		check(is_equal_approx(camp.key_light.directional_shadow_max_distance,policy.PRESETS[quality].shadow_range),quality+" applies its shadow distance")
 		var leaf_ranges := true
 		for node in camp.get_children():
 			if node is MultiMeshInstance3D and node.get_meta("foliage_detail",false):
