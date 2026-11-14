@@ -5,18 +5,20 @@ extends "res://scripts/world.gd"
 @export var collision_scene:PackedScene
 var layout:Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://assets/camp/camp-layout.json"))
 var scenery:Node3D
-var pending_collision:Array[MeshInstance3D] = []
 var destinations:Array[Dictionary] = []
 var light_slots:Array[OmniLight3D] = []
 var light_timer := 0.0
 var material_cache := {}
 var training_hits := 0
 var foliage_stream
-var collision_visuals:Node3D
+var collision_root:Node3D
 
 func apply_graphics():
 	super.apply_graphics()
 	var preset:Dictionary = Session.graphics_preset()
+	if is_instance_valid(scenery):
+		for part in scenery.find_children("SceneryCell_*","MeshInstance3D",true,false):
+			part.lod_bias = preset.scenery_lod
 	for node in get_children():
 		if node is MultiMeshInstance3D and not node.has_meta("distant_crown"):
 			node.lod_bias = preset.lod
@@ -63,6 +65,20 @@ func finish_import(part:MeshInstance3D):
 	for surface in range(part.mesh.get_surface_count()):
 		var original = part.get_active_material(surface)
 		if not original is BaseMaterial3D:
+			continue
+		if original.resource_name.begins_with("SpatialPalette_"):
+			var palette_key:String = original.resource_name
+			if not material_cache.has(palette_key):
+				var palette := ShaderMaterial.new()
+				palette.shader = preload("res://shaders/scenery_palette.gdshader")
+				if original.cull_mode == BaseMaterial3D.CULL_DISABLED:
+					var two_sided := Shader.new()
+					two_sided.code = palette.shader.code.replace("shader_type spatial;","shader_type spatial;\nrender_mode cull_disabled;")
+					palette.shader = two_sided
+				palette.set_shader_parameter("textured",original.albedo_texture!=null)
+				palette.set_shader_parameter("stone_texture",original.albedo_texture)
+				material_cache[palette_key] = palette
+			part.mesh.surface_set_material(surface,material_cache[palette_key])
 			continue
 		var colors = part.mesh.surface_get_arrays(surface)[Mesh.ARRAY_COLOR]
 		var has_colors:bool = colors != null and colors.size()>0
@@ -112,12 +128,9 @@ func build_ground():
 			part.material_override = water
 			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		part.visibility_range_end = 390
-	collision_visuals = collision_scene.instantiate()
+	collision_root = collision_scene.instantiate()
 	collision_scene = null
-	add_child(collision_visuals)
-	collision_visuals.hide()
-	for part in collision_visuals.find_children("*","MeshInstance3D",true,false):
-		pending_collision.append(part)
+	add_child(collision_root)
 	environment.fog_density = .0035
 	sun.directional_shadow_max_distance = 65
 
@@ -187,17 +200,12 @@ func plant():
 	foliage_stream = preload("res://scripts/foliage_stream.gd").new()
 	foliage_stream.world = self
 	add_child(foliage_stream)
-	for i in range(pending_collision.size()):
-		pending_collision[i].create_trimesh_collision()
-		for body in pending_collision[i].get_children():
-			if body is StaticBody3D:
-				body.reparent(self,true)
-		if i%4 == 0:
-			Session.app.build_progress(.55+float(i)/pending_collision.size()*.12,"Preparing walkways…")
-			await get_tree().process_frame
-	pending_collision.clear()
-	collision_visuals.free()
-	collision_visuals = null
+	# The device receives already-baked shapes, never invisible GPU meshes.
+	for body in collision_root.get_children():
+		if body is StaticBody3D:
+			body.reparent(self,true)
+	collision_root.free()
+	collision_root = null
 	var prototypes = prototypes_scene.instantiate()
 	var meshes := {}
 	for part in prototypes.find_children("*","MeshInstance3D",true,false):

@@ -16,6 +16,7 @@ var moon_disc:MeshInstance3D
 var environment:Environment
 var autosave := 0.0
 var daylight := 1.0
+var daylight_timer := 0.0
 
 func material(color:String,roughness:float=.85) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
@@ -290,7 +291,10 @@ func _process(delta):
 		return
 	autosave += delta
 	Session.data.time = fmod(Session.data.time+delta,1920.0)
-	update_daylight()
+	daylight_timer += delta
+	if daylight_timer>=.25:
+		daylight_timer = fmod(daylight_timer,.25)
+		update_daylight()
 	if not forest:
 		Session.data.health = minf(100,Session.data.health+delta*4)
 	if autosave>20:

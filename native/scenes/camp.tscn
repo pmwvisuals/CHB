@@ -2,7 +2,7 @@
 [ext_resource type="Script" path="res://scripts/camp_region.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/camp/camp-static.glb" id="2"]
 [ext_resource type="PackedScene" path="res://assets/camp/camp-prototypes.glb" id="3"]
-[ext_resource type="PackedScene" path="res://assets/camp/camp-collision.glb" id="4"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-physics.scn" id="4"]
 [node name="Camp" type="Node3D"]
 script = ExtResource("1")
 scenery_scene = ExtResource("2")

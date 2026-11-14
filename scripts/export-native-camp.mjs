@@ -7,6 +7,7 @@ import * as T from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { installCanvas,png } from './native-canvas.mjs';
+import { optimizeScenery } from './optimize-native-scenery.mjs';
 installCanvas();
 await fs.mkdir('.tools/native-export',{recursive:true});
 await fs.mkdir('native/assets/camp',{recursive:true});
@@ -63,6 +64,9 @@ const saved=[];
 async function write(name,content){const file='native/assets/camp/'+name,buffer=Buffer.isBuffer(content)?content:Buffer.from(content);await fs.writeFile(file,buffer);saved.push({source:'generated from lib/game browser sources',file:'assets/camp/'+name,bytes:buffer.length,sha256:crypto.createHash('sha256').update(buffer).digest('hex')});}
 const exporter=new GLTFExporter();
 for(const [name,root] of [['camp-static.glb',staticScene],['camp-prototypes.glb',prototypes],['camp-collision.glb',colliders]]){console.log('Exporting',name,root.children.length,'meshes');const binary=await exporter.parseAsync(root,{binary:true,onlyVisible:true,trs:false,maxTextureSize:1024});await write(name,Buffer.from(binary));}
+await optimizeScenery();
+const optimized=await fs.readFile('native/assets/camp/camp-static.glb');
+Object.assign(saved.find(a=>a.file==='assets/camp/camp-static.glb'),{bytes:optimized.length,sha256:crypto.createHash('sha256').update(optimized).digest('hex')});
 // A shared height grid and habitat mask preserve the original camp terrain rules.
 const size=251,heights=[],mask=new Uint8Array(size*size*4);
 for(let z=0;z<size;z++)for(let x=0;x<size;x++){const xx=-250+x*2,zz=-250+z*2,a=source.groundHabitat(xx,zz),i=(z*size+x)*4;heights.push(source.groundHeight(xx,zz));mask[i]=a.grass*255;mask[i+1]=a.forest*(.45+.35*a.patch)*255;mask[i+2]=0;mask[i+3]=255;}

@@ -104,8 +104,13 @@ func _process(_delta):
 
 func finish_travel(packed:PackedScene):
 	world = packed.instantiate()
+	world.visible = false
+	# The instance owns its live resources; release the packed loading reference
+	# before building collision and vegetation, when memory use peaks.
+	packed = null
 	add_child(world)
 	await world.prepare()
+	world.visible = true
 	transitioning = false
 	Session.paused = false
 	backdrop.visible = false

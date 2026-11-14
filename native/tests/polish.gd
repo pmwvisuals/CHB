@@ -32,12 +32,20 @@ func run():
 	var checked := 0
 	var correct := true
 	for part in camp.scenery.find_children("*","MeshInstance3D",true,false):
+		# The animated opaque-blue lake deliberately supplies its own color.
+		if part.name == "MirrorLake":
+			continue
 		for index in range(part.mesh.get_surface_count()):
 			var material = part.get_active_material(index)
 			var colors = part.mesh.surface_get_arrays(index)[Mesh.ARRAY_COLOR]
-			if material is BaseMaterial3D and colors != null and colors.size()>0:
+			if colors != null and colors.size()>0:
 				checked += 1
-				correct = correct and material.vertex_color_use_as_albedo
+				if material is BaseMaterial3D:
+					correct = correct and material.vertex_color_use_as_albedo
+				elif material is ShaderMaterial:
+					correct = correct and material.shader.code.contains("COLOR.rgb")
+				else:
+					correct = false
 	check(checked>0 and correct,"Colored imported surfaces retain their original colors")
 	var fitted:bool = camp.find_children("TempleNameplate_*","MeshInstance3D",true,false).size() == 12
 	var font_correct := true

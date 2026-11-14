@@ -43,7 +43,11 @@ Choose **Graphics** on the welcome screen, or **Pause → Graphics** during play
 | Nearby trunk/crown cells | 80 m | 112 m |
 | Directional shadow distance | 45 m | 65 m |
 
-Distant trunks and crowns retain their original placements and shapes, grouped into larger shared cells. Full-screen menus stop drawing covered 3D scenery. Temporary collision meshes and converted placement arrays are freed after setup; physical collision remains active.
+Distant trunks and crowns retain their original placements and shapes, grouped into 96-metre shared cells. Fine cells retain nearby details. The conservative tree batching remains compatible with the physical tablet; larger forest submissions were not retained after device testing.
+
+Opaque architecture shares four palette materials and spatial groups while preserving every one of the original 985,778 scenery triangles. Vertex data retains each surface's color, roughness and metallic finish; identical stone textures share a draw material. Automatic architecture LOD prioritizes close details and simplifies distant subpixel geometry. The special ground, paved roads, water, transparent effects and emissive decorations retain their own materials. Scenery source data falls from 103,671,552 to 77,606,036 bytes.
+
+The device loads 61 physics chunks containing the exact original 475,218 collision triangles directly from a compressed 4,135,917-byte scene. It no longer loads a second graphics mesh copy to construct collision. The original collision GLB remains in the editable archive and is excluded from the APK. Full-screen menus and loading screens stop drawing covered scenery. Packed loading references and converted placement arrays are released after setup. The 24/8-minute cycle remains; light and sky updates run four times per second, sufficient for their slow movement, while movement and the clock continue each frame.
 
 On first launch, mobile devices with less than 6 GiB physical memory or a 32-bit runtime receive Balanced; other devices receive High. This is a conservative starting recommendation, not a GPU benchmark or minimum-requirements guarantee. Players can override it, and the choice persists. The SM-T515 receives Balanced automatically. Further optimization is still needed for comfortable play on this old 2 GB tablet.
 
@@ -51,15 +55,15 @@ On first launch, mobile devices with less than 6 GiB physical memory or a 32-bit
 
 The supplied `asterion-native-project.zip` contains every required asset, including the camp scenery, collision and shared-mesh GLBs, terrain maps and layout data. Extract the complete archive before importing it. Godot generates its own import and extracted-texture files on first opening.
 
-The archive includes both the complete `assets/` and `fonts/` directories. For a source checkout, copy both directories from that archive. Alternatively, run `node scripts/fetch-native-fonts.mjs` for the verified original fonts; `node scripts/stage-native-assets.mjs` for the original local creature/plant files; `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake the camp; and `node scripts/export-native-weapons.mjs` for the sword, bow and arrow GLBs. The exporters use Node and the existing project dependencies, and do not require Blender. `assets-manifest.json` records art file sizes and hashes. The fonts include their original SIL Open Font License files, also included by the Android export preset.
+The archive includes both the complete `assets/` and `fonts/` directories. For a source checkout, copy both directories from that archive. Alternatively, run `node scripts/fetch-native-fonts.mjs` for the verified original fonts; `node scripts/stage-native-assets.mjs` for the original local creature/plant files; `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake and rebatch the camp; and `node scripts/export-native-weapons.mjs` for the sword, bow and arrow GLBs. After regenerating the camp, import it in Godot and run `scripts/bake-native-physics.gd` with the native project as `--path` and the script's absolute path as `--script`. This produces the required physics-only scene and updates the asset manifest. The mesh exporters use Node and the existing project dependencies; physics baking uses Godot. Blender is unnecessary for these steps. `assets-manifest.json` records art file sizes and hashes. The fonts include their original SIL Open Font License files, also included by the Android export preset.
 
 ## Build an Android APK
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The current installed test APK is `builds/asterion-test.apk` (142,436,125 bytes), version 0.1.0. It uses the optimized export template and the local testing key; it is not a store-signed release. Its v2/v3 signatures verify, and Android reports `armeabi-v7a`. Minimum Android API is 24. The APK is separate from the editable project ZIP and is not committed to Git. The original debug build remains an earlier diagnostic artifact.
+The current installed test APK is `builds/asterion-test.apk` (126,187,245 bytes), version 0.1.0. It uses the optimized export template and the local testing key; it is not a store-signed release. Its v2/v3 signatures verify, and Android reports `armeabi-v7a`. Minimum Android API is 24. The APK is separate from the editable project ZIP and is not committed to Git. The original debug build remains an earlier diagnostic artifact.
 
-On the physical SM-T515, the camp, map, travel, joystick movement, weapon selection and both graphics choices respond. In short samples from the same Arrival Ridge view, the optimized build measured **3.14 FPS on Balanced and 2.40 FPS on High**. The initial unoptimized debug sample was 1.45 FPS. These results do not meet a comfortable-play target on this tablet and do not predict performance on stronger phones.
+On the physical SM-T515, the camp, map, travel, joystick movement, weapon selection and both graphics choices respond. The current controlled Arrival Ridge sample measured **3.07 FPS on Balanced**, compared with 3.14 FPS in the preceding checkpoint. This does not establish a frame-rate improvement. Drawing calls fell from about 670 to 555 and tracked graphics allocations from 154.56 to 135.44 MiB. The initial unoptimized debug sample was 1.45 FPS. These results do not meet a comfortable-play target on this tablet and do not predict performance on stronger phones. Larger forest batching experiments did not load reliably on this device and are excluded from the supplied build.
 
 For another computer, set up the export dependencies:
 
@@ -81,11 +85,11 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 & 'Godot.exe' --headless --path . --script res://tests/camp.gd
 & 'Godot.exe' --headless --path . --script res://tests/polish.gd
 & 'Godot.exe' --headless --path . --script res://tests/training.gd
-& 'Godot.exe' --headless --path . --script res://tests/graphics.gd
+& 'Godot.exe' --path . --script res://tests/graphics.gd
 & 'Godot.exe' --path . --resolution 1280x720 --script res://tests/touch.gd
 ```
 
-The touch test needs a real display window because Godot's headless driver does not route GUI touches as the Windows display driver does. It supplies synthetic two-finger input and tests the actual controls. Test save files live in `tests/`, are isolated from real progress and are removed at completion.
+The touch test needs a real display window because Godot's headless driver does not route GUI touches as the Windows display driver does. It supplies synthetic two-finger input and tests the actual controls. Run the graphics test with a display to exercise the actual renderers instance transforms. Headless mode uses a dummy rendering backend and does not establish GPU behavior. Test save files live in `tests/`, are isolated from real progress and are removed at completion.
 
 For visual previews, create `builds/` and run:
 

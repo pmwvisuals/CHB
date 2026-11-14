@@ -20,11 +20,14 @@ var app
 var ui_theme:Theme
 var render_profile:Dictionary = {}
 var profile_tick := 0
+var performance_capture := OS.has_feature("mobile") and (OS.is_debug_build() or OS.has_feature("performance_capture"))
 var touch_controls := OS.has_feature("mobile") or "--touch-controls" in OS.get_cmdline_user_args()
 
 func _ready():
 	Engine.max_fps = 30 if touch_controls else 60
-	if OS.has_feature("mobile") and OS.is_debug_build():
+	if not performance_capture and FileAccess.file_exists("user://render-profile.json"):
+		DirAccess.remove_absolute(OS.get_user_data_dir().path_join("render-profile.json"))
+	if performance_capture:
 		print("PERF user_dir=",OS.get_user_data_dir())
 		var reader := JSON.new()
 		if FileAccess.file_exists("user://render-profile.json") and reader.parse(FileAccess.get_file_as_string("user://render-profile.json")) == OK and reader.data is Dictionary:
@@ -142,7 +145,7 @@ func _notification(what):
 			save_game(app.world.player)
 
 func _process(_delta):
-	if not OS.has_feature("mobile") or not OS.is_debug_build() or not is_instance_valid(app) or not is_instance_valid(app.world) or app.transitioning:
+	if not performance_capture or not is_instance_valid(app) or not is_instance_valid(app.world) or app.transitioning:
 		return
 	var now := Time.get_ticks_msec()
 	if now-profile_tick<5000:
