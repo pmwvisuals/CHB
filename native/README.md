@@ -40,7 +40,7 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 ## Build an Android APK
 
-The Android preset is configured for landscape, ARM64 phones, an offline game and package name `com.pmwvisuals.asterion`. An APK has **not** been built yet. The current computer still needs the Android export dependencies:
+The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet. An APK has **not** been built yet. The current computer still needs the Android export dependencies:
 
 1. In Godot, open **Editor → Manage Export Templates** and install the templates matching **4.7.2**.
 2. Install **OpenJDK 17** and the **Android SDK**. In **Editor → Editor Settings → Export → Android**, set their two folder paths. Follow the [Godot 4.7 Android setup instructions](https://docs.godotengine.org/en/4.7/tutorials/export/exporting_for_android.html) for the matching SDK components. An Android emulator is unnecessary for testing on a physical phone.

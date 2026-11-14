@@ -21,6 +21,8 @@ Three new training views were rendered and inspected at 1280 × 720 with touch c
 
 ## Current limits
 
+The SM-T515 is now connected and USB debugging is authorized. Device properties report Android 11 (API 30), 1,818,908 kB total memory (the 2 GB model), and `armeabi-v7a,armeabi` app ABIs only. ARM32 was enabled alongside ARM64 in the export preset; the previous ARM64-only APK configuration would not install on this tablet. These are device and connection checks, not a gameplay or performance test. Platform Tools were verified against Google's catalogue and restored under `Documents/Codex/AndroidTools/Sdk`; the Build Tools and Android platform packages are still needed before APK export.
+
 The camp exterior layout is transferred, including the original hills, paved paths, twelve decorated temples, Great Hall, Wayfarer Hall, dining pavilion, gardens, training yard, lake, dock, pavilion, causeway and planting. Sword/bow practice and drills are functional. Temple interiors, quests and the large deep-forest landscape remain to be migrated. The separate 96-metre forest remains an encounter test region. Browser-specific volumetric clouds, localized mist shaders, plant wind and advanced water reflections are not yet fully reproduced in Godot.
 
 The weapons use the existing simple practice designs; animated hands and combat audio are not included. The forest boar is currently passive because combat is restricted to the training ground. Navigation, future forest encounters and death/charge animations remain future work.
