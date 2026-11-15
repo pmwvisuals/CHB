@@ -7,6 +7,8 @@ var near_cells:Array[Dictionary] = []
 var distant := {}
 var last_position := Vector2(INF,INF)
 var near_range := 112.0
+var far_range := 390.0
+var near_range_scale := 1.0
 var last_quality := ""
 var timer := 0.0
 
@@ -42,7 +44,7 @@ func finish():
 		node.position = group.origin
 		node.material_override = group.material
 		node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		node.visibility_range_end = 390
+		node.visibility_range_end = far_range
 		world.add_child(node)
 		group.node = node
 	refresh(true)
@@ -57,7 +59,7 @@ func refresh(force:bool=false):
 	last_position = point
 	last_quality = quality
 	var preset:Dictionary = Session.graphics_preset()
-	near_range = preset.near_range
+	near_range = preset.near_range*near_range_scale
 	for cell in near_cells:
 		cell.near = cell.centre.distance_squared_to(point)<near_range*near_range
 		cell.node.visible = cell.near

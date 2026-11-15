@@ -1,133 +1,133 @@
 {
   "assets": [
     {
-      "bytes": 1061228.0,
+      "bytes": 1061228,
       "file": "assets/camp_olive.glb",
       "sha256": "c7f9b3813cabbbf103fd2570adffc2665f18019019686c606da69593124606d6",
       "source": "assets-source/vegetation/camp_olive.glb"
     },
     {
-      "bytes": 1061240.0,
+      "bytes": 1061240,
       "file": "assets/camp_laurel.glb",
       "sha256": "89d27b04aad7921c827919a5ecc37efee62206ad6bf7ce69e6c2ec1487c667e9",
       "source": "assets-source/vegetation/camp_laurel.glb"
     },
     {
-      "bytes": 1046308.0,
+      "bytes": 1046308,
       "file": "assets/forest_fir.glb",
       "sha256": "6d92e6dff4f7b0830962b95fd175c9e8bfc3fc7e65a45565f97a624d40e49a99",
       "source": "assets-source/vegetation/forest_fir.glb"
     },
     {
-      "bytes": 1061216.0,
+      "bytes": 1061216,
       "file": "assets/forest_oak.glb",
       "sha256": "926216985e8c9c0e4cd721e67902cb1b229a140625c710bd06258bdc97b36481",
       "source": "assets-source/vegetation/forest_oak.glb"
     },
     {
-      "bytes": 17956.0,
+      "bytes": 17956,
       "file": "assets/forest_fern.glb",
       "sha256": "9bef2708c506af940753920646b8783caed11715a7c01645dbb37c6ff5d47a45",
       "source": "assets-source/vegetation/forest_fern.glb"
     },
     {
-      "bytes": 24213160.0,
+      "bytes": 24213160,
       "file": "assets/boar.glb",
       "sha256": "ccc37c07225a7f7668b0eed5a1bd74d517337487203638f0ce38ef34623de27c",
       "source": "assets-source/creatures/ash-tusk-boar/game/ash-tusk-boar-game.glb"
     },
     {
-      "bytes": 38192.0,
+      "bytes": 38192,
       "file": "assets/weapons/practice-sword.glb",
       "sha256": "04a40387099d4d7dbdf27946bad9b036e753b31257f2f498755f1b2250c20ac1",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 20800.0,
+      "bytes": 20800,
       "file": "assets/weapons/practice-bow.glb",
       "sha256": "23c9136dedb509e29e7424ac9fcaab9a1d6117e2110c7c3302685e65bb3c138e",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 8340.0,
+      "bytes": 8340,
       "file": "assets/weapons/practice-arrow.glb",
       "sha256": "38bf4781767cb2d592d3d961cf717e608530d87f90e6417eb157c8d45ec1b2a0",
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 13693788.0,
+      "bytes": 13693788,
       "file": "assets/plants/imported-plants.glb",
       "sha256": "abfc057ea74447458e0bdf455f4e071e7e4011945d4a25162de591067d1021b0",
       "source": "User supplied packs; scripts/blender/prepare_imported_plants.py"
     },
     {
-      "bytes": 2073.0,
+      "bytes": 2073,
       "file": "assets/plants/import-report.json",
       "sha256": "5f427dc6e7677aa1cd06f522b904ee8fdd845aadaffae567adb5a0250e1901af",
       "source": "User supplied packs; scripts/blender/prepare_imported_plants.py"
     },
     {
-      "bytes": 55083580.0,
+      "bytes": 55083580,
       "file": "assets/camp/camp-static.glb",
       "sha256": "ca10b9aa292418b75b0ba1b5279b3b566a5036025ead912686abbb24e6254ad2",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 13625052.0,
+      "bytes": 13625052,
       "file": "assets/camp/camp-prototypes.glb",
       "sha256": "9146d34c2bea89b2ab4dead00e322712480e73b634365201f89ef477d2b17191",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 20540688.0,
+      "bytes": 20540688,
       "file": "assets/camp/camp-collision.glb",
       "sha256": "29fdacb40e7a8c11d0ae613a43ab811db65950f73e6585e89c944eb98bd59dcf",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 71212.0,
+      "bytes": 71212,
       "file": "assets/camp/habitat.png",
       "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 770172.0,
+      "bytes": 770172,
       "file": "assets/camp/ground-albedo.png",
       "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 1268157.0,
+      "bytes": 1268157,
       "file": "assets/camp/ground-normal.png",
       "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 498771.0,
+      "bytes": 498771,
       "file": "assets/camp/ground-roughness.png",
       "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 6448109.0,
+      "bytes": 6448109,
       "file": "assets/camp/camp-layout.json",
       "sha256": "271bbc6965d00640efa1a279ce54349dff6be84fb115870ec68a2f0dc337fb14",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 563.0,
+      "bytes": 563,
       "file": "assets/atmosphere/bake-report.json",
       "sha256": "cbbad943eb3175ce222833179728a5c5099443fda64993370e1194069fd8237b",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "bytes": 81676.0,
+      "bytes": 81676,
       "file": "assets/atmosphere/cloud-banks.png",
       "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "bytes": 2026501.0,
+      "bytes": 2026501,
       "file": "assets/atmosphere/ground-light.png",
       "sha256": "1739119c3306b3bff4be8f69c64372f20ec88fe5de5d211ee10c90961c5ae344",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
@@ -215,6 +215,36 @@
       "bytes": 535,
       "sha256": "f7a6647c23193399322f7f273addfda4579209f69142e7fbeaa17cc086259c8d",
       "source": "user-supplied Galaxy Abundant lantern; CC BY 4.0; see assets/props/LANTERN-CREDITS.txt"
+    },
+    {
+      "file": "assets/deep-forest/prototypes.glb",
+      "bytes": 6027148,
+      "sha256": "b18c1870f44f7439b44e09eabad5663867e51d8cd45ad46f664f03e80eb41e4d",
+      "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
+    },
+    {
+      "file": "assets/deep-forest/layout.json",
+      "bytes": 2222729,
+      "sha256": "1f4fcbb50fb19a3ec86344664d707de503146e6550f5bd76656a37bd2d8340ec",
+      "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
+    },
+    {
+      "file": "assets/deep-forest/habitat.png",
+      "bytes": 630392,
+      "sha256": "33554821c170a639014dcff80c92bb6b108f1800cd6a3e51fbdf62f67099ca5d",
+      "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
+    },
+    {
+      "file": "assets/deep-forest/mist.png",
+      "bytes": 9035,
+      "sha256": "f33e8f28445b295a79777e9918f91afc03c170655a54f86c615c8d4c9fa2bdbf",
+      "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
+    },
+    {
+      "file": "assets/deep-forest/soil-noise.png",
+      "bytes": 21611,
+      "sha256": "15b54cd4b1c280d6d90e468ccbc2a5e51667a4da4ad7c785245a9bd07543cfc8",
+      "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
     }
   ]
 }

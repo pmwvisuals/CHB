@@ -1,7 +1,7 @@
 extends Node
 
 # Compile scripts on the main thread before requesting heavy scene resources.
-const REGION_SCRIPTS = [preload("res://scripts/camp_region.gd"),preload("res://scripts/world.gd")]
+const REGION_SCRIPTS = [preload("res://scripts/camp_region.gd"),preload("res://scripts/forest_region.gd")]
 
 var world
 var loading_path := ""

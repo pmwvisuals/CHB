@@ -1,5 +1,15 @@
 # The deep forest landscape
 
+The native Godot forest now has a 550-metre playable diameter, with surrounding tree scenery out to 330 metres from its centre. The first landscape pass reuses the existing forest terrain and trail design, all five dark tree varieties, and woodland floor assets. It includes 5,200 tall trees, 20,000 litter/fern/bracken/bramble placements, four connected earth trails, six clearings, low hills and hollows. The broader native boundary includes the entire eastern trail endpoint.
+
+From the native camp map, travel to **Deepwood Gate**, then use **E** or the interaction button to enter. The stone gate behind the forest arrival returns to camp. Walking, sprinting, jumping, touch controls and both existing graphics choices work through the normal game controls. This checkpoint develops landscape exploration. The existing boar is passive near the first clearing.
+
+Tree meshes are shared across spatial instance groups. Near leaves have bounded detail distances, distant crowns reuse the existing foliage streamer, and trunk collisions are created around the player and released farther away. Terrain rendering and physics share the same triangle grid. The canopy uses real directional shadows and restrained cool fill so the ground stays readable. Twelve soft, depth-tested mist pockets occupy hollows, with denser haze near the outer boundary. The forest's large prototype resource loads after the previous region is released. Old test-forest saves relocate to the new entrance once, with progression retained.
+
+Rebuild native forest assets with `node scripts/export-native-forest.mjs`, using the original vegetation source GLBs under `assets-source/vegetation/`, then import the native project in Godot. The complete editable archive already includes these prepared assets. Run `native/tests/deep_forest.gd` for layout, collision, migration and re-entry checks, and `native/tests/deep_forest_preview.gd` for player-height captures. The current Android candidate is `native/builds/asterion-deep-forest-test.apk`. Its device frame rate and memory have not been measured.
+
+## Browser landscape
+
 Choose **Explore the deep forest** on the sanctuary welcome screen or pause menu. This opens `forest.html?view=landscape`: landscape-only exploration with no enemies, loot, weapon models or expedition-save changes. The earlier combat demo remains available through Quests & expeditions. The shared forest page and portable package keep their existing filenames.
 
 The playable woodland spans roughly 520 metres, surrounded by further scenery out to a 330-metre radius. Rolling ground, a low ridge, depressions and several small clearings break up the landscape. Four connected winding earth trails cross the interior. There are no stone road borders, flower beds, ornamental trees, decorative structures or new creature assets.

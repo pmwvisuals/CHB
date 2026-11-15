@@ -1,4 +1,16 @@
-# Hephaestus oil lamps — 15 November 2026
+# Native deep forest landscape — 15 November 2026
+
+The first native forest landscape replaces the small woodland test area with a 550-metre playable diameter, surrounded by tree scenery to radius 330 m. It reuses the browser forest's rolling terrain, hollows, four connected trails and six clearings. Shared spatial batches place all five existing dark tree types across 5,200 placements, plus 20,000 leaf-litter, fern, bracken and bramble placements. Terrain and collision share 36 chunks of the same triangle grid. Tree roots follow the terrain. Detailed leaves have bounded distances, distant crowns reuse the existing streamer, and nearby trunk collision is created and released as the player moves.
+
+Canopy shadows and cool ambient fill keep the forest readable. Twelve world-space, depth-tested soft mist pockets use fading edges. Peripheral haze hides the outer scenery boundary while the interior keeps its longer view distance. Original tree geometry supplies the canopy. The existing boar remains passive at the first clearing. The return gate leads to camp, and the old test-forest position migrates once without discarding coins, XP or practice records.
+
+**112 assertions passed** for this checkpoint, comprising 29 forest checks through the Windows display driver, 26 gameplay smoke and 57 camp/travel checks. Forest checks include both graphics settings, all four trail floors and trunk clearances, source tree grounding, boundary mist, migration, restored exploration positions and a complete forest after repeated entry. A reload check caught shared material mutation during development. The loader now duplicates mesh resources before assigning region materials. The final repeated-entry run has no script errors. Seven player-height views were rendered and inspected, including the entrance, trail, first clearing, hollow, ridge, deep clearing and outer edge.
+
+Desktop preview samples after warm-up were roughly 38–49 FPS on Intel Iris Xe. These short samples establish appearance and functioning rendering. Android installation, sustained frame rate, memory and heat remain untested for the new forest. The optimized ARM32/ARM64 test APK is `builds/asterion-deep-forest-test.apk`, 173,250,087 bytes, signed with the local test key and independently verified with APK v2/v3 signatures. Its SHA-256 is `e43d5ffb398756a689b641f4a9ba617482978d8366b88863f1886e7013e84516`.
+
+Rebuild prepared native forest assets with `node scripts/export-native-forest.mjs`, then import in Godot. The editable archive contains the prepared GLB, layout and texture maps. Large forest prototype geometry loads during region setup after the previous region is released. Existing camp content and fixed evening lighting remain available through the same entry points.
+
+## Earlier Hephaestus oil lamps — 15 November 2026
 
 Exactly two brass hurricane oil lamps flank the temple entrance on raised plinths. Warm local lights (15 m radius, strength 4.5, no shadows, distance fade at 35–50 m) illuminate the shaded columns, porch, entrance surround and nameplate. The central ramp stays open, and global evening lighting is retained. Both instances share a prepared 15,997-triangle model and 1024 px maps, reduced from the supplied 499,988-triangle lantern. Identical source UV layers were consolidated so Godot uses the correct maps. Flames use a small animated emissive mesh.
 

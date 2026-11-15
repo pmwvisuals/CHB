@@ -2,7 +2,7 @@ extends Node
 
 const SAVE := "user://sanctuary-save.json"
 var save_path := SAVE
-var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":""}
+var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":"","forest_layout":""}
 const GRAPHICS := preload("res://scripts/graphics_quality.gd")
 var graphics_recommended := "high"
 const TRAINING_KEYS := ["archery_best","sword_best","archery_rounds","sword_rounds","arrows_fired","target_hits","sword_hits","combos"]

@@ -88,11 +88,14 @@ func prepare():
 		enemy.player = player
 		enemy.model = beast_scene.instantiate()
 		add_child(enemy)
-		enemy.position = Vector3(3,height(3,-8)+.3,-8)
-	Session.message = "Explore the woodland. Combat is currently reserved for the training ground." if forest else "Welcome to the sanctuary. Open the map to explore."
+		enemy.position = creature_position()
+	Session.message = "Follow the earth trails into Deepwood. The stone gate returns to camp." if forest else "Welcome to the sanctuary. Open the map to explore."
 
 func finish_preparation():
 	pass
+
+func creature_position() -> Vector3:
+	return Vector3(3,height(3,-8)+.3,-8)
 
 func apply_graphics():
 	key_light.directional_shadow_max_distance = Session.graphics_preset().shadow_range
