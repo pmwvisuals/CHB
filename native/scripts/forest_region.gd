@@ -8,6 +8,12 @@ var tree_count := 0
 var floor_count := 0
 var detail_nodes:Array[MultiMeshInstance3D] = []
 var mist_nodes:Array[Node3D] = []
+var supplied_creatures:Array[CharacterBody3D] = []
+const SUPPLIED_CREATURES := [
+	{"id":"MagicWolf","asset":"res://assets/forest-creatures/magic-wolf.glb","height":2.1,"heading":0.0,"speed":.7,"point":[-65,-45],"route":[[-60,-41],[-60,-49],[-69,-50],[-71,-43]]},
+	{"id":"MutantMantis","asset":"res://assets/forest-creatures/mutant-mantis.glb","height":2.8,"heading":PI,"speed":0.0,"point":[92,-70],"route":[]},
+	{"id":"FantasyBoar","asset":"res://assets/forest-creatures/fantasy-boar.glb","height":1.6,"heading":0.0,"speed":.55,"point":[-130,90],"route":[[-126,94],[-125,87],[-133,85],[-135,92]]}
+]
 
 func bounds() -> float:
 	return layout.radius
@@ -232,6 +238,16 @@ func finish_preparation():
 		Session.data.forest_layout = "deepwood_1"
 	player.position = recover_tree_position(player.position)
 	refresh_collisions()
+	for definition in SUPPLIED_CREATURES:
+		var actor := preload("res://scripts/forest_creature.gd").new()
+		actor.player = player
+		actor.definition = definition
+		var point := Vector2(definition.point[0],definition.point[1])
+		if point.distance_to(Vector2(player.position.x,player.position.z))<3:
+			point += Vector2(4,0)
+		actor.position = Vector3(point.x,height(point.x,point.y)+.15,point.y)
+		add_child(actor)
+		supplied_creatures.append(actor)
 	Session.message = "Follow the earth trail into Deepwood. The stone gate behind you returns to camp."
 
 func tree_overlaps(at:Vector3) -> bool:

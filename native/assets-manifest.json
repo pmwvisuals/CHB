@@ -245,6 +245,30 @@
       "bytes": 1626058,
       "sha256": "a2e87bffb54efbc1c2ee8f01d0e3269ecc27360406bb305ed974996264760eb8",
       "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
+    },
+    {
+      "file": "assets/forest-creatures/CREDITS.txt",
+      "bytes": 1116,
+      "sha256": "22b673c2cbc3607be90e718e81934e4e3ec50c45a50cf51e1847b10faa1170f9",
+      "source": "User-supplied creature files; scripts/blender/prepare_forest_creatures.py"
+    },
+    {
+      "file": "assets/forest-creatures/fantasy-boar.glb",
+      "bytes": 768976,
+      "sha256": "a1346baaeaa5611912dfd9b9d023c0a2ae803f6bc44588ba5962083668cae988",
+      "source": "User-supplied creature files; scripts/blender/prepare_forest_creatures.py"
+    },
+    {
+      "file": "assets/forest-creatures/magic-wolf.glb",
+      "bytes": 8549744,
+      "sha256": "5e854054cda07dd8dd6229ca106f7782ae1422e766e4ec33bac7a07f73cb90bc",
+      "source": "User-supplied creature files; scripts/blender/prepare_forest_creatures.py"
+    },
+    {
+      "file": "assets/forest-creatures/mutant-mantis.glb",
+      "bytes": 1060464,
+      "sha256": "b9eaad696871fa54509abe2fab9b8a6d1ec284288eed4e45928cb6f5235c9f4c",
+      "source": "User-supplied creature files; scripts/blender/prepare_forest_creatures.py"
     }
   ]
 }

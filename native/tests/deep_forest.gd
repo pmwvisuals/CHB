@@ -89,7 +89,10 @@ func run():
 			forest.refresh_collisions()
 			var at := Vector3(p[0],forest.height(p[0],p[1]),p[1])
 			var ray := PhysicsRayQueryParameters3D.create(at+Vector3.UP*2,at-Vector3.UP)
-			ray.exclude = [forest.player.get_rid(),forest.enemy.get_rid()]
+			var exclusions:Array[RID] = [forest.player.get_rid(),forest.enemy.get_rid()]
+			for creature in forest.supplied_creatures:
+				exclusions.append(creature.get_rid())
+			ray.exclude = exclusions
 			var hit:Dictionary = forest.get_world_3d().direct_space_state.intersect_ray(ray)
 			walkable = walkable and not hit.is_empty() and absf(hit.position.y-at.y)<.04 and hit.normal.y>.65 and forest.inside_bounds(at)
 			var to := Vector3(q[0],forest.height(q[0],q[1]),q[1])

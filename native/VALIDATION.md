@@ -1,4 +1,16 @@
-# Flowing campfire motion — 15 November 2026
+# Three supplied forest creatures — 15 November 2026
+
+One Magic Wolf, mutant mantis and fantasy blue boar now accompany the original Ash-Tusk Boar in separate Deepwood clearings. Source skin poses are measured once during setup to normalize their scales and align the feet. Target overall heights are 2.1 m, 2.8 m and 1.6 m respectively. Wolf and blue boar follow short routes with idle pauses; the mantis uses its single supplied animation at the ridge. The placement pass retains peaceful behaviour. Model rendering hides beyond 105 m and returns below 95 m. Animation and actor simulation suspend beyond 75 m and while paused.
+
+The wolf retains 24,059 triangles and 15 source clips (including its initial pose), the mantis 6,784 triangles and one loop, and the converted textured blue boar 4,584 triangles and seven clips. Runtime material corrections give the mantis and blue boar a nonmetallic surface. The FBX boar's supplied diffuse texture is connected during conversion. Large differences between bind-pose boxes and animated surfaces are resolved through skin-pose measurement rather than raw mesh bounds. Local material overrides preserve the imported resources across repeated forest entry.
+
+**108 assertions passed**, comprising 34 supplied-creature checks, 33 forest checks, 15 original-boar checks and 26 gameplay smoke checks. Checks cover actual pose-relative foot alignment, physical floor contact, texture presence, full walking routes, player proximity, pause, distant rendering/animation suspension, credits, region release and repeated entry. Trail tests exclude the live creature actors when measuring the static trunk corridor. Actual Windows/Godot views were inspected for all three creatures, walking wolf/boar poses and the pause-screen credits.
+
+The wolf metadata declares alice.duarte13 and CC BY 4.0. The mantis metadata declares LostBoyz2078 and CC BY-NC 4.0, restricting this asset to noncommercial prototype use until additional permission or replacement. The fantasy-boar archive contains no creator or license statement, leaving distribution rights unverified. Source links, known terms and adaptations are in the packaged `assets/forest-creatures/CREDITS.txt` and the pause screen. Supplied art files remain local and are not committed to GitHub.
+
+The Android candidate is `builds/asterion-forest-creatures-test.apk`, 182,035,657 bytes, with independently verified v2/v3 signatures under the local test key. Both ARM32 and ARM64 and the existing Android Compatibility MSAA workaround are retained. SHA-256 is `006ef1d8d3b5b3430de7be7cc99216edcce20987db96c43ebe7bfb62e9f6876c`. Device frame rate, memory and sustained play for the added models remain untested. This checkpoint is a local prototype.
+
+## Earlier flowing campfire motion — 15 November 2026
 
 The amphitheatre fire now combines independent curling and stretching of thirteen subdivided flame cards with upward-moving texture distortion. The roots stay anchored. Each card stores its own atlas rectangle, keeping animated sampling inside its flame image. Phase offsets avoid synchronized swaying, and the warm local light varies gently between energy 3.02 and 3.38. The original source disappearing animation remains replaced. The supplied flame texture, stone ring and logs are retained. Flame geometry is one shared draw with 1,274 triangles.
 

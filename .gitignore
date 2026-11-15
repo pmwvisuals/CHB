@@ -87,6 +87,12 @@ __pycache__/
 /asterion-boar-rigged.zip
 /asterion-boar-runtime.html
 /asterion-boar-runtime.zip
+/asterion-boar-polished.zip
+/asterion-boar-polished.html
+/asterion-boar-game.zip
+/assets-source/imported-plants/
+/assets-source/campfire/
+/assets-source/imported-creatures/
 /native/.godot/
 /native/assets/
 /native/builds/
@@ -100,18 +106,11 @@ __pycache__/
 /native/script_templates/
 /native/text_editor_themes/
 
-/asterion-boar-polished.zip
-
-/asterion-boar-polished.html
-
-/asterion-boar-game.zip
-
-/assets-source/imported-plants/
+/asterion-boar-refined.zip
+/asterion-boar-refined.html
 
 /ash-tusk-boar-commercial.zip
 
 /ash-tusk-boar-seller-kit.zip
 
 /boar-seller-kit/
-
-/assets-source/campfire/
