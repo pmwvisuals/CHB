@@ -69,7 +69,8 @@ func run():
 	check(camp.key_light.transform.is_equal_approx(light_pose) and camp.key_light.light_energy>.6,"Legacy night saves cannot change the fixed evening light")
 	session.data.time = 720.0
 	camp._process(.4)
-	check(camp.find_children("*","OmniLight3D",true,false).is_empty(),"Removed night-light slots do not remain in the scene")
+	var local_lights=camp.find_children("*","OmniLight3D",true,false)
+	check(local_lights.size()==3 and local_lights.all(func(l):return camp.get_node("HephaestusOilLamps").is_ancestor_of(l) or camp.get_node("SanctuaryCampfire").is_ancestor_of(l)),"Two forge lamps and the amphitheatre fire remain; retired night-light slots are absent")
 	app.queue_free()
 	await frames(4)
 	DirAccess.remove_absolute(session.save_path)

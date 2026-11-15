@@ -1,10 +1,18 @@
-# Campfire replacement — 15 November 2026
+# Hephaestus oil lamps — 15 November 2026
+
+Exactly two brass hurricane oil lamps flank the temple entrance on raised plinths. Warm local lights (15 m radius, strength 4.5, no shadows, distance fade at 35–50 m) illuminate the shaded columns, porch, entrance surround and nameplate. The central ramp stays open, and global evening lighting is retained. Both instances share a prepared 15,997-triangle model and 1024 px maps, reduced from the supplied 499,988-triangle lantern. Identical source UV layers were consolidated so Godot uses the correct maps. Flames use a small animated emissive mesh.
+
+Seven rendered forge checks and 57 camp/travel checks passed. The rendered central-facade luminance rises from approximately 0.105 to 0.246 with the lamps enabled at the same camera pose. This is an image comparison on the laptop, not an Android performance benchmark. The existing amphitheatre campfire remains separate. The pause screen and packaged attribution file credit Galaxy Abundant under CC BY 4.0 and link the original model and license.
+
+The current optimized ARM32/ARM64 candidate is `builds/asterion-forge-test.apk`, 165,744,964 bytes, with independently verified v2/v3 signatures using the local testing key. SHA-256: `eb041fd6430202e019d7688bd0f2e4475f6d3a807039523644542b9363b7405b`. The APK includes the attribution text. Device installation, frame rate and memory for this change remain untested.
+
+# Campfire replacement â€” 15 November 2026
 
 The native amphitheatre replaces its seven orange cone flames with thirteen merged flame cards from the supplied campfire asset. The supplied flame atlas retains its original resolution and pixels. Stable visible poses replace the source animation that carries flame pieces below the base and shrinks them away. Bounded vertex movement animates the flame tips while opacity and light energy remain steady. Warm orange/yellow flames use transparent unlit shading, with one short-range shadowless light. The existing stone ring, logs and seating remain.
 
 Nine campfire checks passed through the Windows display driver, including removal of all old cones, one merged flame mesh, no disappearing source animation, visible orange flame coverage at four times across more than one former source-animation cycle, steady illumination and paused movement. Actual camp renders were inspected. All 26 gameplay smoke assertions also passed, including camp/forest transitions, movement, jumping and saving. The optimized ARM32/ARM64 Android APK passes independent v2/v3 signature verification using the local test key. Android performance for the new fire remains untested. The current candidate is `builds/asterion-campfire-test.apk`, with an accompanying SHA-256 file.
 
-## Earlier ridge standing-view follow-up — 15 November 2026
+## Earlier ridge standing-view follow-up â€” 15 November 2026
 
 The native Arrival Ridge landing moves four metres forward to `(0,109)`, on the camp-facing side of the crest. Old saves within 75 cm of the former arrival recover there. Spawn, map travel and saved-position recovery use the actual physical walking surface; resume queries stop just above the saved feet to avoid selecting a roof. Standing eye height remains 1.82 m. Paving uses approximately 40 cm stones and shallow normal-map relief, replacing the roughly 90 cm pattern that exaggerated the low viewpoint. Browser paving uses the same scale.
 
@@ -14,7 +22,7 @@ Terrain, collision meshes, plants, temple sites, map boundaries and lighting ass
 
 The current Android candidate is `builds/asterion-height-test.apk`, **158,939,311 bytes**, ARM32/ARM64, version 0.1.0. Independent verification passes v2/v3 signing using the local testing key. SHA-256: `332a40c689161e67bacecd572cee95500a8c9023868e6415be659b968ccc3a73`. The tablet's local debugging service was unavailable, so this revision has not been installed or checked on the SM-T515. The editable project archive includes the repair and regression test.
 
-## Rounded camp boundary verification — 15 November 2026
+## Rounded camp boundary verification â€” 15 November 2026
 
 The perimeter now follows a rounded convex loop, filling the sharp inward notches around the outer temples. The inner forest line uses smooth broad arcs. Terrain, planting, habitat, map artwork and physical collision were regenerated from the shared boundary source. Contact and canopy shading were rebaked against the new layout hash.
 
@@ -26,7 +34,7 @@ The export contains 917,280 scenery triangles, 55,067 source instances across 2,
 
 The optimized ARM32/ARM64 APK is 158,939,311 bytes and passes independent v2/v3 signing verification using the local testing key. SHA-256 is `a3153ccc828bbb25a12be0ebf0d8e93988ac941564871981260e12c17a67b883`. A direct data comparison confirms all twelve temple placements, road routes and terrain elevation samples match the previous camp. Plant GPU-compression settings are retained.
 
-## Earlier evening atmosphere verification — 15 November 2026
+## Earlier evening atmosphere verification â€” 15 November 2026
 
 The current surface revision raises standing eye height from 1.64 m to **1.82 m**, with a 1.95 m physical capsule. Road/soil footprints are fitted to the actual terrain triangles, with distinct layers. The lake ramp follows the bank where needed, keeping the original incline elsewhere and avoiding a coplanar seam at the road join. Geometry and exact collision were rebuilt; the atmosphere field was rebaked against the new layout hash.
 
@@ -86,7 +94,7 @@ Verified with standard **Godot 4.7.2 stable**, Windows and OpenGL Compatibility 
 
 
 
-Nine ground-level views were rendered at **1280×720** with phone controls: Arrival Ridge, Great Hall, Wayfarer Hall, training yard, lakeside, Poseidon, Ares, Hephaestus and Aphrodite. Three additional elevated views check trees around those outer temple clearings; the interactive map was captured too. Short desktop samples were approximately 22–29 FPS while other checks/builds ran. They are not controlled benchmarks or Android results.
+Nine ground-level views were rendered at **1280Ã—720** with phone controls: Arrival Ridge, Great Hall, Wayfarer Hall, training yard, lakeside, Poseidon, Ares, Hephaestus and Aphrodite. Three additional elevated views check trees around those outer temple clearings; the interactive map was captured too. Short desktop samples were approximately 22â€“29 FPS while other checks/builds ran. They are not controlled benchmarks or Android results.
 
 
 
@@ -140,11 +148,11 @@ The prior lighting checkpoint's 116-file editable archive includes the new baked
 
 
 
-Cloud volume lighting is baked offline into one 2048×1024 panorama containing four sparse banks. A global phase moves their visible positions; the shader uses no built-in clock/camera inputs or changing material uniforms. An actual display test measured **605 → 605 draw submissions** after changing that phase, confirming that cloud drift did not submit a new sky-radiance bake. This comparison is specific to the tested viewport, not an Android benchmark.
+Cloud volume lighting is baked offline into one 2048Ã—1024 panorama containing four sparse banks. A global phase moves their visible positions; the shader uses no built-in clock/camera inputs or changing material uniforms. An actual display test measured **605 â†’ 605 draw submissions** after changing that phase, confirming that cloud drift did not submit a new sky-radiance bake. This comparison is specific to the tested viewport, not an Android benchmark.
 
 
 
-The sky supplies ambient light/reflections through a 128-pixel cache. One 2048-pixel directional shadow map, 2× MSAA and a restrained filmic exposure are shared by both presets. A 1536×1536 RGBA field approximates root/foundation contact, canopy light/ambient visibility and terrain height. It is tied to the current layout hash and all 3,470 retained tree placements; this is not full global illumination. Turf and grass blades use a small material ambient term to preserve freshness in shade without raising road exposure.
+The sky supplies ambient light/reflections through a 128-pixel cache. One 2048-pixel directional shadow map, 2Ã— MSAA and a restrained filmic exposure are shared by both presets. A 1536Ã—1536 RGBA field approximates root/foundation contact, canopy light/ambient visibility and terrain height. It is tied to the current layout hash and all 3,470 retained tree placements; this is not full global illumination. Turf and grass blades use a small material ambient term to preserve freshness in shade without raising road exposure.
 
 
 
@@ -188,7 +196,7 @@ The native app includes camp exteriors and functional practice. Temple interiors
 
 
 
-## Supplied planting replacement — 15 November 2026
+## Supplied planting replacement â€” 15 November 2026
 
 
 
@@ -200,7 +208,7 @@ The new materials use alpha cutout rather than alpha blending, two-sided leaves,
 
 
 
-Ten display-driven plant assertions, 57 camp assertions and 32 display-driven graphics assertions passed. The plant checks cover rooted scale, cutout textures, population, exclusive replacement counts, terrain contact, forest exclusion and preservation. Godot captures include a small sample patch, garden and lakeside close views, Arrival Ridge and training under both graphics settings. Initial laptop samples were 26–28 FPS at 1280x720, depending on view/preset; these are short samples rather than a controlled performance comparison.
+Ten display-driven plant assertions, 57 camp assertions and 32 display-driven graphics assertions passed. The plant checks cover rooted scale, cutout textures, population, exclusive replacement counts, terrain contact, forest exclusion and preservation. Godot captures include a small sample patch, garden and lakeside close views, Arrival Ridge and training under both graphics settings. Initial laptop samples were 26â€“28 FPS at 1280x720, depending on view/preset; these are short samples rather than a controlled performance comparison.
 
 
 

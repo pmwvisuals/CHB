@@ -156,6 +156,14 @@ func _ready():
 	button(pause_panel,"GRAPHICS",Vector2(460,332),Vector2(360,58),open_graphics)
 	button(pause_panel,"SAVE PROGRESS",Vector2(460,404),Vector2(360,58),save_progress)
 	button(pause_panel,"RETURN TO SANCTUARY",Vector2(460,476),Vector2(360,58),func(): Session.paused=false;Session.change_zone("camp"))
+	var credit:=RichTextLabel.new()
+	credit.position=Vector2(260,570)
+	credit.size=Vector2(760,100)
+	credit.bbcode_enabled=true
+	credit.add_theme_font_size_override("normal_font_size",16)
+	credit.text="[center]Lantern: Galaxy Abundant · CC BY 4.0\nAdapted mesh, textures and scale; in-game flame and lighting added.\n[url=https://sketchfab.com/3d-models/vintage-brass-hurricane-lantern-unlit-46528337bec34fa49f2c71577efc7bc0]Original model[/url] · [url=https://creativecommons.org/licenses/by/4.0/]License[/url][/center]"
+	credit.meta_clicked.connect(func(url):OS.shell_open(str(url)))
+	pause_panel.add_child(credit)
 	pause_panel.visible = false
 
 func toggle_pause():

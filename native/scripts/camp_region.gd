@@ -37,8 +37,9 @@ func finish_preparation():
 	# Recover the old arrival save and any foot position underneath added paving.
 	player.position = recover_position(player.position)
 	player.camera.far = 430
-	preload("res://scripts/sun_shafts.gd").add_to(self)
+	preload("res://scripts/forge_lamps.gd").add_to(self)
 	preload("res://scripts/campfire.gd").new().install(self)
+	preload("res://scripts/sun_shafts.gd").add_to(self)
 	training = preload("res://scripts/training.gd").new()
 	training.world = self
 	add_child(training)

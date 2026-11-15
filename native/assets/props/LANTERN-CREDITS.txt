@@ -1,0 +1,6 @@
+Vintage Brass Hurricane Lantern - Unlit
+Author: Galaxy Abundant (https://sketchfab.com/galaxyabundant)
+Source: https://sketchfab.com/3d-models/vintage-brass-hurricane-lantern-unlit-46528337bec34fa49f2c71577efc7bc0
+License: Creative Commons Attribution 4.0 (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Changes: reduced mesh density (499,988 to 15,997 triangles), normalized to 1.25 m tall, textures resized to 1024 px. Flames and lighting added in game. Supplied by the user; original retained in assets-source/props.
