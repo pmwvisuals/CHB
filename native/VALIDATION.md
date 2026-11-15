@@ -1,4 +1,12 @@
-# Native deep forest landscape — 15 November 2026
+# Darker forest trees and irregular groves — 15 November 2026
+
+The native forest's tree materials now multiply their linear colour by `(0.48, 0.58, 0.46)`, producing darker bark and deep evergreen foliage. Relocation uses a repeatable mixture of grove candidates and loose background candidates, with variable minimum separation. Source species, sizes and all 5,200 tree instances are retained. Root heights are resampled after relocation. The normal trail and clearing exclusions apply to every new tree position.
+
+Measured nearest-neighbour spacing variation increased from 0.105 to 0.189, and tree-density variation across interior 40-metre squares increased from 0.145 to 0.300. These coefficients verify greater variation in spacing and density. A direct data comparison confirms the terrain, paths, clearing definitions, map boundary and 20,000 floor placements retain their previous data. The shader applies the new darkening to tree materials specifically. Saved positions overlapping a relocated trunk recover to nearby open ground.
+
+The forest checks pass all 33 assertions, supported by a 32-assertion display run and seven inspected player-height views. The final added floor-palette assertion also passes. Coverage includes density variation, darker tree materials, the separate floor palette, relocated-trunk recovery, all trail floors and trunk clearances, saved progression, graphics switching and repeated entry. The current Android candidate is `builds/asterion-forest-polish-test.apk`. Device frame rate and memory remain untested for this revision.
+
+## Earlier native deep forest landscape — 15 November 2026
 
 The first native forest landscape replaces the small woodland test area with a 550-metre playable diameter, surrounded by tree scenery to radius 330 m. It reuses the browser forest's rolling terrain, hollows, four connected trails and six clearings. Shared spatial batches place all five existing dark tree types across 5,200 placements, plus 20,000 leaf-litter, fern, bracken and bramble placements. Terrain and collision share 36 chunks of the same triangle grid. Tree roots follow the terrain. Detailed leaves have bounded distances, distant crowns reuse the existing streamer, and nearby trunk collision is created and released as the player moves.
 

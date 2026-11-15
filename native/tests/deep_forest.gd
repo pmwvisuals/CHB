@@ -45,6 +45,30 @@ func run():
 	for p in raw.trees:
 		native_species[int(p[0])] = true
 	check(native_species.size()==5,"All five existing dark tree varieties appear")
+	var densities:Array[float] = []
+	for z in range(-200,201,40):
+		for x in range(-200,201,40):
+			if Vector2(x+20,z+20).length()>230:
+				continue
+			densities.append(raw.trees.filter(func(p): return p[1]>=x and p[1]<x+40 and p[3]>=z and p[3]<z+40).size())
+	var mean:float = densities.reduce(func(a,b): return a+b,0.0)/densities.size()
+	var variance:float = densities.reduce(func(a,b): return a+pow(b-mean,2),0.0)/densities.size()
+	check(sqrt(variance)/mean>.25,"Tree density varies between groves and open woodland")
+	var darker := true
+	var floor_palette := true
+	for node in forest.get_children():
+		if node is MultiMeshInstance3D and String(node.name).begins_with("forest_"):
+			var tone:Vector3 = node.multimesh.mesh.surface_get_material(0).get_shader_parameter("woodland_tone")
+			if String(node.name).get_slice("_",1) in ["oak","hornbeam","cedar","fir","spruce"]:
+				darker = darker and tone.x<.6 and tone.y<.65 and tone.z<.6
+			else:
+				floor_palette = floor_palette and tone==Vector3.ONE
+	check(darker,"Tree bark and foliage use the darker woodland palette")
+	check(floor_palette,"Woodland floor plants retain their own palette")
+	var tree:Array = raw.trees.filter(func(p): return Vector2(p[1],p[3]).length()<200)[0]
+	var root_position := Vector3(tree[1],forest.height(tree[1],tree[3])+.1,tree[3])
+	var recovered:Vector3 = forest.recover_tree_position(root_position)
+	check(not forest.tree_overlaps(recovered) and recovered.distance_to(root_position)<10,"Saved positions inside relocated trunks recover nearby")
 	session.set_graphics_quality("balanced")
 	check(forest.detail_nodes.all(func(n): return n.visibility_range_end==42),"Balanced retains near-leaf detail")
 	session.set_graphics_quality("high")

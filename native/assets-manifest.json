@@ -224,8 +224,8 @@
     },
     {
       "file": "assets/deep-forest/layout.json",
-      "bytes": 2222729,
-      "sha256": "1f4fcbb50fb19a3ec86344664d707de503146e6550f5bd76656a37bd2d8340ec",
+      "bytes": 2222667,
+      "sha256": "f0a9f9193d630b0100e338ccbe5282bad7b8a498a7267bec8db1910642bfabc9",
       "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
     },
     {

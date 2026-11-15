@@ -22,6 +22,40 @@ for(const id of ids){
 const exported=await new GLTFExporter().parseAsync(root,{binary:true});
 await fs.writeFile(out+'/prototypes.glb',Buffer.from(exported));
 const placements=source.deepForestPlacements();
+// Mix loose background trees with irregular groves instead of an even spacing.
+// Separate randomness preserves the existing floor planting and terrain data.
+let scatterSeed=391847;
+const scatterRandom=()=>{scatterSeed=(scatterSeed*1664525+1013904223)>>>0;return scatterSeed/4294967296;};
+const randomPoint=()=>{
+ const angle=scatterRandom()*Math.PI*2,radius=Math.sqrt(scatterRandom())*source.deepForest.sceneryRadius;
+ return {x:Math.cos(angle)*radius,z:Math.sin(angle)*radius};
+};
+const groves=Array.from({length:95},()=>({...randomPoint(),radius:14+scatterRandom()*25}));
+const treeCells=new Map();
+placements.trees=placements.trees.map(tree=>{
+ for(let attempt=0;attempt<600;attempt++){
+  let point=randomPoint();
+  if(scatterRandom()<.68){
+   const grove=groves[Math.floor(scatterRandom()*groves.length)],angle=scatterRandom()*Math.PI*2;
+   const radius=Math.sqrt(-2*Math.log(Math.max(.00001,scatterRandom())))*grove.radius*.55;
+   point={x:grove.x+Math.cos(angle)*radius,z:grove.z+Math.sin(angle)*radius};
+  }
+  const {x,z}=point;
+  if(Math.hypot(x,z)>source.deepForest.sceneryRadius||source.forestTrailDistance(x,z)<3.7||source.clearingDistance(x,z)<0)continue;
+  const patch=source.forestPatchNoise(x*.016+81,z*.016-29);
+  const spacing=3.4+(1-patch)*4.2+scatterRandom()*.6,cx=Math.floor(x/10),cz=Math.floor(z/10);
+  let crowded=false;
+  for(let dx=-1;dx<=1&&!crowded;dx++)for(let dz=-1;dz<=1&&!crowded;dz++){
+   crowded=(treeCells.get((cx+dx)+':'+(cz+dz))||[]).some(p=>Math.hypot(p.x-x,p.z-z)<(p.spacing+spacing)*.5);
+  }
+  if(crowded)continue;
+  const y=Math.min(source.deepForestHeight(x,z),source.deepForestHeight(x+.5,z),source.deepForestHeight(x-.5,z),source.deepForestHeight(x,z+.5),source.deepForestHeight(x,z-.5))-.045;
+  const key=cx+':'+cz,list=treeCells.get(key)||[];
+  list.push({x,z,spacing});treeCells.set(key,list);
+  return {...tree,x,y,z};
+ }
+ throw new Error('Could not place a forest tree without blocking a trail or another trunk');
+});
 const encode=p=>[ids.indexOf(p.id),p.x,p.y,p.z,p.scale,p.rotation].map(v=>Math.round(v*10000)/10000);
 const size=241,spacing=3,origin=-360,heights=[];
 for(let z=0;z<size;z++)for(let x=0;x<size;x++)heights.push(source.deepForestHeight(origin+x*spacing,origin+z*spacing));

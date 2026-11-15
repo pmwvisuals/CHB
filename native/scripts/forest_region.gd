@@ -125,6 +125,8 @@ func plant():
 				var mat := ShaderMaterial.new()
 				mat.shader = preload("res://shaders/forest_vegetation.gdshader")
 				mat.set_shader_parameter("tint",Color("514335") if "bark" in part.name else original.albedo_color)
+				var tree:bool = String(part.name).get_slice("_",1) in ["oak","hornbeam","cedar","fir","spruce"]
+				mat.set_shader_parameter("woodland_tone",Vector3(.48,.58,.46) if tree else Vector3.ONE)
 				mat.set_shader_parameter("leaf","foliage" in part.name or "canopy" in part.name)
 				mat.set_shader_parameter("bark","bark" in part.name)
 				mat.set_shader_parameter("bark_noise",preload("res://assets/deep-forest/soil-noise.png"))
@@ -219,8 +221,28 @@ func finish_preparation():
 	if Session.data.get("forest_layout","")!="deepwood_1":
 		player.position = spawn_position()
 		Session.data.forest_layout = "deepwood_1"
+	player.position = recover_tree_position(player.position)
 	refresh_collisions()
 	Session.message = "Follow the earth trail into Deepwood. The stone gate behind you returns to camp."
+
+func tree_overlaps(at:Vector3) -> bool:
+	for tree in layout.trees:
+		if at.y>=tree[2]+6 or at.y+1.95<=tree[2]:
+			continue
+		if Vector2(at.x-tree[1],at.z-tree[3]).length()<tree[4]*.2+.4:
+			return true
+	return false
+
+func recover_tree_position(at:Vector3) -> Vector3:
+	if not tree_overlaps(at):
+		return at
+	for distance in [1.5,3.0,6.0]:
+		for index in range(12):
+			var point:Vector2 = Vector2(at.x,at.z)+Vector2(cos(index*TAU/12),sin(index*TAU/12))*distance
+			var candidate := Vector3(point.x,height(point.x,point.y)+.1,point.y)
+			if inside_bounds(candidate) and not tree_overlaps(candidate):
+				return candidate
+	return spawn_position()
 
 func apply_graphics():
 	super.apply_graphics()
