@@ -191,6 +191,18 @@
       "file": "assets/camp/camp-physics.scn",
       "sha256": "f33bea8f729d6768859d79fb7cd00b3803361284cec8ca7718b5e17e2a612171",
       "source": "exact collision faces from camp-collision.glb; physics only"
+    },
+    {
+      "file": "assets/campfire/campfire-flames.glb",
+      "bytes": 1629264,
+      "sha256": "a64d5f305ced92efb857d31fa75f14e85944a21084badf59f0f30ea6b18e30c2",
+      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
+    },
+    {
+      "file": "assets/campfire/flames.png",
+      "bytes": 1626058,
+      "sha256": "a2e87bffb54efbc1c2ee8f01d0e3269ecc27360406bb305ed974996264760eb8",
+      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
     }
   ]
 }

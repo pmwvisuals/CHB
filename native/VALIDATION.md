@@ -1,4 +1,10 @@
-# Ridge standing-view follow-up — 15 November 2026
+# Campfire replacement — 15 November 2026
+
+The native amphitheatre replaces its seven orange cone flames with thirteen merged flame cards from the supplied campfire asset. The supplied flame atlas retains its original resolution and pixels. Stable visible poses replace the source animation that carries flame pieces below the base and shrinks them away. Bounded vertex movement animates the flame tips while opacity and light energy remain steady. Warm orange/yellow flames use transparent unlit shading, with one short-range shadowless light. The existing stone ring, logs and seating remain.
+
+Nine campfire checks passed through the Windows display driver, including removal of all old cones, one merged flame mesh, no disappearing source animation, visible orange flame coverage at four times across more than one former source-animation cycle, steady illumination and paused movement. Actual camp renders were inspected. All 26 gameplay smoke assertions also passed, including camp/forest transitions, movement, jumping and saving. The optimized ARM32/ARM64 Android APK passes independent v2/v3 signature verification using the local test key. Android performance for the new fire remains untested. The current candidate is `builds/asterion-campfire-test.apk`, with an accompanying SHA-256 file.
+
+## Earlier ridge standing-view follow-up — 15 November 2026
 
 The native Arrival Ridge landing moves four metres forward to `(0,109)`, on the camp-facing side of the crest. Old saves within 75 cm of the former arrival recover there. Spawn, map travel and saved-position recovery use the actual physical walking surface; resume queries stop just above the saved feet to avoid selecting a roof. Standing eye height remains 1.82 m. Paving uses approximately 40 cm stones and shallow normal-map relief, replacing the roughly 90 cm pattern that exaggerated the low viewpoint. Browser paving uses the same scale.
 
