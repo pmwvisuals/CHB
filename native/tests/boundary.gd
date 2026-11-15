@@ -27,6 +27,15 @@ func run():
 	for i in range(camp.boundary.size()):
 		area += camp.boundary[i].cross(camp.boundary[(i+1)%camp.boundary.size()])
 	check(absf(area)*.5<235*235*4*.7,"Walkable outline removes more than thirty percent of the old unused area")
+	check(absf(area)*.5<117935.24*1.08,"Rounded corners add less than eight percent to the compact map")
+	var rounded := true
+	for i in range(camp.boundary.size()):
+		var a:Vector2 = camp.boundary[i]
+		var b:Vector2 = camp.boundary[(i+1)%camp.boundary.size()]
+		var c:Vector2 = camp.boundary[(i+2)%camp.boundary.size()]
+		var bend:float = (b-a).angle_to(c-b)
+		rounded = rounded and bend>=-.0001 and bend<PI/22.5
+	check(rounded,"The physical and visible outline has smooth convex corners without temple notches")
 	var walls_work := true
 	for i in range(0,camp.boundary.size(),24):
 		var point:Vector2 = camp.boundary[i]

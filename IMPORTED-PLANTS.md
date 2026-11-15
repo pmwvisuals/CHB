@@ -1,12 +1,12 @@
 # Supplied grass and flowering bushes — native camp replacement
 
-The native Godot camp now uses the two user-supplied GLB packs. The Android test build for this checkpoint is `native/builds/asterion-plants-test.apk`; the existing APK is preserved separately. Browser vegetation has not been replaced in this pass.
+The native Godot camp uses the two user-supplied GLB packs. The current Android candidate is `native/builds/asterion-boundary-test.apk`. Placement counts below reflect the rounded camp boundary. Browser vegetation is handled by its existing pipeline.
 
 ## Placement
 
-- 33,912 existing grass/ground-cover placements now use fresh, aged or dry grass from the supplied pack, with heights of approximately 18–30 cm. Occasional taller grass/reeds mark the lake bank.
-- 155 camp shrubs replace the old multipart myrtle/laurel models. Each shrub is instantiated once instead of separately drawing its old trunk, leaves, crown and blossoms.
-- 265 small flowering bushes replace the dense old individual-flower placements in garden beds. Broad-leaf flowering plants are reserved for lakeside beds.
+- 33,908 grass/ground-cover placements use fresh, aged or dry grass from the supplied pack, with heights of approximately 18–30 cm. Occasional taller grass/reeds mark the lake bank.
+- 156 camp shrubs replace the old multipart myrtle/laurel models. Each shrub is instantiated once.
+- 264 small flowering bushes replace the dense old individual-flower placements in garden beds. Broad-leaf flowering plants are reserved for lakeside beds.
 - The habitat mask excludes flowering bushes from the dark forest. Every original dark forest tree and bramble trunk placement remains. Original ferns, bracken, camp trees, buildings, roads and collision remain.
 - Source placement X/Z coordinates are reused. Root heights are sampled from the camp's terrain, with a 2.5 cm inset to avoid visible floating roots. Prototypes are normalized to unit height before instance scaling. There is no plant collision.
 

@@ -55,78 +55,6 @@
       "source": "lib/game/practice-weapons.ts"
     },
     {
-      "bytes": 54919360,
-      "file": "assets/camp/camp-static.glb",
-      "sha256": "a2b0c9ed27837f57bce85b59159be1c993aefac80a416b8f45571891386acdc5",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 13625052,
-      "file": "assets/camp/camp-prototypes.glb",
-      "sha256": "a46e40a45a0c30008698450807bc8189c782f050425955e14d78c38ac949b462",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 19930080,
-      "file": "assets/camp/camp-collision.glb",
-      "sha256": "e7fbaa68dd94c60aa6b9cb6d0c15412fe93fba794c49b2d78c338ee2b2f27ff5",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 71212,
-      "file": "assets/camp/habitat.png",
-      "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 770172,
-      "file": "assets/camp/ground-albedo.png",
-      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 1268157,
-      "file": "assets/camp/ground-normal.png",
-      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 498771,
-      "file": "assets/camp/ground-roughness.png",
-      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 6429745,
-      "file": "assets/camp/camp-layout.json",
-      "sha256": "56ba8723587ca4e8d10d3e4b89b94b8f652b11929804bb045442906d87654417",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 563,
-      "file": "assets/atmosphere/bake-report.json",
-      "sha256": "1ecb2a1b7a7b89650481dabd11d4643d921dfa96a653ba93cb024c60e38b5b90",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "bytes": 81676,
-      "file": "assets/atmosphere/cloud-banks.png",
-      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "bytes": 1875072,
-      "file": "assets/atmosphere/ground-light.png",
-      "sha256": "d3a95eb71439f9f20c231a147a96b56f2ab2b708fdd698c2bed4d937f8ed9888",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "bytes": 2364437,
-      "file": "assets/camp/camp-physics.scn",
-      "sha256": "6f7bc09763ee0ed8c1e622384585a12333d5975696b14c96df60fd42d5f09747",
-      "source": "exact collision faces from camp-collision.glb; physics only"
-    },
-    {
       "file": "assets/plants/imported-plants.glb",
       "source": "User supplied packs; scripts/blender/prepare_imported_plants.py",
       "bytes": 13693788,
@@ -191,6 +119,78 @@
       "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
       "bytes": 1390883,
       "sha256": "853befe53647d63a04d7e799716f50d8476ed8d634eaed9b573f4a2670815911"
+    },
+    {
+      "bytes": 55083580,
+      "file": "assets/camp/camp-static.glb",
+      "sha256": "ca10b9aa292418b75b0ba1b5279b3b566a5036025ead912686abbb24e6254ad2",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 13625052,
+      "file": "assets/camp/camp-prototypes.glb",
+      "sha256": "9146d34c2bea89b2ab4dead00e322712480e73b634365201f89ef477d2b17191",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 20540688,
+      "file": "assets/camp/camp-collision.glb",
+      "sha256": "29fdacb40e7a8c11d0ae613a43ab811db65950f73e6585e89c944eb98bd59dcf",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 71212,
+      "file": "assets/camp/habitat.png",
+      "sha256": "a970947fba399eb8c3f767a4468f172117251c62319249a31f19cbc5ff2403a4",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 770172,
+      "file": "assets/camp/ground-albedo.png",
+      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1268157,
+      "file": "assets/camp/ground-normal.png",
+      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 498771,
+      "file": "assets/camp/ground-roughness.png",
+      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 6448109,
+      "file": "assets/camp/camp-layout.json",
+      "sha256": "271bbc6965d00640efa1a279ce54349dff6be84fb115870ec68a2f0dc337fb14",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 563,
+      "file": "assets/atmosphere/bake-report.json",
+      "sha256": "cbbad943eb3175ce222833179728a5c5099443fda64993370e1194069fd8237b",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "bytes": 81676,
+      "file": "assets/atmosphere/cloud-banks.png",
+      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "bytes": 2026501,
+      "file": "assets/atmosphere/ground-light.png",
+      "sha256": "1739119c3306b3bff4be8f69c64372f20ec88fe5de5d211ee10c90961c5ae344",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "bytes": 2436595,
+      "file": "assets/camp/camp-physics.scn",
+      "sha256": "f33bea8f729d6768859d79fb7cd00b3803361284cec8ca7718b5e17e2a612171",
+      "source": "exact collision faces from camp-collision.glb; physics only"
     }
   ]
 }
