@@ -1,4 +1,10 @@
-# Roaming forest boar — 15 November 2026
+# Flowing campfire motion — 15 November 2026
+
+The amphitheatre fire now combines independent curling and stretching of thirteen subdivided flame cards with upward-moving texture distortion. The roots stay anchored. Each card stores its own atlas rectangle, keeping animated sampling inside its flame image. Phase offsets avoid synchronized swaying, and the warm local light varies gently between energy 3.02 and 3.38. The original source disappearing animation remains replaced. The supplied flame texture, stone ring and logs are retained. Flame geometry is one shared draw with 1,274 triangles.
+
+The display-driven campfire checks confirm continuous orange flame coverage across four times, a visibly changing silhouette and internal texture, bounded warm illumination and pause freezing both movement and light. In the final run, 4,855 of 9,321 sampled bright flame pixels changed by the motion threshold between two frames. This measures visible animation rather than a uniform change alone. A 60-frame, two-second GIF records actual Godot output. Camp/travel checks also pass. The updated Android candidate is `builds/asterion-fire-motion-test.apk`, 171,923,307 bytes, with independently verified v2/v3 signatures using the local testing key and both ARM32/ARM64 architectures. Its SHA-256 is `8c90b999c3d2cfc606059ee9458ba933cd1967ed44c69260a6329b0ef14f8cb2`. Device performance remains untested for this revision.
+
+## Earlier roaming forest boar — 15 November 2026
 
 The normal native forest entry creates one Ash-Tusk Boar using the existing rigged game model. Its six-point walking route lies inside the first clearing, approximately 90 metres along the main trail from arrival. It walks at 0.55 m/s, turns smoothly, alternates walking and idle pauses, and pauses within 2.8 metres of the player. Activity pauses farther than 65 metres from the player. Existing distance mesh levels and visual culling remain. A blocked movement timer advances the route after a pause. Returning to camp frees the actor, and entering the forest recreates it. A player saved beside the usual spawn gets an alternative boar spawn in the same clearing.
 

@@ -139,18 +139,6 @@
       "source": "exact collision faces from camp-collision.glb; physics only"
     },
     {
-      "file": "assets/campfire/campfire-flames.glb",
-      "bytes": 1629264,
-      "sha256": "a64d5f305ced92efb857d31fa75f14e85944a21084badf59f0f30ea6b18e30c2",
-      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
-    },
-    {
-      "file": "assets/campfire/flames.png",
-      "bytes": 1626058,
-      "sha256": "a2e87bffb54efbc1c2ee8f01d0e3269ecc27360406bb305ed974996264760eb8",
-      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
-    },
-    {
       "file": "assets/plants/imported-plants_Image_0.png",
       "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting",
       "bytes": 2623819,
@@ -245,6 +233,18 @@
       "bytes": 21611,
       "sha256": "15b54cd4b1c280d6d90e468ccbc2a5e51667a4da4ad7c785245a9bd07543cfc8",
       "source": "scripts/export-native-forest.mjs; existing forest layout and project-authored vegetation"
+    },
+    {
+      "file": "assets/campfire/campfire-flames.glb",
+      "bytes": 711616,
+      "sha256": "daea3dc2185047772c104cc0931ea5b7d4718eb4cc6e7fe61081f2905ae2a775",
+      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
+    },
+    {
+      "file": "assets/campfire/flames.png",
+      "bytes": 1626058,
+      "sha256": "a2e87bffb54efbc1c2ee8f01d0e3269ecc27360406bb305ed974996264760eb8",
+      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
     }
   ]
 }

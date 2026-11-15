@@ -3,6 +3,7 @@ extends Node3D
 var phase := 0.0
 var flame_material:ShaderMaterial
 var removed_flames := 0
+var firelight:OmniLight3D
 
 func install(world):
 	name = "SanctuaryCampfire"
@@ -26,6 +27,7 @@ func install(world):
 		part.material_override = flame_material
 		part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var light := OmniLight3D.new()
+	firelight = light
 	light.name = "SteadyFirelight"
 	light.position.y = 1.0
 	light.light_color = Color("ff9b40")
@@ -39,3 +41,4 @@ func _process(delta:float):
 		return
 	phase += delta
 	flame_material.set_shader_parameter("fire_time",phase)
+	firelight.light_energy = 3.2+.12*sin(phase*4.7)+.06*sin(phase*8.3+.8)

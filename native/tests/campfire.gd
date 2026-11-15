@@ -26,17 +26,20 @@ func run():
 	check(fire.find_children("*","AnimationPlayer",true,false).is_empty(),"Off-screen and zero-scale source animation is replaced")
 	check(fire.find_children("*","MeshInstance3D",true,false).size()==1,"Supplied flame cards share one mesh draw")
 	var light = fire.get_node("SteadyFirelight")
-	var energy:float = light.light_energy
 	camp.player.set_physics_process(false)
 	camp.player.camera.global_position = Vector3(0,camp.height(0,-56)+2.2,-56)
 	camp.player.camera.look_at(fire.global_position+Vector3.UP*1.3)
 	var counts:Array[int] = []
+	var images:Array[Image] = []
+	var energies:Array[float] = []
 	for sample in range(4):
 		for frame in range(45):
 			await process_frame
 		await RenderingServer.frame_post_draw
 		var picture:Image = root.get_texture().get_image()
 		picture.save_png("res://builds/campfire-"+str(sample)+".png")
+		images.append(picture)
+		energies.append(light.light_energy)
 		var orange := 0
 		for y in range(130,590,2):
 			for x in range(380,900,2):
@@ -45,12 +48,35 @@ func run():
 					orange += 1
 		counts.append(orange)
 		check(orange>150,"Flame stays visibly bright at sample "+str(sample))
-	check(light.light_energy==energy and energy>3,"Warm firelight remains steady")
+	check(energies.all(func(e): return e>=3.0 and e<=3.4),"Warm firelight varies gently within a continuously lit range")
+	var changed := 0
+	var active := 0
+	for y in range(230,470,2):
+		for x in range(500,770,2):
+			var a:Color = images[0].get_pixel(x,y)
+			var b:Color = images[1].get_pixel(x,y)
+			if maxf(a.r,b.r)>.5 and maxf(a.g,b.g)>.15:
+				active += 1
+				if absf(a.r-b.r)+absf(a.g-b.g)+absf(a.b-b.b)>.12:
+					changed += 1
+	check(active>100 and float(changed)/active>.15,"Rendered flame visibly changes shape and internal flow")
+	var stopped_energy:float = light.light_energy
 	var phase:float = fire.phase
 	session.paused = true
 	fire._process(2)
-	check(fire.phase==phase,"Pause stops flame movement")
+	check(fire.phase==phase and light.light_energy==stopped_energy,"Pause freezes flame motion and firelight")
+	print("FIRE MOTION ",changed," / ",active," light=",energies)
 	print("FIRE PIXELS ",counts)
+	if "--motion-preview" in OS.get_cmdline_user_args():
+		session.paused = false
+		fire.set_process(false)
+		var folder := ProjectSettings.globalize_path("res://../.tools/campfire-motion")
+		DirAccess.make_dir_recursive_absolute(folder)
+		for i in range(60):
+			fire._process(1.0/30)
+			await process_frame
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png(folder+"/frame-%03d.png" % i)
 	app.queue_free()
 	for i in range(3):
 		await process_frame

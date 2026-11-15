@@ -1,6 +1,6 @@
-"""Prepare the supplied flame cards in stable visible poses for the camp fire."""
+"""Prepare subdivided flame cards and atlas bounds for flowing campfire motion."""
 from pathlib import Path
-import bpy, json, hashlib, shutil
+import bpy, bmesh, json, hashlib, shutil
 from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -39,6 +39,25 @@ for obj in list(bpy.data.objects):
     bpy.context.scene.frame_set(best[1])
     mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(bpy.context.evaluated_depsgraph_get()))
     mesh.transform(obj.matrix_world)
+    # Extra vertices let each tongue bend and stretch through its height.
+    topology = bmesh.new()
+    topology.from_mesh(mesh)
+    bmesh.ops.subdivide_edges(topology, edges=list(topology.edges), cuts=6, use_grid_fill=True)
+    topology.to_mesh(mesh)
+    topology.free()
+    uv = mesh.uv_layers.active.data
+    u0 = min(v.uv.x for v in uv)
+    v0 = min(v.uv.y for v in uv)
+    u1 = max(v.uv.x for v in uv)
+    v1 = max(v.uv.y for v in uv)
+    # Store each sprite's UV rectangle so animated sampling cannot bleed into
+    # neighbouring atlas images. glTF exports vertically inverted UVs.
+    for attribute in list(mesh.color_attributes):
+        mesh.color_attributes.remove(attribute)
+    bounds = mesh.color_attributes.new(name='FlameAtlasBounds', type='FLOAT_COLOR', domain='CORNER')
+    for color in bounds.data:
+        color.color = (u0, 1-v1, u1-u0, v1-v0)
+    mesh.color_attributes.active_color = bounds
     card = bpy.data.objects.new('StableFlame', mesh)
     bpy.context.collection.objects.link(card)
     cards.append(card)
@@ -65,13 +84,15 @@ nodes = mat.node_tree.nodes
 shader = nodes.get('Principled BSDF')
 texture = nodes.new('ShaderNodeTexImage')
 texture.image = image
-mat.node_tree.links.new(texture.outputs['Color'], shader.inputs['Base Color'])
+metadata = nodes.new('ShaderNodeVertexColor')
+metadata.layer_name = 'FlameAtlasBounds'
+mat.node_tree.links.new(metadata.outputs['Color'], shader.inputs['Base Color'])
 mat.node_tree.links.new(texture.outputs['Alpha'], shader.inputs['Alpha'])
 flame.data.materials.clear()
 flame.data.materials.append(mat)
 for polygon in flame.data.polygons:
     polygon.material_index = 0
-bpy.ops.export_scene.gltf(filepath=str(OUT/'campfire-flames.glb'), export_format='GLB', use_selection=True, export_animations=False)
+bpy.ops.export_scene.gltf(filepath=str(OUT/'campfire-flames.glb'), export_format='GLB', use_selection=True, export_animations=False, export_all_vertex_colors=True)
 shutil.copyfile(SOURCE/'Textures/Optimized/Campfire_fire_MAT_BaseColor_Alpha.png', OUT/'flames.png')
 manifest_path = ROOT/'native/assets-manifest.json'
 manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
