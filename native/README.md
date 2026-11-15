@@ -4,11 +4,11 @@ Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset impor
 
 This checkpoint transfers the browser camp's exterior layout into Godot: terrain and roads, all twelve decorated temple exteriors at their unique sites, the four-door Great Hall, Wayfarer Hall, dining pavilion, training yard, gardens, docks and lakeside pavilion. The rounded camp spans approximately 405 by 392 metres and encloses 125,186 square metres, 43.3% less playable area than the former 470-metre square. The smooth perimeter fills the earlier temple notches, adding 6.1% to the previous compact outline. The inner tree line also follows broad curves. Ares (map 5) and Hephaestus (map 9) lie fully inside forest clearings; Aphrodite is also surrounded by forest. Foundations, approach paths and temple placements are preserved. Terrain beyond the outline is removed, with a small nonwalkable skirt beneath the back trees. Old saved positions outside the new boundary return to Arrival Ridge without losing progression. Temple interiors and the large deep-forest region remain to be migrated; the separate forest encounter is a small test region.
 
-Standing eye height is now 1.82 m above the physical walking surface. Roads and soil fit the actual terrain triangles, removing intersecting sand fragments at training and the raised bank across the lake entrance. The causeway remains continuously walkable.
+Standing eye height is 1.82 m above the physical walking surface. Arrival Ridge now lands four metres forward, on the camp-facing side of the crest, with approximately 40 cm paving stones and shallower surface relief. Spawn, map travel and recovery of old positions resolve the actual paved floor. Old saves at the former arrival recover to the crest. Roads and soil fit the terrain triangles, removing intersecting sand fragments at training and the raised bank across the lake entrance. The causeway remains continuously walkable.
 
 ## Included
 
-The native camp now uses the supplied grass and flower-bush packs: 33,908 grass placements, 156 camp shrubs and 264 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles, ferns and bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-boundary-test.apk`; its device performance has not yet been measured.
+The native camp now uses the supplied grass and flower-bush packs: 33,908 grass placements, 156 camp shrubs and 264 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles, ferns and bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-height-test.apk`; its device performance has not yet been measured.
 
 The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
 
@@ -67,7 +67,7 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The current test APK is `builds/asterion-boundary-test.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
+The current test APK is `builds/asterion-height-test.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
 
 The previous untrimmed build was tested on the physical SM-T515: camp, map, travel, joystick movement, weapon selection and both graphics choices responded. Its Arrival Ridge sample measured **3.07 FPS on Balanced**, which does not meet comfortable-play performance and does not predict performance on stronger phones. The new compact map has fewer instances, scenery triangles and collision faces, but has not yet been timed on Android. Larger forest batching experiments did not load reliably on this device and remain excluded.
 
@@ -89,6 +89,8 @@ Replace `Godot.exe` below with your actual console executable. Run from this nat
 & 'Godot.exe' --headless --path . --import
 & 'Godot.exe' --headless --path . --script res://tests/smoke.gd
 & 'Godot.exe' --headless --path . --script res://tests/camp.gd
+& 'Godot.exe' --path . --script res://tests/hill.gd
+& 'Godot.exe' --headless --path . --script res://tests/surfaces.gd
 & 'Godot.exe' --headless --path . --script res://tests/boundary.gd
 & 'Godot.exe' --path . --script res://tests/lighting.gd
 & 'Godot.exe' --headless --path . --script res://tests/polish.gd

@@ -2,6 +2,8 @@ import * as T from 'three';
 import {groundHeight} from './data';
 
 export const pavingLift=.065;
+// Eight flagstones across a tile: approximately 40 cm per stone.
+export const pavingTextureRepeat=3.2;
 /** One surface is used by rendering and walking collision, including on hills. */
 export function pavedRoadGeometry(points:T.Vector3[],width:number,height=groundHeight){
  const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
@@ -21,10 +23,10 @@ export function limestoneRoadMaterial(){
  }
  for(let z=0;z<size;z++)for(let x=0;x<size;x++){const left=height[z*size+(x+size-1)%size],right=height[z*size+(x+1)%size],up=height[((z+size-1)%size)*size+x],down=height[((z+1)%size)*size+x],n=new T.Vector3((left-right)*.65,(up-down)*.65,1).normalize(),i=(z*size+x)*4;normal[i]=(n.x*.5+.5)*255;normal[i+1]=(n.y*.5+.5)*255;normal[i+2]=(n.z*.5+.5)*255;normal[i+3]=255;}
  function texture(data:Uint8Array,srgb=false){const t=new T.DataTexture(data,size,size);t.colorSpace=srgb?T.SRGBColorSpace:T.NoColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;t.generateMipmaps=true;t.minFilter=T.LinearMipmapLinearFilter;t.magFilter=T.LinearFilter;t.anisotropy=16;t.needsUpdate=true;return t;}
- const material=new T.MeshStandardMaterial({color:'#ffffff',map:texture(albedo,true),normalMap:texture(normal),roughnessMap:texture(roughness),roughness:.96,normalScale:new T.Vector2(.8,.8),polygonOffset:true,polygonOffsetFactor:-1});
+ const material=new T.MeshStandardMaterial({color:'#ffffff',map:texture(albedo,true),normalMap:texture(normal),roughnessMap:texture(roughness),roughness:.96,normalScale:new T.Vector2(.35,.35),polygonOffset:true,polygonOffsetFactor:-1});
  material.name='Worn Greek limestone paving';
  material.onBeforeCompile=shader=>{shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>',`#include <uv_vertex>
-  vec2 pavingUV=(modelMatrix*vec4(position,1.)).xz/7.2;
+  vec2 pavingUV=(modelMatrix*vec4(position,1.)).xz/${pavingTextureRepeat.toFixed(1)};
   #ifdef USE_MAP
    vMapUv=pavingUV;
   #endif
@@ -33,5 +35,5 @@ export function limestoneRoadMaterial(){
   #endif
   #ifdef USE_ROUGHNESSMAP
    vRoughnessMapUv=pavingUV;
-  #endif`);};material.customProgramCacheKey=()=> 'greek-limestone-paving-v1';return material;
+  #endif`);};material.customProgramCacheKey=()=> 'greek-limestone-paving-v2';return material;
 }

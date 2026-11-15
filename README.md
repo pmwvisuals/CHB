@@ -10,7 +10,7 @@ The camp streets now use simple worn limestone flagstones, with chamfered Greek-
 
 **Browser lighting** remains fixed daylight, with directional shadows and opaque blue lake water. The native app uses the fixed evening atmosphere described above. The day/night cycle and sun/moon models have been removed. The browser retains slow moving clouds and their shadows. Terrain is clipped to the compact forest boundary, enclosing approximately 117,935 square metres, 46.6% less than the former playable square. Five dark tree varieties and dense undergrowth mark that shared edge. See [ATMOSPHERE.md](ATMOSPHERE.md) and [FOREST-BORDER.md](FOREST-BORDER.md).
 
-Native standing eyes now sit 1.82 m above the actual walking surface. Terrain-fitted paving repairs the scattered training-road fragments and protruding lake-entrance soil in both versions. See [SURFACE-FIXES.md](SURFACE-FIXES.md).
+Native standing eyes sit 1.82 m above the actual walking surface. Arrival Ridge lands on the forward crest with smaller paving stones; spawning and old-position recovery use the physical paved floor. Terrain-fitted paving repairs the scattered training-road fragments and protruding lake-entrance soil in both versions. See [SURFACE-FIXES.md](SURFACE-FIXES.md).
 
 ## Play
 

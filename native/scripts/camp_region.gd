@@ -1,5 +1,11 @@
 extends "res://scripts/world.gd"
 
+# Land on the forward side of the ridge crest, not behind its rising road.
+const ARRIVAL_POINT := Vector2(0,109)
+const LEGACY_ARRIVAL_POINT := Vector2(0,113)
+const PAVING_TEXTURE_REPEAT := 3.2
+const EXPORTED_PAVING_REPEAT := 7.2
+
 @export var scenery_scene:PackedScene
 @export var prototypes_scene:PackedScene
 @export var collision_scene:PackedScene
@@ -28,6 +34,8 @@ func apply_graphics():
 		foliage_stream.refresh(true)
 
 func finish_preparation():
+	# Recover the old arrival save and any foot position underneath added paving.
+	player.position = recover_position(player.position)
 	player.camera.far = 430
 	preload("res://scripts/sun_shafts.gd").add_to(self)
 	training = preload("res://scripts/training.gd").new()
@@ -119,7 +127,23 @@ func inside_bounds(at:Vector3) -> bool:
 	return Geometry2D.is_point_in_polygon(Vector2(at.x,at.z),boundary)
 
 func spawn_position() -> Vector3:
-	return Vector3(0,height(0,113)+.2,113)
+	return Vector3(ARRIVAL_POINT.x,walking_surface_height(ARRIVAL_POINT)+.06,ARRIVAL_POINT.y)
+
+func recover_position(at:Vector3) -> Vector3:
+	var point := Vector2(at.x,at.z)
+	if point.distance_to(LEGACY_ARRIVAL_POINT)<.75:
+		return spawn_position()
+	# Search only around the feet on resume, so an indoor save cannot land
+	# on the roof overhead. Keep saved jumps and elevated walkways intact.
+	return Vector3(at.x,maxf(at.y,walking_surface_height(point,at.y+.5)+.06),at.z)
+
+func walking_surface_height(point:Vector2,ceiling:float=INF) -> float:
+	var floor_y := height(point.x,point.y)
+	var query := PhysicsRayQueryParameters3D.create(Vector3(point.x,minf(floor_y+20,ceiling),point.y),Vector3(point.x,floor_y-5,point.y))
+	if is_instance_valid(player):
+		query.exclude = [player.get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	return hit.position.y if not hit.is_empty() else floor_y
 
 func height(x:float,z:float) -> float:
 	var grid:Dictionary = layout.heightfield
@@ -159,6 +183,11 @@ func build_ground():
 			worn.albedo_color = Color("c8c2b2")
 			worn.roughness = .98
 			worn.metallic_specular = .045
+			# The shared GLB stores UVs at 7.2 m/repeat. Eight stones per tile
+			# should read as 40 cm paving, rather than nearly metre-wide slabs.
+			var repeat_scale := EXPORTED_PAVING_REPEAT/PAVING_TEXTURE_REPEAT
+			worn.uv1_scale = Vector3(repeat_scale,repeat_scale,1)
+			worn.normal_scale = .35
 			part.material_override = worn
 		part.visibility_range_end = 390
 	collision_root = collision_scene.instantiate()
@@ -213,7 +242,7 @@ func build_landmarks():
 		var x:float = temple.x+sin(turn)*17
 		var z:float = temple.z+cos(turn)*17
 		destinations.append({"id":temple.id,"name":temple.name,"description":temple.description,"point":Vector2(x,z),"yaw":turn,"temple":true})
-	for entry in [{"id":"hall","name":"Great Hall","point":Vector2(0,16)}, {"id":"wayfarer","name":"Wayfarer Hall","point":Vector2(-55,64)}, {"id":"training","name":"Training Ground","point":Vector2(-67,-15)}, {"id":"lake","name":"Lakeside","point":Vector2(55,5)}, {"id":"gate","name":"Deepwood Gate","point":Vector2(-40,-117)}, {"id":"arrival","name":"Arrival Ridge","point":Vector2(0,113)}]:
+	for entry in [{"id":"hall","name":"Great Hall","point":Vector2(0,16)}, {"id":"wayfarer","name":"Wayfarer Hall","point":Vector2(-55,64)}, {"id":"training","name":"Training Ground","point":Vector2(-67,-15)}, {"id":"lake","name":"Lakeside","point":Vector2(55,5)}, {"id":"gate","name":"Deepwood Gate","point":Vector2(-40,-117)}, {"id":"arrival","name":"Arrival Ridge","point":ARRIVAL_POINT}]:
 		entry.yaw = -PI/2 if entry.id == "lake" else 0.0
 		entry.temple = false
 		destinations.append(entry)
@@ -301,13 +330,7 @@ func interact():
 
 func travel_to(destination:Dictionary):
 	var point:Vector2 = destination.point
-	var floor_y := height(point.x,point.y)
-	var query := PhysicsRayQueryParameters3D.create(Vector3(point.x,floor_y+20,point.y),Vector3(point.x,floor_y-5,point.y))
-	query.exclude = [player.get_rid()]
-	var hit := get_world_3d().direct_space_state.intersect_ray(query)
-	if not hit.is_empty():
-		floor_y = hit.position.y
-	player.position = Vector3(point.x,floor_y+.15,point.y)
+	player.position = Vector3(point.x,walking_surface_height(point)+.06,point.y)
 	player.velocity = Vector3.ZERO
 	player.rotation.y = destination.yaw
 	player.pitch = 0.0
