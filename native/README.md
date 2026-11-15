@@ -8,13 +8,15 @@ Standing eye height is 1.82 m above the physical walking surface. Arrival Ridge 
 
 ## Included
 
+The Ash-Tusk Boar roams the first clearing along the main Deepwood trail, roughly 90 metres from the forest arrival. It follows a short six-point route, walks at 0.55 m/s with matching animation speed, pauses to idle and stops when the player approaches. One instance reuses the existing rigged game model and its automatic distance levels. Returning to camp releases it, and re-entering recreates it in the clearing. This creature-placement checkpoint uses peaceful behaviour.
+
 Deepwood trees use a darker evergreen palette and irregular grove planting, with varied trunk spacing and looser gaps between dense patches. Saved exploration positions that overlap relocated trunks recover to nearby open ground.
 
 The Deepwood Gate leads to the first large native forest landscape, with a 550-metre playable diameter, four winding earth trails, six clearings, rolling ground and hollows. Shared batches place 5,200 existing dark trees and 20,000 woodland floor plants. Canopy shadows, cool ambient fill, local low mist and peripheral haze retain a readable view. Trunk collision streams around the player. The return gate is behind the arrival point, and new saves restore exploration positions. Old test-forest saves migrate to the new entrance once. Rebuild prepared forest assets with `node scripts/export-native-forest.mjs` before importing in Godot. The existing forest boar remains passive during this landscape checkpoint.
 
 The amphitheatre campfire uses the supplied textured flame artwork over the existing logs and stone ring. Thirteen flame cards share one mesh. Gentle movement preserves a visible flame continuously, and one steady warm light illuminates the nearby seating. The original shrinking/disappearing animation is replaced. Rebuild the fire with `scripts/blender/prepare_campfire.py` after extracting the supplied Blender and Textures archives into `assets-source/campfire/`.
 
-The native camp now uses the supplied grass and flower-bush packs: 33,908 grass placements, 156 camp shrubs and 264 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles, ferns and bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-forest-polish-test.apk`; its device performance has not yet been measured.
+The native camp now uses the supplied grass and flower-bush packs: 33,908 grass placements, 156 camp shrubs and 264 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles, ferns and bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-forest-boar-test.apk`; its device performance has not yet been measured.
 
 The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
 
@@ -73,7 +75,7 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The current test APK is `builds/asterion-forest-polish-test.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
+The current test APK is `builds/asterion-forest-boar-test.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
 
 The previous untrimmed build was tested on the physical SM-T515: camp, map, travel, joystick movement, weapon selection and both graphics choices responded. Its Arrival Ridge sample measured **3.07 FPS on Balanced**, which does not meet comfortable-play performance and does not predict performance on stronger phones. The new compact map has fewer instances, scenery triangles and collision faces, but has not yet been timed on Android. Larger forest batching experiments did not load reliably on this device and remain excluded.
 

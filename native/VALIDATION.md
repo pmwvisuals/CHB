@@ -1,4 +1,12 @@
-# Xiaomi device validation — 15 November 2026
+# Roaming forest boar — 15 November 2026
+
+The normal native forest entry creates one Ash-Tusk Boar using the existing rigged game model. Its six-point walking route lies inside the first clearing, approximately 90 metres along the main trail from arrival. It walks at 0.55 m/s, turns smoothly, alternates walking and idle pauses, and pauses within 2.8 metres of the player. Activity pauses farther than 65 metres from the player. Existing distance mesh levels and visual culling remain. A blocked movement timer advances the route after a pause. Returning to camp frees the actor, and entering the forest recreates it. A player saved beside the usual spawn gets an alternative boar spawn in the same clearing.
+
+The controller uses a separate passive movement override. Forest behaviour stays peaceful during this creature-placement step. The existing rig, clips, mesh levels, textures, capsule and combat implementation remain available. No creature art is rebuilt by this integration.
+
+**91 assertions passed**, comprising 15 forest-boar checks, 17 base creature checks, 26 gameplay smoke checks and 33 forest checks. The roaming test covers a simulated two-minute route, all six waypoints, physical ground contact, smooth turns, idle/walk transitions, proximity pausing, paused animation, distance culling, return to camp, repeated entry and safe spawning beside a saved player position. Three actual forest views show the approach, idle pose and walking pose. Android frame rate and memory for this integration remain untested. The candidate is `builds/asterion-forest-boar-test.apk`. It retains ARM32/ARM64 support and the existing Android Compatibility MSAA workaround, and passes independent v2/v3 signature verification using the local test key. SHA-256 is `f48c52c4e2fc37c539f1ea104a2427e68083d792e544ab629abef3f0559fff19`.
+
+## Earlier Xiaomi device validation — 15 November 2026
 
 See [XIAOMI-TEST.md](XIAOMI-TEST.md) for the High-only physical-device run, crash evidence, Android MSAA workaround and remaining performance limits. High loads and controls work; approximately 2.8 FPS remains unplayable.
 

@@ -111,12 +111,7 @@ func _physics_process(delta):
 			update_visual_distance(global_position.distance_to(camera.global_position))
 	if not player.combat_enabled():
 		strike = -1
-		velocity.x = 0
-		velocity.z = 0
-		play("Idle")
-		if not is_on_floor():
-			velocity.y -= 20*delta
-		move_and_slide()
+		passive_step(delta)
 		return
 	cooldown = maxf(0,cooldown-delta)
 	var to_player:Vector3 = player.global_position-global_position
@@ -147,6 +142,14 @@ func _physics_process(delta):
 		play("Walk")
 	else:
 		play("Idle")
+	if not is_on_floor():
+		velocity.y -= 20*delta
+	move_and_slide()
+
+func passive_step(delta:float):
+	velocity.x = 0
+	velocity.z = 0
+	play("Idle")
 	if not is_on_floor():
 		velocity.y -= 20*delta
 	move_and_slide()

@@ -84,7 +84,7 @@ func prepare():
 	finish_preparation()
 	apply_graphics()
 	if forest and beast_scene:
-		enemy = preload("res://scripts/boar.gd").new()
+		enemy = create_creature()
 		enemy.player = player
 		enemy.model = beast_scene.instantiate()
 		add_child(enemy)
@@ -96,6 +96,9 @@ func finish_preparation():
 
 func creature_position() -> Vector3:
 	return Vector3(3,height(3,-8)+.3,-8)
+
+func create_creature():
+	return preload("res://scripts/boar.gd").new()
 
 func apply_graphics():
 	key_light.directional_shadow_max_distance = Session.graphics_preset().shadow_range

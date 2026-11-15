@@ -33,7 +33,16 @@ func spawn_position() -> Vector3:
 	return Vector3(0,height(0,216)+.15,216)
 
 func creature_position() -> Vector3:
-	return Vector3(9,height(9,118)+.15,118)
+	var point := Vector2(10,123)
+	if is_instance_valid(player) and point.distance_to(Vector2(player.position.x,player.position.z))<3:
+		point = Vector2(3,113)
+	return Vector3(point.x,height(point.x,point.y)+.15,point.y)
+
+func create_creature():
+	var boar := preload("res://scripts/forest_boar.gd").new()
+	boar.name = "AshTuskBoar"
+	boar.route = PackedVector2Array([Vector2(13,120),Vector2(10,113),Vector2(3,113),Vector2(0,119),Vector2(5,124),Vector2(10,123)])
+	return boar
 
 func build_sky():
 	super.build_sky()
