@@ -68,6 +68,11 @@ func set_graphics_quality(value:String) -> bool:
 	return true
 
 func apply_graphics():
+	# Godot 4.7.2 Compatibility can repeatedly allocate MSAA resolve buffers
+	# on Android when an intermediate render target is needed (engine #124258).
+	# Set this before changing render scale, including on the first menu frame.
+	if OS.has_feature("mobile") and RenderingServer.get_current_rendering_method()=="gl_compatibility":
+		get_viewport().msaa_3d = Viewport.MSAA_DISABLED
 	get_viewport().scaling_3d_scale = graphics_preset().scale
 	if is_instance_valid(app) and is_instance_valid(app.world) and is_instance_valid(app.world.player):
 		app.world.apply_graphics()

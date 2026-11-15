@@ -124,3 +124,7 @@ See `VALIDATION.md` for the current results and limits.
 `tests/graphics_preview.gd` captures the same Arrival Ridge and training views under both graphics choices. `tests/graphics.gd -- --capture` also captures the settings screen.
 
 Hephaestus has exactly two brass oil lanterns on raised entrance plinths. Their warm, 15 m-range lights brighten the shaded facade without new shadow maps; distance fading bounds their reach. Both instances share a 15,997-triangle, 1.25 m model adapted from the supplied Galaxy Abundant lantern (CC BY 4.0). Attribution and original-model/license links are in the pause screen and `assets/props/LANTERN-CREDITS.txt`. Run `tests/forge.gd` with a display at 1280x720 to verify the facade comparison.
+
+## Xiaomi device test
+
+The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-android-compat-test.apk`.

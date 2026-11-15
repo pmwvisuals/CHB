@@ -1,3 +1,7 @@
+# Xiaomi device validation — 15 November 2026
+
+See [XIAOMI-TEST.md](XIAOMI-TEST.md) for the High-only physical-device run, crash evidence, Android MSAA workaround and remaining performance limits. High loads and controls work; approximately 2.8 FPS remains unplayable.
+
 # Darker forest trees and irregular groves — 15 November 2026
 
 The native forest's tree materials now multiply their linear colour by `(0.48, 0.58, 0.46)`, producing darker bark and deep evergreen foliage. Relocation uses a repeatable mixture of grove candidates and loose background candidates, with variable minimum separation. Source species, sizes and all 5,200 tree instances are retained. Root heights are resampled after relocation. The normal trail and clearing exclusions apply to every new tree position.
