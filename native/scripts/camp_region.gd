@@ -320,12 +320,16 @@ func near_temple() -> Dictionary:
 	return {}
 
 func interaction_text() -> String:
+	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:return "Camp quest board"
 	if near_gate():
 		return "Enter the woodland"
 	var temple := near_temple()
 	return "Read "+temple.name+" inscription" if not temple.is_empty() else ""
 
 func interact():
+	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:
+		player.hud.open_journal()
+		return
 	if near_gate():
 		Session.change_zone("forest")
 		return

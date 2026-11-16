@@ -61,7 +61,11 @@ func combat_allowed(_at:Vector3) -> bool:
 func practice_attack(_attacker) -> bool:
 	return false
 
+func hit_enemies(_attacker) -> bool:
+	return false
+
 func prepare():
+	Session.ensure_adventure()
 	rng.seed = 72191 if forest else 41256
 	build_sky()
 	build_ground()
@@ -89,7 +93,9 @@ func prepare():
 		enemy.model = beast_scene.instantiate()
 		add_child(enemy)
 		enemy.position = creature_position()
-	Session.message = "Follow the earth trails into Deepwood. The stone gate returns to camp." if forest else "Welcome to the sanctuary. Open the map to explore."
+	var rescued:bool=Session.recovering
+	Session.enter_region(forest)
+	Session.message = "You were rescued. Your XP, gold and quest progress are safe." if rescued else "Follow the earth trails into Deepwood. The stone gate returns to camp." if forest else "Welcome to the sanctuary. Open Journal to begin a quest."
 
 func finish_preparation():
 	pass
@@ -308,7 +314,7 @@ func _process(delta):
 		RenderingServer.global_shader_parameter_set("sanctuary_weather_time",weather_time)
 	autosave += delta
 	if not forest:
-		Session.data.health = minf(100,Session.data.health+delta*4)
+		Session.data.health = minf(Session.RULES.max_health(Session.data),Session.data.health+delta*4)
 	if autosave>20:
 		autosave = 0
 		Session.save_game(player)

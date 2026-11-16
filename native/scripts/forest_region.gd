@@ -9,11 +9,45 @@ var floor_count := 0
 var detail_nodes:Array[MultiMeshInstance3D] = []
 var mist_nodes:Array[Node3D] = []
 var supplied_creatures:Array[CharacterBody3D] = []
+var encounters
 const SUPPLIED_CREATURES := [
 	{"id":"MagicWolf","asset":"res://assets/forest-creatures/magic-wolf.glb","height":2.1,"heading":0.0,"speed":.7,"point":[-65,-45],"route":[[-60,-41],[-60,-49],[-69,-50],[-71,-43]]},
-	{"id":"MutantMantis","asset":"res://assets/forest-creatures/mutant-mantis.glb","height":2.8,"heading":PI,"speed":0.0,"point":[92,-70],"route":[]},
+	{"id":"MutantMantis","asset":"res://assets/forest-creatures/mutant-mantis.glb","height":2.8,"heading":PI,"speed":0.0,"point":[48,-182],"route":[]},
 	{"id":"FantasyBoar","asset":"res://assets/forest-creatures/fantasy-boar.glb","height":1.6,"heading":0.0,"speed":.55,"point":[-130,90],"route":[[-126,94],[-125,87],[-133,85],[-135,92]]}
 ]
+
+func prepare():
+	await super.prepare()
+	training=preload("res://scripts/field_combat.gd").new()
+	training.world=self
+	add_child(training)
+	encounters=preload("res://scripts/forest_encounters.gd").new()
+	add_child(encounters)
+	encounters.install(self)
+	player.sync_combat()
+	Session.message="DEEPWOOD · Follow the trail to the first boar clearing. Journal tracks your quest."
+
+func combat_allowed(at:Vector3) -> bool:
+	return at.z<196 and inside_bounds(at)
+
+func hit_enemies(attacker) -> bool:
+	return is_instance_valid(encounters) and encounters.melee(attacker)
+
+func interaction_text() -> String:
+	if near_gate():return "Return to camp"
+	if is_instance_valid(encounters) and encounters.near_cache()!="":return "Open supply cache"
+	return ""
+
+func interact():
+	if near_gate():
+		Session.change_zone("camp")
+	elif is_instance_valid(encounters):encounters.open_cache()
+
+func danger_name() -> String:
+	if player.position.z>=196:return "ENTRANCE · SAFE"
+	if player.position.z>80:return "OUTSKIRTS · DANGER I"
+	if player.position.z>-100:return "HUNTING GROVES · DANGER II"
+	return "NORTHERN HOLLOW · DANGER III"
 
 func bounds() -> float:
 	return layout.radius

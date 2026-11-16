@@ -14,6 +14,7 @@ func run():
 	var session = root.get_node("Session")
 	session.save_path = "res://tests/_forest-boar-save.json"
 	session.data.positions = {}
+	session.data.adventure={}
 	var app = load("res://scenes/app.tscn").instantiate()
 	root.add_child(app)
 	app.travel("forest")
@@ -21,6 +22,8 @@ func run():
 		await process_frame
 	var forest = app.world
 	var boar = forest.enemy
+	# This suite checks authored roaming/animation, independent of the PvE brain.
+	boar.brain=null
 	check(boar.name=="AshTuskBoar" and boar.route.size()==6,"The normal forest entry creates the roaming Ash-Tusk Boar")
 	check(boar.clips.has("Idle") and boar.clips.has("Walk") and boar.clips.has("TuskAttack"),"The existing rig and animations remain available")
 	forest.player.set_physics_process(false)
@@ -67,8 +70,9 @@ func run():
 	session.paused = false
 	var health:float = session.data.health
 	var coins:int = session.data.coins
+	var beast_health:int=boar.health
 	boar.hurt(25)
-	check(boar.health==100 and session.data.health==health and session.data.coins==coins and not forest.player.combat_enabled(),"Roaming keeps the current peaceful forest rules")
+	check(boar.health==beast_health and session.data.health==health and session.data.coins==coins,"A model-only patrol cannot create combat damage or rewards")
 	boar.update_visual_distance(110)
 	check(not boar.model.visible,"Distant boar geometry culls")
 	boar.update_visual_distance(8)

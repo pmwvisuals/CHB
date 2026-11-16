@@ -4,6 +4,7 @@ const MODEL := preload("res://assets/weapons/practice-arrow.glb")
 var trainer
 var velocity := Vector3.ZERO
 var round_id := -1
+var damage := 0
 var resolved := false
 var age := 0.0
 var lodged_age := 0.0

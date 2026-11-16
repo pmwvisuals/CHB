@@ -1,6 +1,7 @@
 extends CharacterBody3D
 
 var player
+var brain
 @export var model_scene:PackedScene
 var model:Node3D
 var animation:AnimationPlayer
@@ -109,42 +110,8 @@ func _physics_process(delta):
 		var camera := get_viewport().get_camera_3d()
 		if camera:
 			update_visual_distance(global_position.distance_to(camera.global_position))
-	if not player.combat_enabled():
-		strike = -1
-		passive_step(delta)
-		return
-	cooldown = maxf(0,cooldown-delta)
-	var to_player:Vector3 = player.global_position-global_position
-	to_player.y = 0
-	var distance := to_player.length()
-	velocity.x = 0
-	velocity.z = 0
-	if strike >= 0:
-		strike += delta
-		if strike >= .68 and not hit_applied:
-			hit_applied = true
-			if distance < 3.4 and to_player.normalized().dot(global_basis.z) > .35:
-				Session.data.health = maxf(0,Session.data.health-18)
-				Session.message = "Tusk strike! Step aside during the wind-up."
-		if strike >= 1.34:
-			strike = -1
-			cooldown = 1.5
-			play("Idle")
-	elif distance < 2.8 and cooldown <= 0:
-		strike = 0
-		hit_applied = false
-		play("TuskAttack")
-	elif distance < 15 and distance > 2.4:
-		var direction := to_player.normalized()
-		rotation.y = lerp_angle(rotation.y,atan2(direction.x,direction.z),delta*3)
-		velocity.x = direction.x*.9
-		velocity.z = direction.z*.9
-		play("Walk")
-	else:
-		play("Idle")
-	if not is_on_floor():
-		velocity.y -= 20*delta
-	move_and_slide()
+	if brain and brain.step(delta):return
+	passive_step(delta)
 
 func passive_step(delta:float):
 	velocity.x = 0
@@ -154,14 +121,8 @@ func passive_step(delta:float):
 		velocity.y -= 20*delta
 	move_and_slide()
 
-func hurt(amount:int):
-	if health <= 0 or not player.combat_enabled():
-		return
-	health = maxi(0,health-amount)
-	Session.message = "Boar hit. Watch for its counterattack."
-	if health == 0:
-		Session.data.coins += 15
-		Session.data.xp += 25
-		Session.message = "Encounter complete: +15 coins, +25 XP. Return to camp."
-		Session.save_game(player)
-		queue_free()
+func combat_animation(kind:String):
+	play({"walk":"Walk","attack":"TuskAttack","idle":"Idle","death":"Idle"}.get(kind,"Idle"))
+
+func hurt(amount:int) -> bool:
+	return brain.hurt(amount) if brain else false

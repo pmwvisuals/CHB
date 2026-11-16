@@ -14,6 +14,7 @@ func run():
 	var session = root.get_node("Session")
 	session.save_path = "res://tests/_deep-forest-save.json"
 	session.data.positions = {"forest":[0,0,18]}
+	session.data.adventure={}
 	session.data.erase("forest_layout")
 	session.data.coins = 7
 	session.data.xp = 11
@@ -23,6 +24,9 @@ func run():
 	while app.transitioning:
 		await process_frame
 	var forest = app.world
+	# Landscape checks isolate terrain from the separately tested combat AI.
+	forest.enemy.set_physics_process(false)
+	for actor in forest.supplied_creatures:actor.set_physics_process(false)
 	for i in range(20):
 		await physics_frame
 	check(forest.player.position.distance_to(forest.spawn_position())<1,"Old forest saves migrate to the new entrance")
@@ -103,7 +107,8 @@ func run():
 		check(clear,"Trail walking corridor remains clear of tree trunks")
 	forest.player.position = forest.gate+Vector3(0,.1,-1)
 	check(forest.near_gate() and forest.interaction_text()=="Return to camp","Forest gate offers a working return route")
-	check(not forest.player.combat_enabled() and not forest.player.weapon.visible,"Forest remains peaceful during landscape development")
+	forest.player.sync_combat()
+	check(not forest.player.combat_enabled() and not forest.player.weapon.visible,"The forest entrance remains a safe return corridor")
 	var remembered := Vector3(6,forest.height(6,118)+.15,118)
 	forest.player.position = remembered
 	session.save_game(forest.player)

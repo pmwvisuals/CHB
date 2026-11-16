@@ -19,6 +19,11 @@ var bow_button:Button
 var drill_button:Button
 var draw_meter:ProgressBar
 var graphics_panel:Control
+var journal_panel:Control
+var quest_tracker:Label
+var heal_button:Button
+var return_button:Button
+var xp_meter:ProgressBar
 
 func label_at(parent,text:String,at:Vector2,font_size:int=20) -> Label:
 	var label := Label.new()
@@ -53,14 +58,33 @@ func _ready():
 	add_child(root)
 	var plate := PanelContainer.new()
 	plate.position = Vector2(14,12)
-	plate.size = Vector2(402,104)
+	plate.size = Vector2(402,116)
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(plate)
 	var title := label_at(root,"ASTERION  /  " + ("DEEPWOOD" if world.forest else "SANCTUARY"),Vector2(30,22),21)
 	title.add_theme_font_override("font",preload("res://fonts/Cinzel.ttf"))
 	title.add_theme_color_override("font_color",Color("dfc991"))
-	health = label_at(root,"",Vector2(30,57),18)
-	info = label_at(root,"",Vector2(30,82),16)
+	health = label_at(root,"",Vector2(30,57),17)
+	info = label_at(root,"",Vector2(30,82),15)
+	xp_meter=ProgressBar.new()
+	xp_meter.position=Vector2(30,108)
+	xp_meter.size=Vector2(366,6)
+	xp_meter.show_percentage=false
+	for style_name in ["background","fill"]:
+		var bar_style:=StyleBoxFlat.new()
+		bar_style.bg_color=Color("b49a5c") if style_name=="fill" else Color("182c25")
+		bar_style.content_margin_top=0
+		bar_style.content_margin_bottom=0
+		bar_style.content_margin_left=0
+		bar_style.content_margin_right=0
+		xp_meter.add_theme_stylebox_override(style_name,bar_style)
+	xp_meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	root.add_child(xp_meter)
+	quest_tracker=label_at(root,"",Vector2(30,140),17)
+	quest_tracker.size=Vector2(382,80)
+	quest_tracker.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	quest_tracker.max_lines_visible=3
+	quest_tracker.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	toast_panel = PanelContainer.new()
 	root.add_child(toast_panel)
 	pin(toast_panel,Control.PRESET_CENTER_BOTTOM,Rect2(-280,-194,560,98))
@@ -90,6 +114,8 @@ func _ready():
 	pin(prompt,Control.PRESET_CENTER_BOTTOM,Rect2(-110,-86,220,56))
 	var pause := button(root,"Ⅱ",Vector2.ZERO,Vector2(62,54),toggle_pause)
 	pin(pause,Control.PRESET_TOP_RIGHT,Rect2(-86,22,62,54))
+	var journal_button:=button(root,"JOURNAL",Vector2.ZERO,Vector2(112,54),open_journal)
+	pin(journal_button,Control.PRESET_TOP_RIGHT,Rect2(-316,22,112,54))
 	if not world.forest:
 		var map_button := button(root,"MAP",Vector2.ZERO,Vector2(90,54),open_map)
 		pin(map_button,Control.PRESET_TOP_RIGHT,Rect2(-190,22,90,54))
@@ -110,6 +136,9 @@ func _ready():
 		sword_button.text = "SWORD"
 		bow_button.text = "BOW"
 	training_info = label_at(training_panel,"",Vector2(14,66),16)
+	training_info.size=Vector2(274,70)
+	training_info.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	training_info.max_lines_visible=3
 	training_info.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	draw_meter = ProgressBar.new()
 	draw_meter.max_value = 1.2
@@ -132,6 +161,8 @@ func _ready():
 		attack_button.button_up.connect(func(): Session.bow_held=false)
 		attack_button.visible = false
 		pin(attack_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-130,112,80))
+		heal_button=button(root,"HEAL",Vector2.ZERO,Vector2(112,52),func():Session.heal_requested=true,true)
+		pin(heal_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-198,112,52))
 		var jump = button(root,"JUMP",Vector2.ZERO,Vector2(94,64),func(): Session.jump_requested=true,true)
 		pin(jump,Control.PRESET_BOTTOM_RIGHT,Rect2(-270,-112,94,64))
 		var sprint := button(root,"RUN",Vector2.ZERO,Vector2(76,54),func(): pass,true)
@@ -155,7 +186,7 @@ func _ready():
 	button(pause_panel,"RESUME",Vector2(460,260),Vector2(360,58),toggle_pause)
 	button(pause_panel,"GRAPHICS",Vector2(460,332),Vector2(360,58),open_graphics)
 	button(pause_panel,"SAVE PROGRESS",Vector2(460,404),Vector2(360,58),save_progress)
-	button(pause_panel,"RETURN TO SANCTUARY",Vector2(460,476),Vector2(360,58),func(): Session.paused=false;Session.change_zone("camp"))
+	return_button=button(pause_panel,"RETURN TO SANCTUARY",Vector2(460,476),Vector2(360,58),func():Session.return_to_camp())
 	var credit:=RichTextLabel.new()
 	credit.position=Vector2(200,552)
 	credit.size=Vector2(880,154)
@@ -206,7 +237,9 @@ func close_map():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func handle_back():
-	if is_instance_valid(graphics_panel):
+	if is_instance_valid(journal_panel):
+		close_journal()
+	elif is_instance_valid(graphics_panel):
 		graphics_panel.closed.emit()
 	elif is_instance_valid(map_panel):
 		close_map()
@@ -214,6 +247,10 @@ func handle_back():
 		toggle_pause()
 
 func _unhandled_input(event):
+	if event.is_action_pressed("journal"):
+		get_viewport().set_input_as_handled()
+		if is_instance_valid(journal_panel):close_journal()
+		elif not Session.paused:open_journal()
 	if event.is_action_pressed("camp_map") and not world.forest:
 		get_viewport().set_input_as_handled()
 		open_map()
@@ -222,10 +259,21 @@ func _process(delta):
 	# Full-screen menus cover the scene; avoid drawing it underneath them.
 	world.visible = not Session.paused
 	var armed:bool = world.player.combat_enabled()
-	health.text = "VITALITY %d   ·   %d GOLD   ·   %d XP" % [Session.data.health,Session.data.coins,Session.data.xp]
-	info.text = "TRAINING GROUND  ·  PRACTICE ENABLED" if armed else "WOODLAND  ·  EXPLORATION" if world.forest else "SANCTUARY  ·  WEAPONS SHEATHED"
-	if armed and is_instance_valid(world.enemy):
-		info.text += "     BOAR %d / 100" % world.enemy.health
+	var rules=Session.RULES
+	var level:int=rules.level(Session.data.xp)
+	health.text="LV %d · VITALITY %d / %d · %d GOLD"%[level,Session.data.health,rules.max_health(Session.data),Session.data.coins]
+	info.text=(world.danger_name() if world.forest else "TRAINING · PRACTICE" if armed else "SANCTUARY · SAFE")+" · %d XP"%Session.data.xp
+	var previous:int=0 if level==1 else rules.threshold(level-1)
+	xp_meter.max_value=rules.threshold(level)-previous
+	xp_meter.value=Session.data.xp-previous
+	quest_tracker.text=rules.tracker(Session.data)
+	quest_tracker.visible=not Session.paused
+	if is_instance_valid(heal_button):
+		heal_button.visible=world.forest and not Session.paused
+		heal_button.text="HEAL · %d"%Session.data.adventure.potions
+		heal_button.disabled=Session.data.adventure.potions<=0 or Session.data.health>=rules.max_health(Session.data) or Session.heal_cooldown>0
+	return_button.disabled=world.forest and is_instance_valid(world.encounters) and world.encounters.in_combat()
+	return_button.text="LOSE YOUR PURSUERS FIRST" if return_button.disabled else "RETURN TO SANCTUARY"
 	if is_instance_valid(attack_button):
 		attack_button.visible = armed and not Session.paused
 		attack_button.disabled = not armed or Session.paused
@@ -234,6 +282,7 @@ func _process(delta):
 			attack_button.disabled = true
 			attack_button.text = "5 / 5"
 	training_panel.visible = armed and not Session.paused
+	drill_button.visible=not world.forest
 	draw_meter.visible = armed and not Session.paused and world.player.draw_time>0
 	draw_meter.value = world.player.draw_time
 	if armed and is_instance_valid(world.training):
@@ -242,7 +291,7 @@ func _process(delta):
 		bow_button.modulate = Color("e9cc88") if world.player.weapon_kind == "bow" else Color.WHITE
 		drill_button.text = ("" if Session.touch_controls else "R  ")+("RETRY" if world.training.completed else "DRILL")
 	if is_instance_valid(controls):
-		controls.text = "WASD  Move   SHIFT  Run   MOUSE  Look   SPACE  Jump   E  Interact   M  Map   ESC  Pause"+("   1/2 Weapon   R Drill" if armed else "")
+		controls.text = "WASD  Move   SHIFT  Run   MOUSE  Look   SPACE  Jump   E  Interact   M  Map   J  Journal   ESC  Pause"+(("   1/2 Weapon   H Heal" if world.forest else "   1/2 Weapon   R Drill") if armed else "")
 	if last_message != Session.message:
 		last_message = Session.message
 		toast_time = 5.5
@@ -259,4 +308,23 @@ func _process(delta):
 	toast_panel.visible = toast_time>0 and not Session.paused
 	prompt.text = world.interaction_text()
 	prompt.visible = prompt.text != "" and not Session.paused
-	pause_panel.visible = Session.paused and not is_instance_valid(map_panel) and not is_instance_valid(graphics_panel)
+	pause_panel.visible = Session.paused and not is_instance_valid(map_panel) and not is_instance_valid(graphics_panel) and not is_instance_valid(journal_panel)
+
+
+func open_journal():
+	if Session.paused:return
+	Session.paused=true
+	Session.clear_touch()
+	world.player.cancel_draw()
+	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
+	journal_panel=preload("res://scripts/adventure_journal.gd").new()
+	journal_panel.world=world
+	journal_panel.closed.connect(close_journal)
+	add_child(journal_panel)
+
+func close_journal():
+	if is_instance_valid(journal_panel):journal_panel.queue_free()
+	journal_panel=null
+	Session.paused=false
+	Session.clear_touch()
+	if not Session.touch_controls:Input.mouse_mode=Input.MOUSE_MODE_CAPTURED

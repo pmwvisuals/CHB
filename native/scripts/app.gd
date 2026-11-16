@@ -40,7 +40,7 @@ func _ready():
 	title.add_theme_font_size_override("font_size",30)
 	box.add_child(title)
 	detail = Label.new()
-	detail.text = "A refuge beneath the ancient skies.\nExplore the sanctuary and hone your craft."
+	detail.text = "A refuge beneath the ancient skies.\nAccept a contract in your Journal, train, and brave Deepwood."
 	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(detail)
 	progress = ProgressBar.new()
@@ -68,7 +68,7 @@ func travel(zone:String):
 		return
 	transitioning = true
 	if is_instance_valid(world):
-		Session.save_game(world.player)
+		Session.save_game(null if Session.recovering else world.player)
 		world.queue_free()
 		world = null
 	Session.clear_touch()

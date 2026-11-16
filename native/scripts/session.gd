@@ -2,7 +2,11 @@ extends Node
 
 const SAVE := "user://sanctuary-save.json"
 var save_path := SAVE
-var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":"","forest_layout":""}
+var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":"","forest_layout":"","adventure":{}}
+const RULES := preload("res://scripts/adventure_rules.gd")
+var recovering := false
+var heal_requested := false
+var heal_cooldown := 0.0
 const GRAPHICS := preload("res://scripts/graphics_quality.gd")
 var graphics_recommended := "high"
 const TRAINING_KEYS := ["archery_best","sword_best","archery_rounds","sword_rounds","arrows_fired","target_hits","sword_hits","combos"]
@@ -37,9 +41,9 @@ func _ready():
 		if FileAccess.file_exists("user://render-profile.json") and reader.parse(FileAccess.get_file_as_string("user://render-profile.json")) == OK and reader.data is Dictionary:
 			render_profile = reader.data
 		print("PERF config=",JSON.stringify(render_profile))
-	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint","sword","bow","drill"]:
+	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint","sword","bow","drill","journal","heal"]:
 		InputMap.add_action(action)
-	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT],"sword":[KEY_1],"bow":[KEY_2],"drill":[KEY_R]}
+	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT],"sword":[KEY_1],"bow":[KEY_2],"drill":[KEY_R],"journal":[KEY_J],"heal":[KEY_H]}
 	for action in keys:
 		for code in keys[action]:
 			var key := InputEventKey.new()
@@ -54,6 +58,7 @@ func _ready():
 		data.zone="camp"
 		render_profile={"quality":"high","autostart":true,"case":"render_benchmark"}
 	ensure_training()
+	ensure_adventure()
 	graphics_recommended = GRAPHICS.recommend(int(OS.get_memory_info().get("physical",0)),OS.has_feature("mobile"),"64" if OS.has_feature("64") else "32")
 	if not GRAPHICS.valid(data.get("graphics_quality")):
 		data.graphics_quality = graphics_recommended
@@ -110,7 +115,8 @@ func load_game():
 					data[key] = parsed[key]
 			if data.zone not in ["camp","forest"]:
 				data.zone = "camp"
-			data.health = clampf(data.health,1,100) if is_finite(data.health) else 100.0
+			ensure_adventure()
+			data.health = clampf(data.health,1,RULES.max_health(data)) if is_finite(data.health) else 100.0
 	# Retain the legacy save field without restoring the removed sky cycle.
 	data.time = 480.0
 	ensure_training()
@@ -146,6 +152,7 @@ func clear_touch():
 	bow_held = false
 	weapon_requested = ""
 	drill_requested = false
+	heal_requested = false
 	interact_requested = false
 	sprint_requested = false
 
@@ -159,6 +166,7 @@ func _notification(what):
 			save_game(app.world.player)
 
 func _process(_delta):
+	if not paused:heal_cooldown=maxf(0,heal_cooldown-_delta)
 	if benchmark_enabled and not benchmark_started and is_instance_valid(app) and is_instance_valid(app.world) and not app.transitioning:
 		benchmark_started=true
 		add_child(preload("res://scripts/render_benchmark.gd").new())
@@ -169,3 +177,82 @@ func _process(_delta):
 		return
 	profile_tick = now
 	print("PERF ",JSON.stringify({"case":render_profile.get("case","normal"),"fps":Engine.get_frames_per_second(),"process_ms":Performance.get_monitor(Performance.TIME_PROCESS)*1000,"physics_ms":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000,"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"primitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"objects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"static_mb":Performance.get_monitor(Performance.MEMORY_STATIC)/1048576.0,"video_mb":Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED)/1048576.0}))
+
+
+func ensure_adventure():
+	RULES.ensure(data)
+
+func current_player():
+	return app.world.player if is_instance_valid(app) and is_instance_valid(app.world) else null
+
+func commit_adventure(before:Dictionary) -> bool:
+	if save_game(current_player()):return true
+	data=before
+	return false
+
+func accept_quest(id:String) -> bool:
+	if data.zone!="camp":return false
+	var before:=data.duplicate(true)
+	if not RULES.accept(data,id):return false
+	if not commit_adventure(before):return false
+	message="Quest accepted · "+RULES.active(data).title
+	return true
+
+func claim_quest(id:String) -> bool:
+	if data.zone!="camp":return false
+	var before:=data.duplicate(true)
+	if not RULES.claim(data,id):return false
+	if not commit_adventure(before):return false
+	message="Quest completed · Your XP and gold have been saved."
+	return true
+
+func progress_event(event:String,amount:int=1):
+	ensure_adventure()
+	RULES.record(data,event,amount)
+
+func award(xp:int,gold:int):
+	ensure_adventure()
+	RULES.reward(data,xp,gold)
+
+func buy_draught() -> bool:
+	if data.zone!="camp":return false
+	var before:=data.duplicate(true)
+	if not RULES.buy_potion(data):return false
+	return commit_adventure(before)
+
+func use_draught() -> bool:
+	if paused or recovering or heal_cooldown>0:return false
+	var before:=data.duplicate(true)
+	if not RULES.heal(data):
+		message="No draught needed." if data.health>=RULES.max_health(data) else "No healing draughts left. Buy supplies in camp."
+		return false
+	if not commit_adventure(before):return false
+	heal_cooldown=2.0
+	message="Healing draught · +40 vitality"
+	return true
+
+func enter_region(is_forest:bool):
+	ensure_adventure()
+	if is_forest:progress_event("forest_enter")
+	elif not recovering:progress_event("camp_return")
+	if not is_forest:recovering=false
+	save_game(current_player())
+
+func return_to_camp() -> bool:
+	if data.zone=="forest" and is_instance_valid(app) and is_instance_valid(app.world) and app.world.encounters.in_combat():
+		message="Lose your pursuers before returning. The stone entrance gate is always safe."
+		return false
+	paused=false
+	change_zone("camp")
+	return true
+
+func recover_at_camp():
+	if recovering:return
+	recovering=true
+	ensure_adventure()
+	data.adventure.defeats+=1
+	data.health=RULES.max_health(data)
+	data.positions.erase("forest")
+	data.positions.erase("camp")
+	message="You were rescued. Recover in camp; your XP, gold and quest progress are safe."
+	change_zone("camp")

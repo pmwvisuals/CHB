@@ -88,6 +88,8 @@ func sword_result(index:int):
 		Session.message = "MISSED  ·  Move closer and face the dummy."
 		return
 	Session.data.training.sword_hits += 1
+	Session.progress_event("sword_hit")
+	Session.save_game(world.player)
 	combo = combo+1 if clock-last_sword<=1.35 else 1
 	last_sword = clock
 	var points := 10
@@ -150,6 +152,8 @@ func arrow_result(arrow,hit:Dictionary):
 	last_target = int(hit.collider.get_meta("practice_target")) if not hit.is_empty() and hit.collider.has_meta("practice_target") else -1
 	if last_score>0:
 		Session.data.training.target_hits += 1
+		Session.progress_event("target_hit")
+		Session.save_game(world.player)
 	if mode == "bow" and not completed:
 		score += last_score
 		resolved += 1

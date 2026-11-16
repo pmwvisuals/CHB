@@ -1,6 +1,10 @@
 extends CharacterBody3D
 
 var player
+var brain
+var health:=100
+var attack_clip:=""
+var death_clip:=""
 var definition:Dictionary
 var visual:Node3D
 var animation:AnimationPlayer
@@ -26,6 +30,8 @@ func _ready():
 		for clip in animation.get_animation_list():
 			if String(clip).to_lower().ends_with("idle"):
 				idle_clip = clip
+			if "attack" in String(clip).to_lower() and attack_clip=="":attack_clip=clip
+			if "death" in String(clip).to_lower() or "die" in String(clip).to_lower():death_clip=clip
 			if String(clip).to_lower().ends_with("walk"):
 				walk_clip = clip
 		if idle_clip=="":
@@ -128,6 +134,7 @@ func _physics_process(delta:float):
 		return
 	if animation:
 		animation.speed_scale = 1
+	if brain and brain.step(delta):return
 	velocity.x = 0
 	velocity.z = 0
 	var walking := false
@@ -151,3 +158,14 @@ func _physics_process(delta:float):
 	if not is_on_floor():
 		velocity.y -= 20*delta
 	move_and_slide()
+
+
+func combat_animation(kind:String):
+	play(walk_clip if kind=="walk" and walk_clip!="" else attack_clip if kind=="attack" and attack_clip!="" else death_clip if kind=="death" and death_clip!="" else idle_clip)
+	# The mantis source has no locomotion clip; its authored idle remains.
+	if kind=="attack" and attack_clip=="":
+		visual.rotation.x=-.15
+	elif kind in ["idle","walk"]:visual.rotation.x=0
+
+func hurt(amount:int) -> bool:
+	return brain.hurt(amount) if brain else false

@@ -1,5 +1,7 @@
 # Asterion Sanctuary — native prototype
 
+The first playable adventure chapter is available: **Journal → A Steady Hand** begins three story quests and a repeatable patrol. Train, hunt four forest creatures with sword or bow, collect caches, earn XP/gold and buy healing supplies in camp. Levels, quests, inventory and rewards save locally. See [ADVENTURE.md](ADVENTURE.md) for controls, rules and the test coverage. Visual work is paused; known Android performance/loading limitations remain.
+
 Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset import to finish, then press **F5** and choose **Enter Sanctuary**. No Blender plug-ins are required to run it.
 
 This checkpoint transfers the browser camp's exterior layout into Godot: terrain and roads, all twelve decorated temple exteriors at their unique sites, the four-door Great Hall, Wayfarer Hall, dining pavilion, training yard, gardens, docks and lakeside pavilion. The rounded camp spans approximately 405 by 392 metres and encloses 125,186 square metres, 43.3% less playable area than the former 470-metre square. The smooth perimeter fills the earlier temple notches, adding 6.1% to the previous compact outline. The inner tree line also follows broad curves. Ares (map 5) and Hephaestus (map 9) lie fully inside forest clearings; Aphrodite is also surrounded by forest. Foundations, approach paths and temple placements are preserved. Terrain beyond the outline is removed, with a small nonwalkable skirt beneath the back trees. Old saved positions outside the new boundary return to Arrival Ridge without losing progression. Temple interiors remain to be migrated. The large forest landscape is available through Deepwood Gate.
@@ -28,21 +30,21 @@ The native camp now uses the supplied grass and flower-bush packs: 21,501 grass 
 
 The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
 
-- First-person walking, sprinting, jumping, physical roads, ramps and structures. The practice sword equips only inside the training ground and sheathes immediately on leaving, including map travel.
+- First-person walking, sprinting, jumping, physical roads, ramps and structures. Weapons equip at the training ground and in the dangerous forest interior. Camp and the forest entrance sheath them automatically, including map travel.
 - Android controls: movement stick, right-side drag to look, Run, Jump, Strike/Draw, Sword/Bow selection, Drill, Map, Travel and Pause. Movement, looking and action buttons support simultaneous fingers.
 - Separate camp and forest scenes with a loading screen. The previous scene is released before the next is loaded.
 - The camp's existing trees, dense forest border, shrubs, flowers, grass, carved road borders and corrected animated boar assets. Repeated scenery uses shared mesh batches, spatial culling and automatic mesh LOD.
 - An interactive camp map with eighteen destinations, the original road network and safe arrivals that face each temple. Open it with **M** or **Map**.
 - Opaque blue lake water with animated ripples and fitted temple inscriptions. Large scattered rock props are removed.
-- Combat is enabled only in the training-ground footprint. The sword and ash bow reuse the browser weapon designs. Sword strikes register on the three existing dummies; arrows fly with gravity and lodge in the three visible targets or the scenery. The forest boar is passive; its idle, walk and tusk-attack animation assets remain available for future encounters.
-- Free sword/archery practice, three-hit combos, a 30-second sword drill and a five-arrow archery drill. Practice does not award coins or XP.
+- Camp combat is enabled only in the training-ground footprint. The forest interior supports PvE encounters. The sword and ash bow reuse the browser weapon designs. Sword strikes register on the three existing dummies; arrows fly with gravity and lodge in the three visible targets or the scenery. The forest boars, wolf and mantis now support bounded hunting encounters with wind-ups, dodging, health and rewards.
+- Free sword/archery practice, three-hit combos, a 30-second sword drill and a five-arrow archery drill. Free practice does not award coins or XP; its one-time introductory quest does.
 - Device-local position, health, coins, XP, practice statistics and personal-best saving. Older saves receive the new practice fields automatically. The browser save is separate.
 - Fixed evening light, one warm sun low in the western sky, slowly drifting cloud banks, directional shadows and distant haze. Six subtle rays mark a few canopy openings. The day/night cycle, moon and night point-light updates remain disabled; the legacy save clock stays fixed.
 - Compatibility renderer and a 30 FPS cap when using phone controls. Exactly two graphics options, **Balanced** and **High**, apply immediately and save on this device.
 - Cinzel headings and architectural inscriptions, with Barlow Semi Condensed for the interface. Temple names have mounted stone plaques ahead of the projecting frieze ribs; lettering fits its backing, respects depth and has a limited viewing distance. Notices wrap in compact panels and expire after a few seconds.
 - Imported surfaces apply their original vertex colors, including sand, ground details and planting. Nonmetallic highlights are softened to prevent the former white wash over the training yard.
 
-On desktop, use **WASD**, **Shift**, **mouse**, **Space**, **left click**, **E**, **M** and **Esc**. Inside the training ground, **1** selects Sword, **2** selects Bow and **R** starts/restarts the selected drill. Click to strike; hold and release to shoot. On touchscreens, the training controls appear only there. The camp map includes **Deepwood Gate**, beyond the forgotten shrine; the forest currently supports peaceful exploration.
+On desktop, use **WASD**, **Shift**, **mouse**, **Space**, **left click**, **E**, **M** and **Esc**. Inside the training ground, **1** selects Sword, **2** selects Bow and **R** starts/restarts the selected drill. Click to strike; hold and release to shoot. On touchscreens, the training controls appear only there. The camp map includes **Deepwood Gate**, beyond the forgotten shrine; the forest now supports the first PvE quest chapter.
 
 ## Training ground
 
@@ -83,7 +85,7 @@ The archive includes both the complete `assets/` and `fonts/` directories. For a
 
 The Android preset is configured for landscape, ARM32 and ARM64 devices, an offline game and package name `com.pmwvisuals.asterion`. The connected SM-T515 reports Android 11 (API 30), roughly 2 GB RAM and only `armeabi-v7a,armeabi` app support, so ARM32 is required for this tablet.
 
-The current test APK is `builds/asterion-shrine-relocation-test.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
+The current gameplay test APK is `builds/asterion-adventure.apk`, version 0.1.0. It uses the optimized export template and local testing key. Minimum Android API is 24. Its checksum accompanies the APK. The APK is separate from the editable project ZIP and is not committed to Git. This is a development test build.
 
 The previous untrimmed build was tested on the physical SM-T515: camp, map, travel, joystick movement, weapon selection and both graphics choices responded. Its Arrival Ridge sample measured **3.07 FPS on Balanced**, which does not meet comfortable-play performance and does not predict performance on stronger phones. The new compact map has fewer instances, scenery triangles and collision faces, but has not yet been timed on Android. Larger forest batching experiments did not load reliably on this device and remain excluded.
 

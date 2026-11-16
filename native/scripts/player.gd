@@ -68,16 +68,15 @@ func _ready():
 
 func _unhandled_input(event):
 	if event.is_action_pressed("pause"):
-		Session.paused = not Session.paused
-		Session.clear_touch()
-		if not Session.touch_controls:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Session.paused else Input.MOUSE_MODE_CAPTURED
+		if is_instance_valid(hud):hud.handle_back()
+		else:Session.paused=not Session.paused
 		return
 	if Session.paused:
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		primary_held = true
 		primary_pressed = true
+	if event.is_action_pressed("heal"):Session.heal_requested=true
 	if event.is_action_pressed("sword"):
 		equip("sword")
 	if event.is_action_pressed("bow"):
@@ -122,7 +121,7 @@ func sync_combat():
 		cooldown = 0
 		if is_instance_valid(world.training):
 			world.training.cancel_round()
-	Session.message = "TRAINING GROUND  ·  1 Sword  ·  2 Bow  ·  R Start drill" if active else "SANCTUARY  ·  Weapon sheathed"
+	Session.message = ("DEEPWOOD · Sword and bow ready. Sidestep enemy wind-ups." if world.forest else "TRAINING GROUND  ·  1 Sword  ·  2 Bow  ·  R Start drill") if active else ("WOODLAND ENTRANCE · Safe" if world.forest else "SANCTUARY  ·  Weapon sheathed")
 
 func cancel_draw():
 	draw_time = 0
@@ -158,7 +157,7 @@ func equip(kind:String) -> bool:
 	sword_model.visible = kind == "sword"
 	bow_model.visible = kind == "bow"
 	world.training.cancel_round()
-	Session.message = "ASH BOW  ·  Hold to draw, release to fire. Stand on the archery line." if kind == "bow" else "PRACTICE SWORD  ·  Face a dummy and land three quick hits."
+	Session.message = ("ASH BOW · Hold to draw, release to fire." if kind=="bow" else "SWORD · Face your target and move within reach.") if world.forest else ("ASH BOW  ·  Hold to draw, release to fire. Stand on the archery line." if kind == "bow" else "PRACTICE SWORD  ·  Face a dummy and land three quick hits.")
 	return true
 
 func release_bow() -> bool:
@@ -178,6 +177,8 @@ func _physics_process(delta):
 	if Session.paused:
 		cancel_draw()
 		return
+	if Session.heal_requested:Session.use_draught()
+	Session.heal_requested=false
 	cooldown = maxf(0,cooldown-delta)
 	var direction := Input.get_vector("left","right","forward","back") + Session.touch_move
 	direction = direction.limit_length()
@@ -215,10 +216,7 @@ func _physics_process(delta):
 		global_position = world.spawn_position()
 		velocity = Vector3.ZERO
 	if Session.data.health <= 0:
-		Session.data.health = 100.0
-		Session.message = "You recovered at the sanctuary."
-		Session.data.positions.erase("camp")
-		Session.change_zone("camp")
+		Session.recover_at_camp()
 
 func attack():
 	if not combat_enabled() or cooldown>0 or Session.paused or weapon_kind != "sword":
@@ -230,13 +228,5 @@ func attack():
 	swing.tween_property(weapon,"rotation:z",-1.1,.13)
 	swing.tween_property(weapon,"rotation:z",0.0,.30)
 	world.practice_attack(self)
-	if is_instance_valid(world.enemy):
-		var target:Vector3 = world.enemy.global_position + Vector3.UP
-		var offset := target-camera.global_position
-		if offset.length() < 3.5 and offset.normalized().dot(-camera.global_basis.z) > .55:
-			var query := PhysicsRayQueryParameters3D.create(camera.global_position,target)
-			query.exclude = [get_rid()]
-			var hit := get_world_3d().direct_space_state.intersect_ray(query)
-			if hit.is_empty() or hit.collider == world.enemy:
-				world.enemy.hurt(25)
+	world.hit_enemies(self)
 	return true
