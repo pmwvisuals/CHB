@@ -8,7 +8,10 @@ export const pavingTextureRepeat=3.2;
 export function pavedRoadGeometry(points:T.Vector3[],width:number,height=groundHeight){
  const verts:number[]=[],indices:number[]=[],uvs:number[]=[];
  points.forEach((p,i)=>{const dir=points[Math.min(i+1,points.length-1)].clone().sub(points[Math.max(i-1,0)]).normalize();for(let j=0;j<5;j++){const side=(j/4-.5)*2,edge=width*.72,x=p.x+dir.z*edge*side,z=p.z-dir.x*edge*side;verts.push(x,height(x,z)+pavingLift,z);uvs.push(j/4,i/(points.length-1));}if(i<points.length-1)for(let j=0;j<4;j++){const a=i*5+j;indices.push(a,a+5,a+1,a+1,a+5,a+6);}});
- const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();geo.userData.surfacePolygons=points.slice(1).map((_,i)=>[i*5,i*5+5,i*5+9,i*5+4]);return geo;
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();geo.userData.surfacePolygons=points.slice(1).map((_,i)=>[i*5,i*5+5,i*5+9,i*5+4]);
+ // Rounded terminals cover the exposed square corners where routes meet.
+ for(const end of [points[0],points[points.length-1]]){const start=verts.length/3,polygon:number[]=[];for(let j=0;j<24;j++){const a=-j/24*Math.PI*2,x=end.x+Math.cos(a)*width*.72,z=end.z+Math.sin(a)*width*.72;polygon.push(start+j);verts.push(x,height(x,z)+pavingLift,z);uvs.push(x/pavingTextureRepeat,z/pavingTextureRepeat);}geo.userData.surfacePolygons.push(polygon);for(let j=1;j<23;j++)indices.push(start,start+j,start+j+1);}
+ geo.setAttribute('position',new T.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geo.setIndex(indices);geo.computeVertexNormals();return geo;
 }
 
 /** Simple worn limestone flagstones. One seamless material covers the road network. */

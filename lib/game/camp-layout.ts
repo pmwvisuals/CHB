@@ -15,5 +15,6 @@ export const campRoutes=[
  {name:'Boat dock walk',width:2.8,points:[[55,5],[52,-5],[53,-12],[53,-18]]},
 ] as const;
 export function routePoints(points:readonly (readonly number[])[]){return new CatmullRomCurve3(points.map(p=>new Vector3(p[0],0,p[1]))).getPoints(160);}
-export const gardenCourts=[{x:-15,z:43,rx:6,rz:10},{x:15,z:43,rx:6,rz:10},{x:-18,z:-15,rx:4,rz:5},{x:18,z:-15,rx:4,rz:5}];
+// Circular flower courts are temporarily removed, including their soil and edging.
+export const gardenCourts:{x:number;z:number;rx:number;rz:number}[]=[];
 export function inGardenCourt(x:number,z:number,pad=0){return gardenCourts.some(g=>((x-g.x)/(g.rx+pad))**2+((z-g.z)/(g.rz+pad))**2<1);}

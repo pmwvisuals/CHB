@@ -10,7 +10,7 @@ const spacing=1.04;
 export function roadBorderPlacements(routes:BorderRoute[]){
  const cells=new Map<string,{a:T.Vector3;b:T.Vector3;route:number;width:number}[]>(),cell=8;
  routes.forEach((r,route)=>{for(let i=1;i<r.points.length;i++){
-  const a=r.points[i-1],b=r.points[i],pad=r.width*.66+.2,segment={a,b,route,width:r.width};
+  const a=r.points[i-1],b=r.points[i],pad=r.width*.72+.65,segment={a,b,route,width:r.width};
   for(let x=Math.floor((Math.min(a.x,b.x)-pad)/cell);x<=Math.floor((Math.max(a.x,b.x)+pad)/cell);x++)for(let z=Math.floor((Math.min(a.z,b.z)-pad)/cell);z<=Math.floor((Math.max(a.z,b.z)+pad)/cell);z++){
    const key=x+':'+z,list=cells.get(key)||[];list.push(segment);cells.set(key,list);
   }
@@ -28,7 +28,7 @@ export function roadBorderPlacements(routes:BorderRoute[]){
     // Open junctions completely: a kerb must never cut across a joining road.
     const crossing=(cells.get(Math.floor(x/cell)+':'+Math.floor(z/cell))||[]).some(s=>{
      if(s.route===id)return false;const dx=s.b.x-s.a.x,dz=s.b.z-s.a.z,u=T.MathUtils.clamp(((x-s.a.x)*dx+(z-s.a.z)*dz)/(dx*dx+dz*dz||1),0,1);
-     return Math.hypot(x-s.a.x-dx*u,z-s.a.z-dz*u)<s.width*.66+.2;
+     return Math.hypot(x-s.a.x-dx*u,z-s.a.z-dz*u)<s.width*.72+.65;
     });if(crossing)continue;
     const ix=Math.floor(x),iz=Math.floor(z);let overlap=false;
     for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)if((occupied.get((ix+dx)+':'+(iz+dz))||[]).some(k=>Math.hypot(x-k.x,z-k.z)<.65))overlap=true;

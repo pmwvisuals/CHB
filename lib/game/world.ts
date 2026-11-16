@@ -84,7 +84,7 @@ export function buildWorld(): World {
   function windowAt(g:T.Object3D,x:number,z:number,dy=0){box(g,x,2.2+dy,z,1.45,1.65,.12,trim);box(g,x,2.2+dy,z+.08,1.2,1.4,.08,mat('#6d9e9e',.25));box(g,x,2.2+dy,z+.14,.06,1.4,.07,trim);box(g,x,2.2+dy,z+.14,1.2,.06,.07,trim);box(g,x,1.3+dy,z+.2,1.75,.15,.55,wood);}
   function bench(g:T.Object3D,x:number,z:number,w=3){box(g,x,.65,z,w,.18,.7,wood,true);for(const s of [-1,1])box(g,x+s*(w/2-.25),.3,z,.15,.6,.55,wood);}
   const templeExteriors=buildTempleExteriors(scene,collision);buildGreatHall(scene,collision);
-  templeCatalog.filter(theme=>theme.id!=='poseidon').forEach(theme=>{const endpoint=sitePoint(theme.id,0,16);path([...templeTrails[theme.id],[endpoint.x,endpoint.z]],2.8);});
+  templeCatalog.filter(theme=>theme.id!=='poseidon').forEach(theme=>{const alignment=sitePoint(theme.id,0,16),endpoint=sitePoint(theme.id,0,9.8);path([...templeTrails[theme.id],[alignment.x,alignment.z],[endpoint.x,endpoint.z]],2.8);});
   buildWayfarerHall(scene,collision);
   // Dining pavilion with columns, garlands and communal tables.
   const pavilion=group(46,43);box(pavilion,0,.08,0,20,.16,16,stone,true);

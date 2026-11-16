@@ -10,7 +10,7 @@ import {terrainGeometry} from '../lib/game/landscape';
 if(typeof document==='undefined'){const ctx=new Proxy({}, {get:()=>()=>{}});Object.assign(globalThis,{document:{createElement:()=>({width:128,height:128,getContext:()=>ctx})}});}
 
 const routes=campRoutes.map(r=>({points:routePoints(r.points),width:r.width}));
-for(const t of templeCatalog)if(t.id!=='poseidon'){const end=sitePoint(t.id,0,16);routes.push({points:routePoints([...templeTrails[t.id],[end.x,end.z]]),width:2.8});}
+for(const t of templeCatalog)if(t.id!=='poseidon'){const alignment=sitePoint(t.id,0,16),end=sitePoint(t.id,0,9.8);routes.push({points:routePoints([...templeTrails[t.id],[alignment.x,alignment.z],[end.x,end.z]]),width:2.8});}
 const placements=roadBorderPlacements(routes);
 assert.ok(placements.length>2000,'all routes receive edging without a fixed capacity cutoff');
 for(let i=0;i<routes.length;i++)for(const side of [-1,1])assert.ok(placements.some(p=>p.route===i&&p.side===side),`route ${i} has both borders`);

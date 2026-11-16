@@ -5,7 +5,7 @@ import {groundHeight} from './data';
 const smooth=(a:number,b:number,x:number)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
 type Segment={x:number;z:number;dx:number;dz:number;length2:number;width:number};
 const cells=new Map<string,Segment[]>(),cellSize=10;
-const routes=[...campRoutes.map(r=>({points:r.points,width:r.width})),...Object.entries(templeTrails).filter(([id])=>id!=='poseidon').map(([id,points])=>{const p=sitePoint(id as SiteId,0,16);return {points:[...points,[p.x,p.z]],width:2.8};})];
+const routes=[...campRoutes.map(r=>({points:r.points,width:r.width})),...Object.entries(templeTrails).filter(([id])=>id!=='poseidon').map(([id,points])=>{const a=sitePoint(id as SiteId,0,16),p=sitePoint(id as SiteId,0,9.8);return {points:[...points,[a.x,a.z],[p.x,p.z]],width:2.8};})];
 for(const route of routes){const points=routePoints(route.points);for(let i=1;i<points.length;i++){
  const a=points[i-1],b=points[i],segment={x:a.x,z:a.z,dx:b.x-a.x,dz:b.z-a.z,length2:a.distanceToSquared(b),width:route.width};
  const pad=route.width*.75+1;

@@ -1,3 +1,13 @@
+# Camp road joins and temple approaches — 16 November 2026
+
+All eleven land temple approaches now extend from their former 16-metre endpoints to local z=9.8, overlapping the entrance ramp at z=10. A waypoint at z=16 aligns the final approach. Browser rendering, walkable collision, vegetation road masks and exported map routes share these extensions. Poseidon retains its dedicated causeway. Road terminal footprints receive rounded caps, and road-border junction rejection uses the full paved width plus block clearance. The four circular flower courts are temporarily removed, including soil overlays, planting, fountains and edging; arbor walks remain.
+
+The original camp was regenerated with updated collision and contact/canopy shading. All 57 camp regression assertions, ten imported-plant checks and eleven physical ray checks along the former temple gaps passed. Ray checks sample four positions on every extended land approach and confirm a raised walkable paved surface. Rendered views of Hera, Athena, Ares, training, Wayfarer, arrival and the former flower courts were inspected. The terrain-overlay and road-border/browser tests, TypeScript checking, browser build and all twelve temple-page checks passed.
+
+The editable project and `builds/asterion-road-repairs-test.apk` contain these changes. Android device frame rate and sustained play for this revision remain unmeasured.
+
+## Earlier checkpoints
+
 # Rendering profiling — 16 November 2026
 
 See [RENDER-OPTIMIZATION.md](RENDER-OPTIMIZATION.md) for the controlled comparisons, retained terrain/surface improvements and unresolved High startup crashes. The normal playable checkpoint measures 4.74 FPS at Arrival Ridge; that remains below smooth play. Later art changes below are retained in source.
