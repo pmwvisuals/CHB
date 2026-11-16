@@ -10,6 +10,7 @@ var detail_nodes:Array[MultiMeshInstance3D] = []
 var mist_nodes:Array[Node3D] = []
 var supplied_creatures:Array[CharacterBody3D] = []
 var encounters
+var exploration
 const SUPPLIED_CREATURES := [
 	{"id":"MagicWolf","asset":"res://assets/forest-creatures/magic-wolf.glb","height":2.1,"heading":0.0,"speed":.7,"point":[-65,-45],"route":[[-60,-41],[-60,-49],[-69,-50],[-71,-43]]},
 	{"id":"MutantMantis","asset":"res://assets/forest-creatures/mutant-mantis.glb","height":2.8,"heading":PI,"speed":0.0,"point":[48,-182],"route":[]},
@@ -24,8 +25,11 @@ func prepare():
 	encounters=preload("res://scripts/forest_encounters.gd").new()
 	add_child(encounters)
 	encounters.install(self)
+	exploration=preload("res://scripts/forest_exploration.gd").new()
+	add_child(exploration)
+	exploration.install(self)
 	player.sync_combat()
-	Session.message="DEEPWOOD · Follow the trail to the first boar clearing. Journal tracks your quest."
+	Session.message="DEEPWOOD · Follow the trails, inspect old survey marks, and track contracts in Journal."
 
 func combat_allowed(at:Vector3) -> bool:
 	return at.z<196 and inside_bounds(at)
@@ -36,12 +40,14 @@ func hit_enemies(attacker) -> bool:
 func interaction_text() -> String:
 	if near_gate():return "Return to camp"
 	if is_instance_valid(encounters) and encounters.near_cache()!="":return "Open supply cache"
+	if is_instance_valid(exploration):return exploration.interaction_text()
 	return ""
 
 func interact():
 	if near_gate():
 		Session.change_zone("camp")
-	elif is_instance_valid(encounters):encounters.open_cache()
+	elif is_instance_valid(encounters) and encounters.near_cache()!="":encounters.open_cache()
+	elif is_instance_valid(exploration):exploration.inspect()
 
 func danger_name() -> String:
 	if player.position.z>=196:return "ENTRANCE · SAFE"

@@ -158,7 +158,7 @@ func run():
 	if "--capture" in OS.get_cmdline_user_args():
 		await process_frame
 		root.get_texture().get_image().save_png("res://builds/adventure-journal.png")
-	var accepts=app.world.player.hud.journal_panel.find_children("*","Button",true,false).filter(func(b):return b.text=="ACCEPT CONTRACT")
+	var accepts=app.world.player.hud.journal_panel.find_children("*","Button",true,false).filter(func(b):return b.text=="ACCEPT CONTRACT" and b.get_meta("quest_id","")=="deep_echoes")
 	check(accepts.size()==1,"The camp journal offers the next unlocked story contract")
 	if not accepts.is_empty():accepts[0].pressed.emit()
 	check(session.RULES.active(session.data).get("id","")=="deep_echoes","The visible Accept control starts the correct quest")

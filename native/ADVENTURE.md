@@ -1,6 +1,6 @@
 # First playable adventure chapter
 
-The native Godot game now has an offline, device-local gameplay loop. Open **Journal** (desktop **J**) in camp to accept **A Steady Hand**, then use **Map → Training Ground**. Three sword hits on a dummy and one successful target shot complete its objectives. Return to Journal in camp to claim the reward and unlock the first woodland contract. Only one contract can be active.
+The native Godot game now has an offline, device-local gameplay loop. Open **Journal** (desktop **J**) in camp to accept **A Steady Hand**, then use **Map → Training Ground**. Three sword hits on a dummy and one successful target shot complete its objectives. Return to Journal in camp to claim the reward and unlock the first woodland contract. Only one contract can be active. After training, the optional **Read the Woods** survey is available alongside the hunting route.
 
 ## Quests and progression
 
@@ -14,6 +14,30 @@ The native Godot game now has an offline, device-local gameplay loop. Open **Jou
 Regular practice does not generate money or XP. The introductory contract rewards its objectives once. Story rewards have saved receipts; the repeatable contract must be accepted again and starts with fresh objectives. Returning before completing the hunt cannot pre-complete a return objective. Opening the unique northern cache early is credited when its story quest becomes available.
 
 XP comes from creature victories, caches and quests. Level 2 starts at 100 cumulative XP; level 3 starts at 250, with progressively wider thresholds up to level 10. Each level adds ten maximum vitality and two sword/bow damage. The HUD shows level, vitality, gold, total XP, a level progress bar and the next active quest objective.
+
+## Deepwood exploration and survey contracts
+
+Four small, numbered stone cairns record the wardens' lost route through Deepwood. Move near a marker, face its inscription and use **Interact / E**. The entrance trail, eastern ridge, wolf-grove rim and northern-hollow rim each hold one mark. Inspection needs a clear physical line of sight and is blocked during an active encounter, pause or rescue. The two deeper markers stand outside the residents' automatic notice radius, allowing a careful approach without making kills a quest requirement.
+
+| Survey contract | Unlock | Objectives | Camp reward |
+| --- | --- | --- | --- |
+| Read the Woods | Complete A Steady Hand | Inspect Old Trail Cairn and Splitstone Ridge, return safely | 65 XP, 25 gold |
+| The Lost Survey | Complete Read the Woods | Inspect Hollow Inscription and Watcher's Remnant, return safely | 110 XP, 50 gold |
+
+Both are optional, one-time contracts. They share the one-active-contract limit with hunts, and neither blocks the existing story chain or repeatable patrol. Quest cards show the required contract when locked. A safe return must follow the objectives; a rescue does not complete it.
+
+| First discovery | Location | XP / gold |
+| --- | --- | --- |
+| Old Trail Cairn (I) | Main trail before the first boar clearing | 10 / 0 |
+| Splitstone Ridge (II) | Eastern ridge clearing | 15 / 5 |
+| Hollow Inscription (III) | Near rim of the wolf's sunken grove | 20 / 8 |
+| Watcher's Remnant (IV) | Near rim of the northern hollow | 25 / 12 |
+
+Discovery rewards are independent of accepting a survey. Finding a mark early credits the corresponding objective when its contract is accepted. Repeat inspection, re-entry and reload cannot reward it again. The Journal's **Expedition Record** shows a persistent count, directions for undiscovered marks and history for recorded ones. Existing caches retain their separate receipts and rewards.
+
+Discovery receipt, XP, gold and objective progress save together. If writing fails, all parts roll back so a retry remains possible. Existing saves gain an empty discoveries dictionary and the two contracts without losing currency, inventory, quests or collected caches. Four shared procedural marker designs reuse ordinary materials; no new external art or forest rebuild is required.
+
+`tests/exploration_rules.gd` covers migration, independent unlocks, early discovery credit, reward receipts, safe-return order, malformed data and failed-save rollback. `tests/exploration_game.gd` uses the actual forest, all four marker locations and the Journal to verify distance, facing, physical obstruction, combat/pause guards, reward progression, return/claim, re-entry and preserved caches. The updated exploration and existing adventure suites pass 120 assertions in total. The current candidate is `builds/asterion-deepwood-exploration-test.apk`; physical Android performance has not been tested for this revision.
 
 ## Forest PvE
 
