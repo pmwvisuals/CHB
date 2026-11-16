@@ -1,0 +1,359 @@
+[
+  {
+    "revision": "original",
+    "cases": [
+      {
+        "case": "baseline",
+        "draws": 491.155555555556,
+        "fps": 2.94759394129271,
+        "frames": 45,
+        "physics_ms": 0.154844444444444,
+        "seconds": 15.266688,
+        "triangles": 789665.911111111
+      },
+      {
+        "case": "no_grass",
+        "draws": 487.086956521739,
+        "fps": 3.00140942271609,
+        "frames": 46,
+        "physics_ms": 0.142673913043478,
+        "seconds": 15.326132,
+        "triangles": 769858.304347826
+      },
+      {
+        "case": "no_trees",
+        "draws": 202.655737704918,
+        "fps": 4.05923934113621,
+        "frames": 61,
+        "physics_ms": 0.188098360655738,
+        "seconds": 15.027445,
+        "triangles": 591515.918032787
+      },
+      {
+        "case": "no_vegetation",
+        "draws": 198.645161290323,
+        "fps": 4.09440428332802,
+        "frames": 62,
+        "physics_ms": 0.197854838709678,
+        "seconds": 15.142617,
+        "triangles": 571713.741935484
+      },
+      {
+        "case": "no_shadows",
+        "draws": 388.263157894737,
+        "fps": 3.73458965803018,
+        "frames": 57,
+        "physics_ms": 0.133228070175439,
+        "seconds": 15.26272,
+        "triangles": 574673.526315789
+      },
+      {
+        "case": "flat_materials",
+        "draws": 490.32183908046,
+        "fps": 5.75167100917828,
+        "frames": 87,
+        "physics_ms": 0.138333333333333,
+        "seconds": 15.126038,
+        "triangles": 789635.83908046
+      },
+      {
+        "case": "simple_ground",
+        "draws": 490.478873239437,
+        "fps": 4.72241825061674,
+        "frames": 71,
+        "physics_ms": 0.131929577464789,
+        "seconds": 15.034669,
+        "triangles": 789642.591549296
+      },
+      {
+        "case": "no_scenery",
+        "draws": 342.072072072072,
+        "fps": 7.3630746713946,
+        "frames": 111,
+        "physics_ms": 0.140531531531532,
+        "seconds": 15.075223,
+        "triangles": 220858.882882883
+      },
+      {
+        "case": "baseline_repeat",
+        "draws": 491.111111111111,
+        "fps": 2.98971498183383,
+        "frames": 45,
+        "physics_ms": 0.131955555555555,
+        "seconds": 15.051601,
+        "triangles": 789672.0
+      }
+    ]
+  },
+  {
+    "revision": "ground-opt",
+    "cases": [
+      {
+        "case": "baseline",
+        "draws": 490.736842105263,
+        "fps": 3.78715674158083,
+        "frames": 57,
+        "physics_ms": 0.654771929824562,
+        "seconds": 15.050857,
+        "triangles": 789650.0
+      },
+      {
+        "case": "no_grass",
+        "draws": 486.7,
+        "fps": 3.96224770387746,
+        "frames": 60,
+        "physics_ms": 1.44175,
+        "seconds": 15.142913,
+        "triangles": 769843.6
+      },
+      {
+        "case": "no_trees",
+        "draws": 202.241758241758,
+        "fps": 6.02113444657272,
+        "frames": 91,
+        "physics_ms": 0.931626373626374,
+        "seconds": 15.113425,
+        "triangles": 591500.186813187
+      },
+      {
+        "case": "no_vegetation",
+        "draws": 198.195652173913,
+        "fps": 6.11645436586529,
+        "frames": 92,
+        "physics_ms": 0.870858695652174,
+        "seconds": 15.041388,
+        "triangles": 571694.413043478
+      },
+      {
+        "case": "no_shadows",
+        "draws": 387.438356164384,
+        "fps": 4.85285414966229,
+        "frames": 73,
+        "physics_ms": 1.21519178082192,
+        "seconds": 15.042687,
+        "triangles": 574640.534246575
+      },
+      {
+        "case": "flat_materials",
+        "draws": 490.252873563218,
+        "fps": 5.74105354139527,
+        "frames": 87,
+        "physics_ms": 1.12987356321839,
+        "seconds": 15.154007,
+        "triangles": 789632.873563218
+      },
+      {
+        "case": "simple_ground",
+        "draws": 490.444444444444,
+        "fps": 4.7376309831591,
+        "frames": 72,
+        "physics_ms": 1.22275,
+        "seconds": 15.197463,
+        "triangles": 789641.111111111
+      },
+      {
+        "case": "no_scenery",
+        "draws": 342.072072072072,
+        "fps": 7.37285462384592,
+        "frames": 111,
+        "physics_ms": 1.05966666666667,
+        "seconds": 15.05522,
+        "triangles": 220858.882882883
+      },
+      {
+        "case": "baseline_repeat",
+        "draws": 490.677966101695,
+        "fps": 3.91975790512193,
+        "frames": 59,
+        "physics_ms": 1.18689830508475,
+        "seconds": 15.05047,
+        "triangles": 789652.508474576
+      }
+    ]
+  },
+  {
+    "revision": "cells",
+    "cases": [
+      {
+        "case": "baseline",
+        "draws": 570.478873239437,
+        "fps": 4.69544826551794,
+        "frames": 71,
+        "physics_ms": 0.996380281690141,
+        "seconds": 15.121016,
+        "triangles": 591038.197183099
+      },
+      {
+        "case": "no_grass",
+        "draws": 566.444444444444,
+        "fps": 4.79545614545364,
+        "frames": 72,
+        "physics_ms": 1.10118055555556,
+        "seconds": 15.014207,
+        "triangles": 571231.888888889
+      },
+      {
+        "case": "no_trees",
+        "draws": 282.045801526718,
+        "fps": 8.73154162099271,
+        "frames": 131,
+        "physics_ms": 0.954267175572519,
+        "seconds": 15.003072,
+        "triangles": 392890.740458015
+      },
+      {
+        "case": "no_vegetation",
+        "draws": 278.044444444444,
+        "fps": 8.99159106403691,
+        "frames": 135,
+        "physics_ms": 1.10574074074074,
+        "seconds": 15.014022,
+        "triangles": 373085.911111111
+      },
+      {
+        "case": "no_shadows",
+        "draws": 468.41975308642,
+        "fps": 5.37949837306702,
+        "frames": 81,
+        "physics_ms": 0.612395061728395,
+        "seconds": 15.05716,
+        "triangles": 447815.790123457
+      },
+      {
+        "case": "flat_materials",
+        "draws": 570.047244094488,
+        "fps": 8.45678688444247,
+        "frames": 127,
+        "physics_ms": 1.2355905511811,
+        "seconds": 15.017517,
+        "triangles": 591022.031496063
+      },
+      {
+        "case": "simple_ground",
+        "draws": 570.168421052632,
+        "fps": 6.31531195912677,
+        "frames": 95,
+        "physics_ms": 1.18382105263158,
+        "seconds": 15.042796,
+        "triangles": 591027.242105263
+      },
+      {
+        "case": "no_scenery",
+        "draws": 342.054054054054,
+        "fps": 7.39624221587152,
+        "frames": 111,
+        "physics_ms": 0.898495495495495,
+        "seconds": 15.007619,
+        "triangles": 221468.162162162
+      },
+      {
+        "case": "baseline_repeat",
+        "draws": 570.444444444444,
+        "fps": 4.73445338664328,
+        "frames": 72,
+        "physics_ms": 0.95448611111111,
+        "seconds": 15.207662,
+        "triangles": 591040.0
+      }
+    ]
+  },
+  {
+    "revision": "tree-regression",
+    "cases": [
+      {
+        "case": "baseline",
+        "draws": 617.771929824561,
+        "fps": 3.75008536378525,
+        "frames": 57,
+        "physics_ms": 0.979982456140351,
+        "seconds": 15.199648,
+        "triangles": 734309.333333333
+      },
+      {
+        "case": "no_grass",
+        "draws": 613.724137931035,
+        "fps": 3.810409025729,
+        "frames": 58,
+        "physics_ms": 1.19703448275862,
+        "seconds": 15.221455,
+        "triangles": 714502.517241379
+      },
+      {
+        "case": "no_trees",
+        "draws": 340.244444444444,
+        "fps": 5.97724264483689,
+        "frames": 90,
+        "physics_ms": 1.03371111111111,
+        "seconds": 15.057103,
+        "triangles": 489818.288888889
+      },
+      {
+        "case": "no_vegetation",
+        "draws": 336.21978021978,
+        "fps": 6.06228686648186,
+        "frames": 91,
+        "physics_ms": 1.13147252747253,
+        "seconds": 15.01083,
+        "triangles": 470013.450549451
+      },
+      {
+        "case": "no_shadows",
+        "draws": 486.535211267606,
+        "fps": 4.70642419611126,
+        "frames": 71,
+        "physics_ms": 1.09866197183099,
+        "seconds": 15.085745,
+        "triangles": 602410.408450704
+      },
+      {
+        "case": "flat_materials",
+        "draws": 617.384615384615,
+        "fps": 5.14470369573747,
+        "frames": 78,
+        "physics_ms": 1.3876282051282,
+        "seconds": 15.161216,
+        "triangles": 734296.538461538
+      },
+      {
+        "case": "simple_ground",
+        "draws": 617.584615384615,
+        "fps": 4.31955969731184,
+        "frames": 65,
+        "physics_ms": 1.14255384615385,
+        "seconds": 15.047824,
+        "triangles": 734305.138461538
+      },
+      {
+        "case": "no_scenery",
+        "draws": 331.114285714286,
+        "fps": 6.94286576901363,
+        "frames": 105,
+        "physics_ms": 0.951971428571428,
+        "seconds": 15.123432,
+        "triangles": 267810.571428571
+      },
+      {
+        "case": "baseline_repeat",
+        "draws": 617.736842105263,
+        "fps": 3.76574104531554,
+        "frames": 57,
+        "physics_ms": 1.29259649122807,
+        "seconds": 15.136451,
+        "triangles": 734313.157894737
+      }
+    ]
+  },
+  {
+    "revision": "normal-installed-high",
+    "cases": [
+      {
+        "samples": 127,
+        "seconds": 26.603709573,
+        "fps": 4.736181608593296,
+        "medianMs": 216.433802,
+        "p95Ms": 217.069687,
+        "maxMs": 217.442969
+      }
+    ]
+  }
+]

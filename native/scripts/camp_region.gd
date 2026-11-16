@@ -181,6 +181,9 @@ func build_ground():
 			part.material_override = water
 			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		elif part.name.begins_with("CampRoad"):
+			# Flush paving receives shadows; it does not need a second draw
+			# into the shadow map for its paper-thin overlay.
+			part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			var worn = part.get_active_material(0).duplicate()
 			worn.albedo_color = Color("c8c2b2")
 			worn.roughness = .98

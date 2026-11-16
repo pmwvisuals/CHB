@@ -2,6 +2,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import crypto from 'node:crypto';
+import {existsSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
 import { build } from 'esbuild';
 import * as T from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -65,6 +67,12 @@ async function write(name,content){const file='native/assets/camp/'+name,buffer=
 const exporter=new GLTFExporter();
 for(const [name,root] of [['camp-static.glb',staticScene],['camp-prototypes.glb',prototypes],['camp-collision.glb',colliders]]){console.log('Exporting',name,root.children.length,'meshes');const binary=await exporter.parseAsync(root,{binary:true,onlyVisible:true,trs:false,maxTextureSize:1024});await write(name,Buffer.from(binary));}
 const optimization=await optimizeScenery();
+// Preserve surface culling after every art/layout rebuild. Override the Python
+// interpreter with ASTERION_PYTHON on machines with a different Blender setup.
+const blenderPython=path.join(process.env.ProgramFiles||'C:/Program Files','Blender Foundation','Blender 5.2','5.2','python','bin','python.exe');
+const surfacePython=process.env.ASTERION_PYTHON||(process.platform==='win32'&&existsSync(blenderPython)?blenderPython:'python3');
+execFileSync(surfacePython,['scripts/split-native-surfaces.py'],{stdio:'inherit'});
+await write('surface-cells.json',await fs.readFile('native/assets/camp/surface-cells.json'));
 data.statistics={sceneryTriangles:optimization.triangles,collisionTriangles:colliders.children.reduce((sum,o)=>sum+(o.geometry.index?.count||o.geometry.attributes.position.count)/3,0),collisionChunks:colliders.children.length,instances:instanceCount,forestTrees:scene.userData.forestBorder.trees,blockyRockInstances:0};
 const optimized=await fs.readFile('native/assets/camp/camp-static.glb');
 Object.assign(saved.find(a=>a.file==='assets/camp/camp-static.glb'),{bytes:optimized.length,sha256:crypto.createHash('sha256').update(optimized).digest('hex')});

@@ -136,3 +136,9 @@ Hephaestus has exactly two brass oil lanterns on raised entrance plinths. Their 
 ## Xiaomi device test
 
 The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-android-compat-test.apk`.
+
+## Rendering profile and optimization
+
+See [RENDER-OPTIMIZATION.md](RENDER-OPTIMIZATION.md) and RENDER-PROFILE.json. The retained terrain shader and 48 m surface cells improved the Xiaomi High overview from roughly 3 FPS to 4.74 FPS in the installed checkpoint. This remains below playable performance, and High startup is still intermittent. Every road/terrain triangle is retained; a larger tree-group experiment was discarded. Native camp exports now run the surface splitter automatically. Set ASTERION_PYTHON if the bundled Blender Python is elsewhere. The installed APK predates the subsequent fern/shrine art refresh; the editable project includes that refresh.
+
+For a diagnostic build only, set custom export features to performance_suite,performance_capture. It automatically runs nine comparisons using an isolated save and restores the full scene afterward. Leave custom_features empty for playable exports. Desktop diagnostic smoke: run Godot with --render-benchmark --benchmark-quick after the -- separator. Run tests/render_surfaces.gd to verify the prepared cells.

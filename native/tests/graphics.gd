@@ -54,7 +54,8 @@ func run():
 			if material is ShaderMaterial and material.shader.code.contains("ROUGHNESS = UV2.x"):
 				palette_materials[material.get_instance_id()] = true
 	check(scenery_triangles==camp.layout.statistics.sceneryTriangles,"Scenery batching preserves all retained rendered triangles")
-	check(scenery_parts.size()<180 and palette_materials.size()==4,"Opaque scenery shares four palette materials and spatial groups")
+	var architecture_parts=scenery_parts.filter(func(p):return p.name.begins_with("SceneryCell"))
+	check(architecture_parts.size()<180 and palette_materials.size()==4,"Opaque architecture shares four palette materials and spatial groups")
 	var stream = camp.foliage_stream
 	var source_count := 0
 	var positions_match := true

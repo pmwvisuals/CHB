@@ -1,3 +1,7 @@
+# Rendering profiling — 16 November 2026
+
+See [RENDER-OPTIMIZATION.md](RENDER-OPTIMIZATION.md) for the controlled comparisons, retained terrain/surface improvements and unresolved High startup crashes. The normal playable checkpoint measures 4.74 FPS at Arrival Ridge; that remains below smooth play. Later art changes below are retained in source.
+
 # Giant fern removal and shrine clearing — 16 November 2026
 
 The giant woodland fern (`forest_fern`, 1.7-metre source asset) is retired from every plant collection and from the camp, forest-belt and Deep Forest placement outputs. The native forest prototype export excludes it, and the unused standalone GLB and manifest entry are removed. Its original authoring source remains archived outside the game. All other Deep Forest floor placements retain their transforms: 15,435 litter, low bracken and bramble placements remain after removing 4,565 giant ferns. All 5,200 forest trees remain.

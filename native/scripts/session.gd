@@ -20,10 +20,14 @@ var app
 var ui_theme:Theme
 var render_profile:Dictionary = {}
 var profile_tick := 0
+var benchmark_started := false
+var benchmark_enabled := OS.has_feature("performance_suite") or "--render-benchmark" in OS.get_cmdline_user_args()
 var performance_capture := OS.has_feature("mobile") and (OS.is_debug_build() or OS.has_feature("performance_capture"))
 var touch_controls := OS.has_feature("mobile") or "--touch-controls" in OS.get_cmdline_user_args()
 
 func _ready():
+	if benchmark_enabled:
+		save_path = "user://render-benchmark-save.json"
 	Engine.max_fps = 30 if touch_controls else 60
 	if not performance_capture and FileAccess.file_exists("user://render-profile.json"):
 		DirAccess.remove_absolute(OS.get_user_data_dir().path_join("render-profile.json"))
@@ -45,6 +49,10 @@ func _ready():
 	mouse.button_index = MOUSE_BUTTON_LEFT
 	InputMap.action_add_event("attack",mouse)
 	load_game()
+	if benchmark_enabled:
+		data.positions={}
+		data.zone="camp"
+		render_profile={"quality":"high","autostart":true,"case":"render_benchmark"}
 	ensure_training()
 	graphics_recommended = GRAPHICS.recommend(int(OS.get_memory_info().get("physical",0)),OS.has_feature("mobile"),"64" if OS.has_feature("64") else "32")
 	if not GRAPHICS.valid(data.get("graphics_quality")):
@@ -151,6 +159,9 @@ func _notification(what):
 			save_game(app.world.player)
 
 func _process(_delta):
+	if benchmark_enabled and not benchmark_started and is_instance_valid(app) and is_instance_valid(app.world) and not app.transitioning:
+		benchmark_started=true
+		add_child(preload("res://scripts/render_benchmark.gd").new())
 	if not performance_capture or not is_instance_valid(app) or not is_instance_valid(app.world) or app.transitioning:
 		return
 	var now := Time.get_ticks_msec()
