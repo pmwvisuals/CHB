@@ -71,7 +71,7 @@ func practice_attack(attacker) -> bool:
 		training.sword_result(-1)
 	return false
 
-func finish_import(part:MeshInstance3D,vegetation:bool=false,meadow:bool=false):
+func finish_import(part:MeshInstance3D,vegetation:bool=false,meadow:bool=false,camp_tree_green:bool=false):
 	for surface in range(part.mesh.get_surface_count()):
 		var original = part.get_active_material(surface)
 		if not original is BaseMaterial3D:
@@ -95,7 +95,7 @@ func finish_import(part:MeshInstance3D,vegetation:bool=false,meadow:bool=false):
 		var has_colors:bool = colors != null and colors.size()>0
 		var key := str(original.get_instance_id())+str(has_colors)
 		if vegetation:
-			key += "vegetation"+str(meadow)
+			key += "vegetation"+str(meadow)+str(camp_tree_green)
 			if not material_cache.has(key):
 				var plant_mat := ShaderMaterial.new()
 				plant_mat.shader = preload("res://shaders/vegetation.gdshader")
@@ -110,6 +110,7 @@ func finish_import(part:MeshInstance3D,vegetation:bool=false,meadow:bool=false):
 				plant_mat.set_shader_parameter("vertex_tint",has_colors)
 				plant_mat.set_shader_parameter("leaf",original.cull_mode==BaseMaterial3D.CULL_DISABLED)
 				plant_mat.set_shader_parameter("fresh_grass",meadow)
+				plant_mat.set_shader_parameter("camp_tree_green",camp_tree_green)
 				plant_mat.set_shader_parameter("roughness",original.roughness)
 				material_cache[key] = plant_mat
 			part.mesh.surface_set_material(surface,material_cache[key])
@@ -269,7 +270,8 @@ func plant():
 		plant_kinds[entry.proto] = entry.kind
 	for part in prototypes.find_children("*","MeshInstance3D",true,false):
 		var kind:String = plant_kinds.get(String(part.name),"")
-		finish_import(part,true,kind=="ground cover" or "grass" in kind)
+		var green_tree:bool=(kind.begins_with("camp_olive ") or kind.begins_with("camp_blossom ")) and ("foliage" in kind or "canopy" in kind)
+		finish_import(part,true,kind=="ground cover" or "grass" in kind,green_tree)
 		meshes[String(part.name)] = part
 	imported_plants = preload("res://scripts/imported_plants.gd").new()
 	meshes.merge(imported_plants.load_prototypes())
