@@ -1,4 +1,4 @@
-import {campRoutes,routePoints} from './camp-layout';
+import {campRoutes,routePoints,insideCentralCourt} from './camp-layout';
 import {templeTrails,sitePoint,type SiteId} from './sanctuary-layout';
 import {groundHeight} from './data';
 
@@ -13,7 +13,7 @@ for(const route of routes){const points=routePoints(route.points);for(let i=1;i<
   const key=x+':'+z,list=cells.get(key)||[];list.push(segment);cells.set(key,list);
  }
 }}
-export function roadCover(x:number,z:number){let cover=0;for(const s of cells.get(Math.floor(x/cellSize)+':'+Math.floor(z/cellSize))||[]){
+export function roadCover(x:number,z:number){if(insideCentralCourt(x,z,.1))return 1;let cover=0;for(const s of cells.get(Math.floor(x/cellSize)+':'+Math.floor(z/cellSize))||[]){
  const t=Math.max(0,Math.min(1,((x-s.x)*s.dx+(z-s.z)*s.dz)/(s.length2||1))),d=Math.hypot(x-s.x-t*s.dx,z-s.z-t*s.dz);
  cover=Math.max(cover,1-smooth(s.width*.49,s.width*.76+.4,d));
 }return cover;}

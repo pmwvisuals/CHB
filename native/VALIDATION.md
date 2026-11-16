@@ -1,3 +1,13 @@
+# Simplified central road junction — 16 November 2026
+
+The arrival junction around `(0,32)` uses one rectangular 30-by-26-metre paved court. Its footprint covers the small pointed grass islands and suppresses road borders inside the court. A single outside outline joins the surrounding roads with crossing openings. The court is stamped onto the actual terrain, shares walkable collision with the paving, and clears vegetation through the source reservation and road-cover mask. The compact camp boundary and structure placements are unchanged.
+
+All 57 native camp checks and eleven physical temple-approach checks pass. The same player-height junction view from the user's screenshot was rendered and inspected: the internal triangular edging is gone. TypeScript, landscape/road geometry tests, compact-boundary checks and the browser build pass. Native scenery, surface cells, collision and contact/canopy lighting were rebuilt. The existing quest/journal/gameplay systems are retained.
+
+Updated local deliverables are the editable native project and `builds/asterion-central-court-test.apk`. Android device performance for this layout refinement remains unmeasured.
+
+## Earlier checkpoints
+
 # Continuous limestone road outline — 16 November 2026
 
 Individual Greek-key road blocks are replaced by a continuous low bevelled limestone ribbon. Adjacent sections share vertices; the outline follows the original route curves and terrain. Spatial road queries leave crossings open. Short rectangular returns connect nearby outline ends at tight triangular grass-island tips, avoiding pointed decorative wedges. No legacy road-block batches remain in the exported camp. The former garden courts stay removed.

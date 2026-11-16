@@ -12,7 +12,7 @@ import {limestoneRoadMaterial,pavedRoadGeometry} from './road-paving';
 import { buildTempleExteriors,buildGreatHall } from './temple-exteriors';
 import { templeCatalog,templePlacement } from './temple-catalog';
 import {sanctuaryExtent,templeTrails,insideTempleGrounds,templeSites,sitePoint} from './sanctuary-layout';
-import {campRoutes,routePoints,inGardenCourt} from './camp-layout';
+import {campRoutes,routePoints,inGardenCourt,centralCourt,insideCentralCourt} from './camp-layout';
 import {buildCampGardens} from './camp-gardens';
 import {buildWayfarerHall} from './wayfarer';
 import {buildTrainingGround} from './training-ground';
@@ -73,6 +73,8 @@ export function buildWorld(): World {
     const footprint=pavedRoadGeometry(points,width),geo=surface.stamp(footprint,.11),road=mesh(geo,paving,scene);road.name='Walkable limestone road';road.castShadow=false;collision.add(new T.Mesh(geo));
   }
   for(const route of campRoutes)path(route.points,route.width);
+  const courtFootprint=new T.PlaneGeometry(centralCourt.halfWidth*2,centralCourt.halfDepth*2);courtFootprint.rotateX(-Math.PI/2);courtFootprint.translate(centralCourt.x,0,centralCourt.z);
+  const courtGeometry=surface.stamp(courtFootprint,.11),court=mesh(courtGeometry,paving,scene);court.name='Central limestone court';court.castShadow=false;collision.add(new T.Mesh(courtGeometry));
   function circleGround(x:number,z:number,r:number,color:string){const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);geo.translate(x,0,z);geo.userData.surfacePolygons=[Array.from({length:64},(_,i)=>i+1)];const fitted=surface.stamp(geo,.025),m=mesh(fitted,mat(color),scene);m.castShadow=false;return m;}
   // The communal green shares the living terrain, rather than two flat coloured discs.
 
@@ -126,7 +128,7 @@ export function buildWorld(): World {
   const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('ASTERION SANCTUARY',9);gs.position.set(0,6.3,.31);gate.add(gs);
   // Paths are kept clear; all vegetation is deterministic and instanced.
   function nearPath(x:number,z:number,extra=0){return paths.some(p=>p.points.some(q=>Math.hypot(q.x-x,q.z-z)<p.width*.75+extra));}
-  function reserved(x:number,z:number){return inMainLandmark(x,z,1)||inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x,z+62)<18 || shrineDistance(x,z)<forgottenShrine.clearingRadius || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
+  function reserved(x:number,z:number){return insideCentralCourt(x,z,1)||inMainLandmark(x,z,1)||inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x,z+62)<18 || shrineDistance(x,z)<forgottenShrine.clearingRadius || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
   const plants:PlantPlacement[]=buildCampGardens(scene,collision,flowerPlacements),planted:{x:number;z:number}[]=[];
   for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(!insideCamp(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(Math.abs(x)<40&&z>-35&&z<95)continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
    const forest=z<-65||Math.abs(x)>105,scale=forest?.9+rand()*.1:.84+rand()*.16;planted.push({x,z});plants.push({id:forest?(forestDepth(x,z)>=.35?forestTreeIds[Math.floor(rand()*forestTreeIds.length)]:'camp_olive'):(i%2?'camp_olive':'camp_blossom'),x,y:h(x,z),z,scale,rotation:rand()*6.28});

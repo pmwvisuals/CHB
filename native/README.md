@@ -10,6 +10,8 @@ Standing eye height is 1.82 m above the physical walking surface. Arrival Ridge 
 
 ## Included
 
+The busy arrival junction is now one rectangular 30-by-26-metre paved court. Internal road outlines and pointed grass islands are removed from this area; the surrounding paths join its outside edge. The same court footprint clears vegetation and supplies the walking surface.
+
 Road edging now uses a continuous low limestone ribbon instead of separate Greek-key blocks. Shared vertices follow the curves and hills. Road crossings remain open, with short rectangular returns closing tight grass-island tips.
 
 Temple approach paving continues through the last six metres to the entrance ramps, aligned with each front gate. Rounded road terminals soften joins, and junction clearance uses the full paved width when placing limestone edging. The four circular flower courts, including their soil overlays, fountains, planting and surrounding blocks, are temporarily removed. Arbor walks remain.
@@ -28,7 +30,7 @@ The Deepwood Gate leads to the first large native forest landscape, with a 550-m
 
 The amphitheatre campfire uses the supplied textured flame artwork over the existing logs and stone ring. Thirteen subdivided flame cards share one 1,274-triangle mesh. Individual flames curl, stretch and rise at different phases, with upward texture flow and a gently flickering warm light. Anchored roots and a continuous flame core keep it burning. Atlas bounds prevent the animated sampling from picking up neighbouring smoke or images. Rebuild the fire with `scripts/blender/prepare_campfire.py` after extracting the supplied Blender and Textures archives into `assets-source/campfire/`.
 
-The native camp now uses the supplied grass and flower-bush packs: 21,501 grass placements, 103 camp shrubs and 204 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles and low bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-road-outline-test.apk`; its device performance has not yet been measured.
+The native camp now uses the supplied grass and flower-bush packs: 21,501 grass placements, 103 camp shrubs and 204 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles and low bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-central-court-test.apk`; its device performance has not yet been measured.
 
 The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
 
@@ -141,7 +143,7 @@ Hephaestus has exactly two brass oil lanterns on raised entrance plinths. Their 
 
 ## Xiaomi device test
 
-The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-road-outline-test.apk`.
+The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-central-court-test.apk`.
 
 ## Rendering profile and optimization
 

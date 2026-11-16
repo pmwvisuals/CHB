@@ -1,6 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {groundHeight as h} from './data';
+import {insideCentralCourt,centralCourtOutline} from './camp-layout';
 
 export interface BorderRoute {points:T.Vector3[];width:number}
 export interface RoadKerb {x:number;z:number;route:number;side:number;forward:T.Vector3}
@@ -76,7 +77,7 @@ export function continuousRoadBorderGeometry(routes:BorderRoute[]){
     const distance=total*j/steps;while(segment<lengths.length-1&&lengths[segment]<distance)segment++;
     const a=route.points[segment-1],b=route.points[segment],t=(distance-lengths[segment-1])/(lengths[segment]-lengths[segment-1]||1),point=a.clone().lerp(b,t),f=b.clone().sub(a).normalize(),right=new T.Vector3(f.z,0,-f.x),edge=route.width*.72+.13,x=point.x+right.x*edge*side,z=point.z+right.z*edge*side;
     const covered=(cells.get(Math.floor(x/cell)+':'+Math.floor(z/cell))||[]).some(s=>{if(s.id===id)return false;const dx=s.b.x-s.a.x,dz=s.b.z-s.a.z,u=T.MathUtils.clamp(((x-s.a.x)*dx+(z-s.a.z)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-s.a.x-dx*u,z-s.a.z-dz*u)<s.width*.72+.24;});
-    if(covered||(!closed&&(distance<.8||distance>total-.8))){cap();continue;}
+    if((id===routes.length-1&&route.width===0?false:insideCentralCourt(x,z,.15))||covered||(!closed&&(distance<.8||distance>total-.8))){cap();continue;}
     const index=vertices.length/3;
     for(const [offset,y] of profile){const px=x+right.x*offset,pz=z+right.z*offset;vertices.push(px,h(px,pz)+y,pz);}
     if(previous>=0){for(let k=0;k<6;k++){const next=(k+1)%6;indices.push(previous+k,index+k,previous+next,previous+next,index+k,index+next);}}
@@ -97,7 +98,7 @@ export function continuousRoadBorderGeometry(routes:BorderRoute[]){
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.userData.runs=runs;return geometry;
 }
 export function buildRoadBorders(scene:T.Scene,routes:BorderRoute[]){
- const geometry=continuousRoadBorderGeometry(routes),material=new T.MeshStandardMaterial({color:'#bdb398',roughness:.94});
+ const geometry=continuousRoadBorderGeometry([...routes,{points:centralCourtOutline(),width:0}]),material=new T.MeshStandardMaterial({color:'#bdb398',roughness:.94});
  const border=new T.Mesh(geometry,material);border.name='Continuous limestone road outline';border.receiveShadow=true;border.castShadow=false;scene.add(border);
  scene.userData.roadBorders={blocks:0,routes:routes.length,runs:geometry.userData.runs};
  return border;

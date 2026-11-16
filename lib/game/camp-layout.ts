@@ -20,3 +20,8 @@ export function routePoints(points:readonly (readonly number[])[]){return new Ca
 // Circular flower courts are temporarily removed, including their soil and edging.
 export const gardenCourts:{x:number;z:number;rx:number;rz:number}[]=[];
 export function inGardenCourt(x:number,z:number,pad=0){return gardenCourts.some(g=>((x-g.x)/(g.rx+pad))**2+((z-g.z)/(g.rz+pad))**2<1);}
+
+/** One simple gathering court replaces the pointed islands at the arrival junction. */
+export const centralCourt={x:0,z:32,halfWidth:15,halfDepth:13};
+export function insideCentralCourt(x:number,z:number,pad=0){return Math.abs(x-centralCourt.x)<=centralCourt.halfWidth+pad&&Math.abs(z-centralCourt.z)<=centralCourt.halfDepth+pad;}
+export function centralCourtOutline(){const c=centralCourt;return [[-1,-1],[1,-1],[1,1],[-1,1],[-1,-1]].map(([x,z])=>new Vector3(c.x+x*c.halfWidth,0,c.z+z*c.halfDepth));}
