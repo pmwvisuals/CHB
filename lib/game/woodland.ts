@@ -24,12 +24,15 @@ export function buildWoodland(scene:T.Scene,collision:T.Group,blocked:(x:number,
  wind(grassMat,true);
  const d=new T.Object3D(),trees:{x:number;z:number}[]=[],plants:PlantPlacement[]=[];
  for(let attempt=0;attempt<800&&trees.length<24;attempt++){
-  const x=-40+(rand()-.5)*55,z=-96+(rand()-.5)*55;if(!inWoodland(x,z)||blocked(x,z,3)||trees.some(p=>Math.hypot(p.x-x,p.z-z)<7))continue;
+  const x=-40+(rand()-.5)*55,z=-96+(rand()-.5)*55;if(!inWoodland(x,z)||blocked(x,z,3)||Math.hypot(x+40,z+108)<13||trees.some(p=>Math.hypot(p.x-x,p.z-z)<7))continue;
   trees.push({x,z});const scale=.9+rand()*.1;plants.push({id:'camp_olive',x,y:h(x,z),z,scale,rotation:rand()*Math.PI*2});
   const collider=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));collider.position.set(x,h(x,z)+1.2,z);collision.add(collider);
  }
  for(let i=0;i<1000;i++){const x=-40+(rand()-.5)*56,z=-96+(rand()-.5)*56;if(!inWoodland(x,z)||blocked(x,z,.8)||rand()>groundHabitat(x,z).bush*.9)continue;plants.push({id:i%4===0?'forest_bramble':i%4===1?'forest_fern':i%4===2?'forest_bracken':'forest_litter',x,y:h(x,z),z,scale:.65+rand()*.7,rotation:rand()*6.28});}
- const planting=plantCollection(scene,plants);
+ // An open shrine forecourt fades into sparse undergrowth at its edges.
+ const shrineDistance=(x:number,z:number)=>Math.hypot(x+40,z+108);
+ const shrinePlants=plants.filter(p=>p.id!=='forest_fern'&&(p.id==='camp_olive'||(shrineDistance(p.x,p.z)>=12&&noise(p.x,p.z)<.3+.7*Math.min(1,(shrineDistance(p.x,p.z)-12)/10))));
+ const planting=plantCollection(scene,shrinePlants);
  // Six curved blades per clump, with dark roots and sunlit tips. No transparent cards.
  const verts:number[]=[],colors:number[]=[],indices:number[]=[];
  for(let blade=0;blade<6;blade++){
@@ -39,7 +42,7 @@ export function buildWoodland(scene:T.Scene,collision:T.Group,blocked:(x:number,
  const grassGeo=new T.BufferGeometry();grassGeo.setAttribute('position',new T.Float32BufferAttribute(verts,3));grassGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));grassGeo.setIndex(indices);grassGeo.computeVertexNormals();
  const patches:T.InstancedMesh[]=[];const centers:T.Vector3[]=[];
  for(let gx=-68;gx<-12;gx+=8)for(let gz=-124;gz<-68;gz+=8){
-  const transforms:T.Matrix4[]=[];for(let i=0;i<420;i++){const x=gx+rand()*8,z=gz+rand()*8;if(!inWoodland(x,z)||blocked(x,z,.35)||rand()>groundHabitat(x,z).grass*.9)continue;d.position.set(x,h(x,z)-.015,z);d.rotation.set(0,rand()*6.28,0);const size=.65+rand()*.65;d.scale.set(size,size,size);d.updateMatrix();transforms.push(d.matrix.clone());}
+  const transforms:T.Matrix4[]=[];for(let i=0;i<420;i++){const x=gx+rand()*8,z=gz+rand()*8;if(!inWoodland(x,z)||blocked(x,z,.35)||rand()>groundHabitat(x,z).grass*.9)continue;d.position.set(x,h(x,z)-.015,z);d.rotation.set(0,rand()*6.28,0);const size=.65+rand()*.65,distance=shrineDistance(x,z),density=.15+.85*T.MathUtils.smoothstep(distance,10,22);if(noise(x+137,z-41)>density)continue;d.scale.set(size,size*(distance<14?.5:1),size);d.updateMatrix();transforms.push(d.matrix.clone());}
   if(!transforms.length)continue;const patch=new T.InstancedMesh(grassGeo,grassMat,transforms.length);patch.name='Woodland grass patch';transforms.forEach((m,i)=>patch.setMatrixAt(i,m));patch.receiveShadow=true;patch.computeBoundingSphere();patch.boundingSphere!.radius+=.4;patch.userData.fullCount=transforms.length;scene.add(patch);patches.push(patch);centers.push(new T.Vector3(gx+4,h(gx+4,gz+4),gz+4));
  }
  const stats={trees:trees.length,plantTypes:planting.stats.types,grassClumps:patches.reduce((sum,p)=>sum+p.count,0),patches:patches.length};scene.userData.woodland=stats;

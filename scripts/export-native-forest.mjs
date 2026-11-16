@@ -12,7 +12,7 @@ const out='native/assets/deep-forest';
 await fs.mkdir(out,{recursive:true});
 await build({entryPoints:['lib/game/deep-forest-layout.ts'],outfile:'.tools/native-forest-layout.mjs',bundle:true,platform:'node',format:'esm'});
 const source=await import('../.tools/native-forest-layout.mjs');
-const ids=['forest_oak','forest_hornbeam','forest_cedar','forest_fir','forest_spruce','forest_litter','forest_fern','forest_bracken','forest_bramble'];
+const ids=['forest_oak','forest_hornbeam','forest_cedar','forest_fir','forest_spruce','forest_litter','forest_bracken','forest_bramble'];
 const root=new Scene();
 for(const id of ids){
  const bytes=await fs.readFile('assets-source/vegetation/'+id+'.glb');
@@ -56,6 +56,7 @@ placements.trees=placements.trees.map(tree=>{
  }
  throw new Error('Could not place a forest tree without blocking a trail or another trunk');
 });
+if([...placements.trees,...placements.floor].some(p=>!ids.includes(p.id)))throw new Error('Unknown or retired forest plant');
 const encode=p=>[ids.indexOf(p.id),p.x,p.y,p.z,p.scale,p.rotation].map(v=>Math.round(v*10000)/10000);
 const size=241,spacing=3,origin=-360,heights=[];
 for(let z=0;z<size;z++)for(let x=0;x<size;x++)heights.push(source.deepForestHeight(origin+x*spacing,origin+z*spacing));

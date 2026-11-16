@@ -30,7 +30,7 @@ export function deepForestPlacements(){
   const a=random()*Math.PI*2,r=Math.sqrt(random())*300,x=Math.cos(a)*r,z=Math.sin(a)*r,patch=forestPatchNoise(x*.038,z*.038),choice=random();if(forestTrailDistance(x,z)<1.7||Math.hypot(x,z-216)<5||random()>.25+.7*patch)continue;
   const id=choice<.56?'forest_litter':choice<.79?'forest_fern':choice<.96?'forest_bracken':'forest_bramble';floor.push({id,x,z,y:deepForestHeight(x,z)-.02,scale:id==='forest_bramble'?.30+random()*.25:.45+random()*.55,rotation:random()*Math.PI*2});
  }
- return {trees,floor};
+ return {trees,floor:floor.filter(p=>p.id!=='forest_fern')};
 }
 
 export const forestMistPockets=[{x:-25,z:165,r:23},{x:40,z:95,r:29},{x:-100,z:90,r:26},{x:-65,z:-45,r:34},{x:40,z:-20,r:20},{x:112,z:-87,r:28},{x:-155,z:-45,r:31},{x:45,z:-170,r:32},{x:185,z:36,r:25},{x:-15,z:-225,r:29},{x:-210,z:135,r:30},{x:215,z:-170,r:38}];

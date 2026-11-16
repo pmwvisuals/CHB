@@ -11,9 +11,10 @@ import {ForestMist} from '../lib/game/forest-mist';
 import {sampleDayCycle,updateDayCycle,cycleSecondsAtHour} from '../lib/game/day-cycle';
 
 const placements=deepForestPlacements();assert.equal(placements.trees.length,5200);assert.ok(deepForest.radius*2>=500);assert.equal(new Set(placements.trees.map(p=>p.id)).size,5);
+assert.equal(placements.floor.length,15435,'retiring the giant fern retains the other floor placements');
 const heights:Record<string,{min:number;max:number}>={};for(const id of new Set(placements.trees.map(p=>p.id))){const asset=vegetationAssets[id],leaf=unpackPlant(asset.parts.find(p=>p.material==='foliage')!.high);heights[id]={min:leaf.boundingBox!.min.y,max:leaf.boundingBox!.max.y};leaf.dispose();}
 for(const tree of placements.trees){assert.ok(forestTrailDistance(tree.x,tree.z)>=3.7);assert.ok(tree.y<=h(tree.x,tree.z)-.044,'roots are embedded in actual forest terrain');assert.ok(h(tree.x,tree.z)-tree.y<.8);assert.ok(heights[tree.id].max*tree.scale>13&&heights[tree.id].max*tree.scale<23,'overstory trees stand well above the player');assert.ok(heights[tree.id].min*tree.scale>2.4,'existing crown geometry clears standing eye height');}
-assert.ok(placements.floor.every(p=>['forest_fern','forest_bracken','forest_bramble','forest_litter'].includes(p.id)),'no ornamental trees, flowers or meadow grass');
+assert.ok(placements.floor.every(p=>['forest_bracken','forest_bramble','forest_litter'].includes(p.id)),'no ornamental trees, flowers or meadow grass');
 for(const p of placements.floor.filter((_,i)=>i%43===0)){assert.ok(Math.abs(p.y-h(p.x,p.z)+.02)<1e-6);assert.ok(forestTrailDistance(p.x,p.z)>=1.7);}
 for(const axis of ['x','z'] as const){let a=0,b=0;for(const p of placements.trees){const angle=p[axis]/7*Math.PI*2;a+=Math.cos(angle);b+=Math.sin(angle);}assert.ok(Math.hypot(a,b)/placements.trees.length<.08,'tree scatter has no planting rows');}
 assert.ok(forestCanopyCover(140,140)>.75&&forestCanopyCover(-65,-45)<.3,'overstory is dense with occasional sky openings');

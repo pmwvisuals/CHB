@@ -1,4 +1,14 @@
-# Woodland creature material refinement — 16 November 2026
+# Giant fern removal and shrine clearing — 16 November 2026
+
+The giant woodland fern (`forest_fern`, 1.7-metre source asset) is retired from every plant collection and from the camp, forest-belt and Deep Forest placement outputs. The native forest prototype export excludes it, and the unused standalone GLB and manifest entry are removed. Its original authoring source remains archived outside the game. All other Deep Forest floor placements retain their transforms: 15,435 litter, low bracken and bramble placements remain after removing 4,565 giant ferns. All 5,200 forest trees remain.
+
+The Forgotten Shrine has no tall bramble or bracken within twelve metres, and woodland olive trunks stand at least thirteen metres from the shrine. Short grass remains in the forecourt, with density fading outward into the surrounding woodland. Within twenty metres, woodland grass falls from 5,140 to 2,393 placements (53.4% fewer). Runtime camp totals are 31,174 imported grass clumps, 156 shrubs and 264 small flowering bushes. Collision and the contact/canopy shading maps were rebuilt from the current source layout.
+
+107 native assertions passed: 57 camp checks, 33 forest checks, 10 imported-plant checks and seven focused shrine/fern checks. Two player-height shrine views were rendered and inspected using Windows OpenGL. Checks confirm no giant-fern camp draws, no Deep Forest fern prototype or placement, the open shrine forecourt, grounded replacement plants, working map travel and repeated forest entry. TypeScript checking, forest/boundary tests, the browser build and all twelve temple-page checks also passed.
+
+The updated editable archive and `builds/asterion-shrine-vegetation-test.apk` are local test deliverables. Android device performance for this revision has not been measured. Existing creature materials, peaceful behaviour, campfire and Balanced/High settings are preserved.
+
+## Earlier woodland creature material refinement — 16 November 2026
 
 The three supplied creatures now use local non-emissive, nonmetallic material overrides, roughness 0.94 and specular response 0.08. Roughness/metallic texture slots are cleared so their values cannot reintroduce gloss from the imported packed maps. Clearcoat and rim lighting are disabled. The wolf receives a muted grey-blue woodland tint `(0.68,0.72,0.67)`, and the blue boar receives `(0.85,0.88,0.83)`. Diffuse and normal textures continue to provide their source detail. Material overrides keep the original imported resources intact.
 

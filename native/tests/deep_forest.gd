@@ -29,7 +29,7 @@ func run():
 	check(session.data.coins==7 and session.data.xp==11,"Forest migration retains progression")
 	check(forest.player.is_on_floor(),"Player stands on the new forest floor")
 	check(forest.bounds()==275 and not forest.inside_bounds(Vector3(280,0,0)),"Forest has a bounded 550-metre playable diameter")
-	check(forest.tree_count==5200 and forest.floor_count==20000,"Existing trees and woodland floor plants populate the full forest")
+	check(forest.tree_count==5200 and forest.floor_count==15435,"Existing trees and woodland floor plants populate the full forest")
 	check(forest.find_children("ForestGround_*","MeshInstance3D",true,false).size()==36,"Terrain uses shared-edge spatial chunks")
 	check(forest.layout.trails.size()==4 and forest.layout.clearings.size()==6,"Four connected trails serve six clearings")
 	check(forest.environment.ambient_light_energy>.5 and forest.environment.fog_depth_begin>=60,"Canopy shade retains readable daylight and nearby visibility")
@@ -116,7 +116,7 @@ func run():
 	while app.transitioning:
 		await process_frame
 	check(app.world.player.position.distance_to(remembered)<1,"A new forest save restores its exploration position")
-	check(app.world.tree_count==5200 and app.world.floor_count==20000,"Repeated entry reconstructs the complete forest")
+	check(app.world.tree_count==5200 and app.world.floor_count==15435,"Repeated entry reconstructs the complete forest")
 	app.queue_free()
 	for i in range(4):
 		await process_frame

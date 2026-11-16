@@ -18,7 +18,7 @@ export function forestUnderstoryPlacements(){
   if(grass.length<34000)grass.push({id:patch>.6&&random()<.33?'forest_bracken':'camp_grass',x,y,z,rotation,scale:.65+random()*.85});
   if(plants.length<5500&&random()<.23){const choice=random(),id=patch>.48&&choice<.24?'forest_bramble':choice<.58?'forest_fern':choice<.9?'forest_bracken':'forest_litter';plants.push({id,x,y:y-.025,z,rotation,scale:id==='forest_bramble'?.42+random()*.42:.6+random()*.85});}
  }
- return {plants,grass};
+ return {plants:plants.filter(p=>p.id!=='forest_fern'),grass};
 }
 
 export function buildForestUnderstory(scene:T.Scene){

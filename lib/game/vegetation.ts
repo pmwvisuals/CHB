@@ -13,6 +13,8 @@ export function unpackPlant(p:Packed){
  const idxraw=bytes(p.i),g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(positions,3));g.setAttribute('normal',new T.BufferAttribute(normals,3));g.setAttribute('uv',new T.BufferAttribute(uv,2));g.setIndex(new T.BufferAttribute(p.wide?new Uint32Array(idxraw.buffer):new Uint16Array(idxraw.buffer),1));g.computeBoundingSphere();g.computeBoundingBox();return g;
 }
 export function plantCollection(scene:T.Scene,placements:PlantPlacement[],options:{range?:number;canopyLayers?:number;detailedRange?:number;cellSize?:number;widthScale?:number}={}){
+ // Retire the oversized angular fern in every camp/forest collection.
+ placements=placements.filter(p=>p.id!=='forest_fern');
  const geometries=new Map<string,T.BufferGeometry>(),materials=new Map<string,T.MeshStandardMaterial>(),depths:T.MeshDepthMaterial[]=[];
  const atlas=new T.DataTexture(bytes(leafAtlas),leafAtlasSize,leafAtlasSize);atlas.colorSpace=T.SRGBColorSpace;atlas.magFilter=T.LinearFilter;atlas.minFilter=T.LinearMipmapLinearFilter;atlas.generateMipmaps=true;atlas.anisotropy=8;atlas.needsUpdate=true;
  const pixels=new Uint8Array(128*256*4);for(let y=0;y<256;y++)for(let x=0;x<128;x++){const grain=Math.sin(x*.4+Math.sin(y*.07)*1.8)*.5+.5,crack=Math.pow(grain,8),n=Math.sin(x*17.3+y*71.7)*.5+.5,i=(y*128+x)*4,v=.43+.16*n-.27*crack;pixels[i]=v*255;pixels[i+1]=v*211;pixels[i+2]=v*169;pixels[i+3]=255;}
