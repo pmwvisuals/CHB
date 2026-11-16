@@ -57,6 +57,7 @@ func prepare():
 		part.material_override=palette[id]
 		add_child(part)
 	surfaces.clear()
+	install_statue()
 	player=preload("res://scripts/player.gd").new()
 	player.world=self
 	add_child(player)
@@ -70,6 +71,30 @@ func prepare():
 	await get_tree().process_frame
 
 func height(_x:float,_z:float) -> float:return 0.0
+
+func install_statue():
+	# Poseidon's supplied download is incomplete; do not fabricate its mesh.
+	if temple_id not in ["zeus","ares"]:return
+	var statue=load("res://assets/temple-statues/"+temple_id+".glb").instantiate()
+	statue.name="CultStatue"
+	statue.position=Vector3(0,.42,-15)
+	if temple_id=="ares":statue.rotation.y=PI/2
+	add_child(statue)
+	var collider:=CollisionShape3D.new()
+	var shape:=BoxShape3D.new()
+	shape.size=Vector3(3.8,5.8 if temple_id=="zeus" else 4.6,2.8)
+	collider.shape=shape
+	collider.position=statue.position+Vector3.UP*shape.size.y*.5
+	solids.add_child(collider)
+	var light:=SpotLight3D.new()
+	light.position=Vector3(-3,8,-10)
+	light.light_color=Color("eee0c7")
+	light.light_energy=2.0
+	light.spot_range=15
+	light.spot_angle=43
+	light.shadow_enabled=false
+	add_child(light)
+	light.look_at(statue.position+Vector3.UP*2.8)
 func spawn_position() -> Vector3:return Vector3(0,.06,17)
 func inside_bounds(at:Vector3) -> bool:return absf(at.x)<9.5 and at.z> -21 and at.z<23
 func near_gate():return is_instance_valid(player) and player.position.z>17.8

@@ -27,7 +27,7 @@ func run():
 		check(room.find_children("TempleArchitecture_*","MeshInstance3D",true,false).size()==6,id+" batches stone, marble trim, pigment, bronze, timber and clay")
 		check(not room.player.combat_enabled() and not room.player.weapon.visible,id+" is a safe sacred space")
 		check(room.flames.size()==6 and room.find_children("*","OmniLight3D",true,false).size()==7,id+" has six visible oil lamps and a sanctum fill light")
-		check(room.find_children("*statue*","",true,false).is_empty(),id+" contains no statue")
+		check(room.has_node("CultStatue")== (id in ["zeus","ares"]),id+" uses its complete supplied sculpture; incomplete Poseidon stays absent")
 		room.player.hud.open_map()
 		check(not session.paused and not is_instance_valid(room.player.hud.map_panel),"Camp map cannot be opened against a temple scene")
 		room.player.hud.open_journal()

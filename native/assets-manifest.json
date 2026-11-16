@@ -269,6 +269,36 @@
       "bytes": 1982171,
       "sha256": "6ed99c7242d0bf49ca9fcc8b4d1f0eb0d3b616e8a22fb3415ce8f5db31ed446c",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/temple-statues/ares.glb",
+      "bytes": 27667772,
+      "sha256": "86d8ea6ae6734e3e943232b6b319d789a3880267d29a9af9ca9941b57c71ec09",
+      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+    },
+    {
+      "file": "assets/temple-statues/CREDITS.txt",
+      "bytes": 1024,
+      "sha256": "1ce196b71c62b057bb877e46e7f25baf7b7da1868aac7943af52a0e8923797ec",
+      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+    },
+    {
+      "file": "assets/temple-statues/preparation.json",
+      "bytes": 976,
+      "sha256": "847f85d32679f6c356badf4137b4c9f6ac2d4d10640e862c5f2cf9a334a4b50f",
+      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+    },
+    {
+      "file": "assets/temple-statues/trident.glb",
+      "bytes": 23232,
+      "sha256": "5be0771ffb3e1f34248c552e4304d7d32d8ca32aa2a773d33d8ff03040e26b66",
+      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+    },
+    {
+      "file": "assets/temple-statues/zeus.glb",
+      "bytes": 26543352,
+      "sha256": "349acc1b5ad3de79fc4bc5f0eba9ae28ebfd32bd9a5e9ed4ad2be5fec6e0c33e",
+      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
     }
   ]
 }

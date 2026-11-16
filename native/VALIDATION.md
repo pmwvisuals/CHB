@@ -1,3 +1,7 @@
+# Supplied temple sculptures — 17 November 2026
+
+Prepared and installed the complete Zeus OBJ/textures and Ares GLB on their temple daises. Corrected Zeus source up-axis and Ares entrance orientation. Added collision, localized statue lighting, original texture adaptation and credits. The trident is prepared but not placed separately. Poseidon is blocked by a truncated 2.9 MB download whose GLB header declares 39.9 MB. The original source files are retained under assets-source/temple-statues. Ares is CC BY-NC 4.0; Zeus rights are unverified. See TEMPLES.md and the asset credits.
+
 # Deepwood exploration contracts and discovery rewards — 17 November 2026
 
 Four numbered stone survey marks now occupy the entrance trail, eastern ridge, wolf-grove rim and northern-hollow rim. Two optional contracts, Read the Woods and The Lost Survey, unlock independently of the hunting story after training and then the first survey respectively. The existing one-active-contract rule, camp-only acceptance/claiming and safe-return requirement remain. The Journal labels exploration contracts, names explicit prerequisites, displays saved discovery counts, offers directions before discovery and preserves site history afterward.
