@@ -39,7 +39,7 @@ func _ready():
 	for index in range(world.destinations.size()):
 		var destination:Dictionary = world.destinations[index]
 		var button := Button.new()
-		button.text = str(index+1)+"  "+destination.name
+		button.text = str(index+1)+"  "+destination.name+("\nCOMING SOON" if destination.temple and destination.id not in Session.OPEN_TEMPLES else "")
 		button.custom_minimum_size = Vector2(182,68)
 		button.add_theme_font_size_override("font_size",17)
 		button.pressed.connect(choose.bind(destination))

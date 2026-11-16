@@ -1,7 +1,7 @@
 extends Node
 
 # Compile scripts on the main thread before requesting heavy scene resources.
-const REGION_SCRIPTS = [preload("res://scripts/camp_region.gd"),preload("res://scripts/forest_region.gd")]
+const REGION_SCRIPTS = [preload("res://scripts/camp_region.gd"),preload("res://scripts/forest_region.gd"),preload("res://scripts/temple_region.gd")]
 
 var world
 var loading_path := ""
@@ -64,7 +64,7 @@ func _ready():
 		travel.call_deferred("camp")
 
 func travel(zone:String):
-	if transitioning or zone not in ["camp","forest"]:
+	if transitioning or zone not in ["camp","forest","temple"]:
 		return
 	transitioning = true
 	if is_instance_valid(world):
@@ -78,7 +78,7 @@ func travel(zone:String):
 	play.visible = false
 	progress.visible = true
 	progress.value = 0
-	detail.text = "Loading woodland…" if zone == "forest" else "Loading sanctuary…"
+	detail.text = "Loading woodland…" if zone == "forest" else "Loading sacred hall…" if zone=="temple" else "Loading sanctuary…"
 	# Release the previous region before requesting the next one.
 	await get_tree().process_frame
 	Session.data.zone = zone

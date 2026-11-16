@@ -1,3 +1,19 @@
+# Deepwood exploration contracts and discovery rewards — 17 November 2026
+
+Four numbered stone survey marks now occupy the entrance trail, eastern ridge, wolf-grove rim and northern-hollow rim. Two optional contracts, Read the Woods and The Lost Survey, unlock independently of the hunting story after training and then the first survey respectively. The existing one-active-contract rule, camp-only acceptance/claiming and safe-return requirement remain. The Journal labels exploration contracts, names explicit prerequisites, displays saved discovery counts, offers directions before discovery and preserves site history afterward.
+
+First discoveries grant 10/15/20/25 XP and 0/5/8/12 gold. Survey completions grant 65 XP/25 gold and 110 XP/50 gold. Unique receipts prevent re-reading, travel or reload from paying twice. Early discovery receipts populate objectives when their contracts are accepted. Session transactions save receipts, progression and rewards together; save failure restores the previous state. Save migration preserves old quests, loot, currency and supplies. The new discovery dictionary accepts only known boolean receipts.
+
+120 checks passed: 23 exploration rules/save checks, 22 actual-scene exploration/Journal checks, 36 existing adventure-rule checks and 39 existing combat/gameplay checks. Real scene checks cover all four marker positions, terrain alignment, generous distance from automatic creature notice at the two deep sites, distance/facing limits, wall obstruction, pause/combat guards, actual Interact rewards, Journal count/history, a safe camp return, one-time claim, forest re-entry and existing caches. Player-height cairn and Expedition Record screenshots were rendered and inspected. Legacy Journal acceptance checks select the intended quest by stable metadata now that two branches can be offered.
+
+The markers use shared low-complexity procedural meshes and ordinary materials with bounded display distances. No terrain, vegetation or external model changes are included. The complete native archive and signed ARM32/ARM64 `builds/asterion-deepwood-exploration-test.apk` include this revision. Physical Android performance and sustained play remain unmeasured for these additions.
+
+## Earlier checkpoints
+
+# Three ancient temple interiors — 17 November 2026
+
+Zeus, Ares and Poseidon open from camp into separate safe interior scenes; the other nine show Coming Soon. Weathered limestone, restrained marble altars/capitals, dark timber coffers, aged bronze, clay offerings and distinct reliefs replace the initial bright palace palette. No statues are created. Forty-one focused temple/travel/UI checks and the existing camp suite pass. Three player-height views were rendered on Windows OpenGL. Mobile performance remains unmeasured for this revision. See TEMPLES.md.
+
 # Simplified central road junction — 16 November 2026
 
 The arrival junction around `(0,32)` uses one rectangular 30-by-26-metre paved court. Its footprint covers the small pointed grass islands and suppresses road borders inside the court. A single outside outline joins the surrounding roads with crossing openings. The court is stamped onto the actual terrain, shares walkable collision with the paving, and clears vegetation through the source reservation and road-cover mask. The compact camp boundary and structure placements are unchanged.

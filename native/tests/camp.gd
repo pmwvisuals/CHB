@@ -38,7 +38,7 @@ func run():
 		await frames(35)
 		check(player.is_on_floor() and player.position.y>-5,"Safe walkable arrival: "+destination.name)
 		if destination.temple:
-			check(camp.interaction_text().begins_with("Read "),"Temple inscription: "+destination.name)
+			check((camp.interaction_text().begins_with("Enter ") if destination.id in session.OPEN_TEMPLES else "Coming soon" in camp.interaction_text()),"Temple availability: "+destination.name)
 			var site:Dictionary = camp.layout.temples.filter(func(t): return t.id == destination.id)[0]
 			var direction := Vector3(site.x-player.position.x,0,site.z-player.position.z).normalized()
 			check((-player.global_basis.z).dot(direction)>.98,"Travel faces the temple: "+destination.name)

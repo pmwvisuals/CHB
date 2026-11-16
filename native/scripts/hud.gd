@@ -61,7 +61,7 @@ func _ready():
 	plate.size = Vector2(402,116)
 	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(plate)
-	var title := label_at(root,"ASTERION  /  " + ("DEEPWOOD" if world.forest else "SANCTUARY"),Vector2(30,22),21)
+	var title := label_at(root,"ASTERION  /  " + (world.theme.name if Session.data.zone=="temple" else "DEEPWOOD" if world.forest else "SANCTUARY"),Vector2(30,22),21)
 	title.add_theme_font_override("font",preload("res://fonts/Cinzel.ttf"))
 	title.add_theme_color_override("font_color",Color("dfc991"))
 	health = label_at(root,"",Vector2(30,57),17)
@@ -116,7 +116,7 @@ func _ready():
 	pin(pause,Control.PRESET_TOP_RIGHT,Rect2(-86,22,62,54))
 	var journal_button:=button(root,"JOURNAL",Vector2.ZERO,Vector2(112,54),open_journal)
 	pin(journal_button,Control.PRESET_TOP_RIGHT,Rect2(-316,22,112,54))
-	if not world.forest:
+	if Session.data.zone=="camp":
 		var map_button := button(root,"MAP",Vector2.ZERO,Vector2(90,54),open_map)
 		pin(map_button,Control.PRESET_TOP_RIGHT,Rect2(-190,22,90,54))
 	training_panel = Control.new()
@@ -217,7 +217,7 @@ func open_graphics():
 	add_child(graphics_panel)
 
 func open_map():
-	if world.forest or Session.paused:
+	if Session.data.zone!="camp" or Session.paused:
 		return
 	Session.paused = true
 	Session.clear_touch()
@@ -251,7 +251,7 @@ func _unhandled_input(event):
 		get_viewport().set_input_as_handled()
 		if is_instance_valid(journal_panel):close_journal()
 		elif not Session.paused:open_journal()
-	if event.is_action_pressed("camp_map") and not world.forest:
+	if event.is_action_pressed("camp_map") and Session.data.zone=="camp":
 		get_viewport().set_input_as_handled()
 		open_map()
 
@@ -262,7 +262,7 @@ func _process(delta):
 	var rules=Session.RULES
 	var level:int=rules.level(Session.data.xp)
 	health.text="LV %d · VITALITY %d / %d · %d GOLD"%[level,Session.data.health,rules.max_health(Session.data),Session.data.coins]
-	info.text=(world.danger_name() if world.forest else "TRAINING · PRACTICE" if armed else "SANCTUARY · SAFE")+" · %d XP"%Session.data.xp
+	info.text=(world.danger_name() if world.forest else "TRAINING · PRACTICE" if armed else "SACRED HALL · SAFE" if Session.data.zone=="temple" else "SANCTUARY · SAFE")+" · %d XP"%Session.data.xp
 	var previous:int=0 if level==1 else rules.threshold(level-1)
 	xp_meter.max_value=rules.threshold(level)-previous
 	xp_meter.value=Session.data.xp-previous

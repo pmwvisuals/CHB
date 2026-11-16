@@ -1,8 +1,9 @@
 extends Node
 
+const OPEN_TEMPLES := ["zeus","ares","poseidon"]
 const SAVE := "user://sanctuary-save.json"
 var save_path := SAVE
-var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":"","forest_layout":"","adventure":{}}
+var data := {"zone":"camp", "coins":0, "xp":0, "health":100.0, "time":480.0, "positions":{}, "training":{},"graphics_quality":"","temple":"poseidon","forest_layout":"","adventure":{}}
 const RULES := preload("res://scripts/adventure_rules.gd")
 var recovering := false
 var heal_requested := false
@@ -113,7 +114,7 @@ func load_game():
 					data[key] = maxi(0,int(parsed[key]))
 				elif typeof(parsed[key]) == typeof(data[key]):
 					data[key] = parsed[key]
-			if data.zone not in ["camp","forest"]:
+			if data.zone not in ["camp","forest","temple"]:
 				data.zone = "camp"
 			ensure_adventure()
 			data.health = clampf(data.health,1,RULES.max_health(data)) if is_finite(data.health) else 100.0
@@ -155,6 +156,11 @@ func clear_touch():
 	heal_requested = false
 	interact_requested = false
 	sprint_requested = false
+
+func enter_temple(id:String):
+	if id not in OPEN_TEMPLES or data.zone!="camp":return
+	data.temple=id
+	change_zone("temple")
 
 func change_zone(zone:String):
 	if is_instance_valid(app):
@@ -256,3 +262,9 @@ func recover_at_camp():
 	data.positions.erase("camp")
 	message="You were rescued. Recover in camp; your XP, gold and quest progress are safe."
 	change_zone("camp")
+
+func discover_site(id:String) -> bool:
+	if data.zone!="forest" or paused or recovering:return false
+	var before:=data.duplicate(true)
+	if not RULES.discover(data,id):return false
+	return commit_adventure(before)

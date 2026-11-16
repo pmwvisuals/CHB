@@ -326,7 +326,7 @@ func interaction_text() -> String:
 	if near_gate():
 		return "Enter the woodland"
 	var temple := near_temple()
-	return "Read "+temple.name+" inscription" if not temple.is_empty() else ""
+	return ("Enter "+temple.name if temple.id in Session.OPEN_TEMPLES else temple.name+" · Coming soon") if not temple.is_empty() else ""
 
 func interact():
 	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:
@@ -337,7 +337,8 @@ func interact():
 		return
 	var temple := near_temple()
 	if not temple.is_empty():
-		Session.message = temple.name+" — "+temple.description
+		if temple.id in Session.OPEN_TEMPLES:Session.enter_temple(temple.id)
+		else:Session.message=temple.name+" · Coming soon. Zeus, Ares and Poseidon are open."
 
 func travel_to(destination:Dictionary):
 	var point:Vector2 = destination.point

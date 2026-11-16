@@ -14,13 +14,14 @@ func text(value:String,size:int=18) -> Label:
 	content.add_child(label)
 	return label
 
-func action(value:String,callback:Callable,enabled:bool=true):
+func action(value:String,callback:Callable,enabled:bool=true) -> Button:
 	var button:=Button.new()
 	button.text=value
 	button.custom_minimum_size.y=48
 	button.disabled=not enabled
 	button.pressed.connect(callback)
 	content.add_child(button)
+	return button
 
 func _ready():
 	theme=Session.ui_theme
@@ -65,7 +66,7 @@ func rebuild():
 	var level:=RULES.level(Session.data.xp)
 	text("LEVEL %d  ·  %d XP  ·  %d GOLD  ·  VITALITY %d / %d"%[level,Session.data.xp,Session.data.coins,Session.data.health,RULES.max_health(Session.data)])
 	text("Complete contracts, collect caches and return to camp. Quest progress and rewards save on this device.",16)
-	notice=text("Return to camp to accept quests, claim rewards and buy supplies." if world.forest else "Camp quest board · Accept one contract at a time.",16)
+	notice=text("Return to camp to accept quests, claim rewards and buy supplies." if Session.data.zone!="camp" else "Camp quest board · Accept one contract at a time.",16)
 	var ordered:Array=RULES.QUESTS.duplicate()
 	ordered.sort_custom(func(a,b):
 		var sa:String=Session.data.adventure.quests[a.id].state
@@ -76,7 +77,7 @@ func rebuild():
 	)
 	for q in ordered:
 		var state:Dictionary=Session.data.adventure.quests[q.id]
-		text(q.title+(" · REPEATABLE" if q.get("repeatable",false) else ""),22)
+		text(q.title+(" · REPEATABLE" if q.get("repeatable",false) else " · EXPLORATION" if q.get("kind","")=="EXPLORATION" else ""),22)
 		if state.state=="claimed" and not q.get("repeatable",false):
 			text("COMPLETED",16)
 			continue
@@ -85,14 +86,20 @@ func rebuild():
 			text("%s  %d / %d"%[o[2],state.progress[o[0]],o[1]],16)
 		text("Reward · %d XP · %d gold"%[q.xp,q.gold],16)
 		if state.state=="active":
-			action("CLAIM REWARD IN CAMP" if RULES.ready(Session.data,q) else "QUEST IN PROGRESS",func():Session.claim_quest(q.id);rebuild(),not world.forest and RULES.ready(Session.data,q))
+			action("CLAIM REWARD IN CAMP" if RULES.ready(Session.data,q) else "QUEST IN PROGRESS",func():Session.claim_quest(q.id);rebuild(),Session.data.zone=="camp" and RULES.ready(Session.data,q))
 		elif state.state=="claimed" and not q.get("repeatable",false):
 			text("COMPLETED",16)
 		else:
 			var available:bool=RULES.unlocked(Session.data,q.id)
-			action("ACCEPT CONTRACT" if available else "LOCKED · Complete the previous contract",func():Session.accept_quest(q.id);rebuild(),available and RULES.active(Session.data).is_empty() and not world.forest)
+			action("ACCEPT CONTRACT" if available else RULES.unlock_hint(q),func():Session.accept_quest(q.id);rebuild(),available and RULES.active(Session.data).is_empty() and Session.data.zone=="camp").set_meta("quest_id",q.id)
+	text("EXPEDITION RECORD",22)
+	text("%d / %d survey marks recorded · First discoveries grant one-time XP and gold."%[Session.data.adventure.discoveries.size(),RULES.DISCOVERIES.size()],17)
+	for site in RULES.DISCOVERIES:
+		var found:bool=Session.data.adventure.discoveries.has(site.id)
+		text(site.name+(" · RECORDED" if found else " · UNDISCOVERED"),20)
+		text(site.lore if found else site.hint,17)
 	text("CAMP SUPPLIES",22)
 	text("Healing draughts · %d / %d carried · Restores 40 vitality. Camp restores vitality for free."%[Session.data.adventure.potions,RULES.POTION_LIMIT],17)
-	action("BUY DRAUGHT · %d GOLD"%RULES.POTION_PRICE,func():Session.buy_draught();rebuild(),not world.forest and Session.data.coins>=RULES.POTION_PRICE and Session.data.adventure.potions<RULES.POTION_LIMIT)
+	action("BUY DRAUGHT · %d GOLD"%RULES.POTION_PRICE,func():Session.buy_draught();rebuild(),Session.data.zone=="camp" and Session.data.coins>=RULES.POTION_PRICE and Session.data.adventure.potions<RULES.POTION_LIMIT)
 	text("Deepwood guide",22)
-	text("The entrance is safe. The southern trails lead to boar clearings. The central groves hide a wolf and a mantis; the northern hollow holds the sealed cache. Stronger creatures reward more XP and gold. Wind-ups last 0.75 seconds: sidestep before the strike. Sword and bow are available in the forest. Defeat returns you to camp with earned progress intact.",17)
+	text("The entrance is safe. The southern trails lead to boar clearings. The central groves hide a wolf; a mantis guards the northern hollow and its sealed cache. Survey marks reveal the woodland history. Inspect them with Interact / E when nearby; finish or escape an encounter before stopping to read. Stronger creatures reward more XP and gold. Wind-ups last 0.75 seconds: sidestep before the strike. Sword and bow are available in the forest. Defeat returns you to camp with earned progress intact.",17)
