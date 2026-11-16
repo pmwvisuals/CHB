@@ -1,3 +1,13 @@
+# Continuous limestone road outline — 16 November 2026
+
+Individual Greek-key road blocks are replaced by a continuous low bevelled limestone ribbon. Adjacent sections share vertices; the outline follows the original route curves and terrain. Spatial road queries leave crossings open. Short rectangular returns connect nearby outline ends at tight triangular grass-island tips, avoiding pointed decorative wedges. No legacy road-block batches remain in the exported camp. The former garden courts stay removed.
+
+TypeScript, road/landscape geometry checks, browser build and all temple-page checks pass. The existing 57 camp checks and eleven physical temple-approach checks passed before the final corner-return adjustment; only the decorative outline changed in that adjustment. Native player-height junction views were inspected. Quest, journal, economy and forest gameplay from the current checkpoint are retained. Native collision, surface cells and contact/canopy lighting were regenerated.
+
+The editable archive and `builds/asterion-road-outline-test.apk` contain this revision. Android device performance has not been measured for this edging change.
+
+## Earlier checkpoints
+
 # First playable adventure chapter — 16 November 2026
 
 See [ADVENTURE.md](ADVENTURE.md). The native game now includes three story quests, one repeatable hunting contract, level progression, gold, healing inventory/shop, three persistent one-time caches, and four forest PvE encounters using the existing models. Camp and the woodland entrance stay safe. The imported mantis guards the northern hollow so danger increases deeper in the forest.

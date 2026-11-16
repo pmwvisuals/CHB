@@ -193,9 +193,9 @@
       "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting"
     },
     {
-      "bytes": 57194016,
+      "bytes": 61104804,
       "file": "assets/camp/camp-static.glb",
-      "sha256": "edaa9c887cc42f053a77e2d37fb4f5d7fb2306acbe699caf8a5d5b6afdf0ea53",
+      "sha256": "f87e0d9942ee78306a2910e34dfba477c3f707d06c2bd127a355221dbd09d23a",
       "source": "generated from lib/game browser sources"
     },
     {
@@ -241,21 +241,21 @@
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 5226674,
+      "bytes": 4892394,
       "file": "assets/camp/camp-layout.json",
-      "sha256": "61dcffb87a4734ae99d40f50c2d1a0c98949496d22077ec431ea25abefaef05e",
+      "sha256": "00965dba9940fd78eccf5806fd3476d3e34b92b25f48af9e1005cca2aaeb202f",
       "source": "generated from lib/game browser sources"
     },
     {
       "bytes": 2470577,
       "file": "assets/camp/camp-physics.scn",
-      "sha256": "719167beefd7e743185ddb9904ae9ffeca5e90204fd4c9d7af50df3e3b66b179",
+      "sha256": "f4953d644181c7d61c0fa29d443bbc3829839c05e5ab0ab0fc7135ac9bce1834",
       "source": "exact collision faces from camp-collision.glb; physics only"
     },
     {
       "file": "assets/atmosphere/bake-report.json",
       "bytes": 563,
-      "sha256": "cad07a5c844b82349899fa1e6c869df0d080ba9faeae7ee86ea9b31b20cb792b",
+      "sha256": "cc73484bbc7899806875210be070f1635301bc09b1a4e5a1999d457f1b77fcbc",
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {

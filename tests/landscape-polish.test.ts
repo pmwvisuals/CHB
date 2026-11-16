@@ -20,8 +20,10 @@ const cross=roadBorderPlacements([{points:[new T.Vector3(0,0,-20),new T.Vector3(
 for(const p of cross)assert.ok(p.route===0?Math.abs(p.z)>=2.84:Math.abs(p.x)>=2.84,'crossroads remain open');
 const kerb=roadKerbGeometry();assert.ok(kerb.boundingBox!.max.y<.2&&kerb.boundingBox!.max.z<.51,'low chamfered road edging fits its spacing');assert.equal(kerb.getAttribute('position').count,kerb.getAttribute('color').count);
 const scene=new T.Scene();buildRoadBorders(scene,routes);
-const blocks=scene.getObjectByName('Greek-key limestone road borders') as T.InstancedMesh,matrix=new T.Matrix4(),position=new T.Vector3();
-for(let i=0;i<blocks.count;i+=13){blocks.getMatrixAt(i,matrix);position.setFromMatrixPosition(matrix);assert.ok(Math.abs(position.y-groundHeight(position.x,position.z)+.02)<.0001,'every block follows the actual terrain');}
+const matrix=new T.Matrix4(),position=new T.Vector3();
+const outline=scene.getObjectByName('Continuous limestone road outline') as T.Mesh;
+assert.ok(outline&&!scene.getObjectByName('Greek-key limestone road borders'),'road uses a connected stone outline rather than instanced blocks');
+const outlinePoints=outline.geometry.getAttribute('position');for(let i=0;i<outlinePoints.count;i+=13){const y=outlinePoints.getY(i)-groundHeight(outlinePoints.getX(i),outlinePoints.getZ(i));assert.ok(y>.02&&y<.2,'continuous outline follows the hills');}
 for(const kind of ['daisy','poppy','lavender'] as const){const g=flowerGeometry(kind),p=g.getAttribute('position');assert.ok(p.count>500&&p.count<4000,'modelled botanical detail has a shared geometry budget');assert.ok(Array.from(p.array).every(Number.isFinite));assert.ok(g.boundingBox!.min.y===0&&g.boundingBox!.max.y>.5,'complete rooted stems and raised flower heads');g.dispose();}
 const flowers=buildFlowers(scene,[{x:-30,z:60,scale:1,rotation:0,kind:'daisy'},{x:10,z:20,y:5,scale:.7,rotation:1,kind:'lavender'}]);
 const daisies=scene.getObjectByName('Living flowers · daisy') as T.InstancedMesh;daisies.getMatrixAt(0,matrix);position.setFromMatrixPosition(matrix);assert.ok(Math.abs(position.y-groundHeight(-30,60)+.012)<.00001,'flowers are planted at terrain height');

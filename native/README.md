@@ -1,6 +1,6 @@
 # Asterion Sanctuary — native prototype
 
-The first playable adventure chapter is available: **Journal → A Steady Hand** begins three story quests and a repeatable patrol. Train, hunt four forest creatures with sword or bow, collect caches, earn XP/gold and buy healing supplies in camp. Levels, quests, inventory and rewards save locally. See [ADVENTURE.md](ADVENTURE.md) for controls, rules and the test coverage. Visual work is paused; known Android performance/loading limitations remain.
+The first playable adventure chapter is available: **Journal → A Steady Hand** begins three story quests and a repeatable patrol. Train, hunt four forest creatures with sword or bow, collect caches, earn XP/gold and buy healing supplies in camp. Levels, quests, inventory and rewards save locally. See [ADVENTURE.md](ADVENTURE.md) for controls, rules and the test coverage. Known Android performance/loading limitations remain.
 
 Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset import to finish, then press **F5** and choose **Enter Sanctuary**. No Blender plug-ins are required to run it.
 
@@ -9,6 +9,8 @@ This checkpoint transfers the browser camp's exterior layout into Godot: terrain
 Standing eye height is 1.82 m above the physical walking surface. Arrival Ridge now lands four metres forward, on the camp-facing side of the crest, with approximately 40 cm paving stones and shallower surface relief. Spawn, map travel and recovery of old positions resolve the actual paved floor. Old saves at the former arrival recover to the crest. Roads and soil fit the terrain triangles, removing intersecting sand fragments at training and the raised bank across the lake entrance. The causeway remains continuously walkable.
 
 ## Included
+
+Road edging now uses a continuous low limestone ribbon instead of separate Greek-key blocks. Shared vertices follow the curves and hills. Road crossings remain open, with short rectangular returns closing tight grass-island tips.
 
 Temple approach paving continues through the last six metres to the entrance ramps, aligned with each front gate. Rounded road terminals soften joins, and junction clearance uses the full paved width when placing limestone edging. The four circular flower courts, including their soil overlays, fountains, planting and surrounding blocks, are temporarily removed. Arbor walks remain.
 
@@ -26,7 +28,7 @@ The Deepwood Gate leads to the first large native forest landscape, with a 550-m
 
 The amphitheatre campfire uses the supplied textured flame artwork over the existing logs and stone ring. Thirteen subdivided flame cards share one 1,274-triangle mesh. Individual flames curl, stretch and rise at different phases, with upward texture flow and a gently flickering warm light. Anchored roots and a continuous flame core keep it burning. Atlas bounds prevent the animated sampling from picking up neighbouring smoke or images. Rebuild the fire with `scripts/blender/prepare_campfire.py` after extracting the supplied Blender and Textures archives into `assets-source/campfire/`.
 
-The native camp now uses the supplied grass and flower-bush packs: 21,501 grass placements, 103 camp shrubs and 204 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles and low bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-shrine-relocation-test.apk`; its device performance has not yet been measured.
+The native camp now uses the supplied grass and flower-bush packs: 21,501 grass placements, 103 camp shrubs and 204 small flowering bushes. Camp grass, garden beds and lakeside planting are replaced; the dark forest trees, brambles and low bracken remain. Root positions follow the hills. Materials use cutout transparency, original-resolution shared textures and GPU compression. The source packs are user-supplied third-party assets. The current Android candidate is `builds/asterion-road-outline-test.apk`; its device performance has not yet been measured.
 
 The complete editable archive includes the prepared plant GLB, textures and compression import settings. To regenerate them from the supplied packs, run `scripts/blender/prepare_imported_plants.py`, import the native project in Godot, run `scripts/configure-imported-plant-textures.py`, import again and rerun the configuration script to refresh manifest hashes. Source files are retained in `assets-source/imported-plants/`.
 
@@ -139,7 +141,7 @@ Hephaestus has exactly two brass oil lanterns on raised entrance plinths. Their 
 
 ## Xiaomi device test
 
-The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-shrine-relocation-test.apk`.
+The M2010J19SG loaded High after disabling MSAA on Android Compatibility. Models, textures and lighting remain; edge smoothing changes. The user confirmed walking, jumping and map travel, but Arrival Ridge is only about 2.8 FPS. Memory held around 550–568 MiB PSS during the sampled session. This remains a test build requiring substantial rendering optimization. See [XIAOMI-TEST.md](XIAOMI-TEST.md). The installed candidate is `builds/asterion-road-outline-test.apk`.
 
 ## Rendering profile and optimization
 
