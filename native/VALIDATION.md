@@ -1,4 +1,10 @@
-# Three supplied forest creatures — 15 November 2026
+# Woodland creature material refinement — 16 November 2026
+
+The three supplied creatures now use local non-emissive, nonmetallic material overrides, roughness 0.94 and specular response 0.08. Roughness/metallic texture slots are cleared so their values cannot reintroduce gloss from the imported packed maps. Clearcoat and rim lighting are disabled. The wolf receives a muted grey-blue woodland tint `(0.68,0.72,0.67)`, and the blue boar receives `(0.85,0.88,0.83)`. Diffuse and normal textures continue to provide their source detail. Material overrides keep the original imported resources intact.
+
+All 14 focused material assertions passed across initial forest entry and re-entry. Checks cover emission, metallic response, roughness, specular limits, clearcoat/rim flags, wolf tint and matching original diffuse/normal texture references. Three idle creature views, walking wolf/boar views and the credits screen were rendered through the Windows display driver and inspected in the actual forest lighting. This change adjusts the supplied animals' materials. Device frame rate and memory remain untested for this revision. The current Android candidate is `builds/asterion-creature-materials-test.apk`.
+
+## Earlier three supplied forest creatures — 15 November 2026
 
 One Magic Wolf, mutant mantis and fantasy blue boar now accompany the original Ash-Tusk Boar in separate Deepwood clearings. Source skin poses are measured once during setup to normalize their scales and align the feet. Target overall heights are 2.1 m, 2.8 m and 1.6 m respectively. Wolf and blue boar follow short routes with idle pauses; the mantis uses its single supplied animation at the ridge. The placement pass retains peaceful behaviour. Model rendering hides beyond 105 m and returns below 95 m. Animation and actor simulation suspend beyond 75 m and while paused.
 

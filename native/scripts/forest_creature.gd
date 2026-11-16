@@ -62,10 +62,18 @@ func _ready():
 			var key:int = original.get_instance_id()
 			if not materials.has(key):
 				var material = original.duplicate()
-				material.metallic_specular = .2
-				material.roughness = maxf(.7,material.roughness)
-				if definition.id in ["MutantMantis","FantasyBoar"]:
-					material.metallic = 0
+				material.emission_enabled = false
+				material.metallic = 0
+				material.metallic_texture = null
+				material.metallic_specular = .08
+				material.roughness = .94
+				material.roughness_texture = null
+				material.clearcoat_enabled = false
+				material.rim_enabled = false
+				if definition.id=="MagicWolf":
+					material.albedo_color *= Color(.68,.72,.67)
+				elif definition.id=="FantasyBoar":
+					material.albedo_color *= Color(.85,.88,.83)
 				materials[key] = material
 			part.set_surface_override_material(surface,materials[key])
 
