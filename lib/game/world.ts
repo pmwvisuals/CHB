@@ -4,7 +4,7 @@ import * as T from 'three';
 import { Octree } from 'three/addons/math/Octree.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { groundHeight as h, landmarks } from './data';
-import { buildWoodland, inWoodland } from './woodland';
+import {forgottenShrine,shrineDistance,shrinePoint} from './shrine-layout';
 import type { Settings } from './data';
 import { gardenGrass, plantCollection, forestTreeIds, type PlantPlacement } from './vegetation';
 import { terrainGeometry,groundMaterial,groundHabitat } from './landscape';
@@ -111,7 +111,7 @@ export function buildWorld(): World {
   const ep:number[]=[];for(let i=0;i<65;i++)ep.push((rand()-.5)*3,rand()*6,(rand()-.5)*3);
   const eg=new T.BufferGeometry();eg.setAttribute('position',new T.Float32BufferAttribute(ep,3));const embers=new T.Points(eg,new T.PointsMaterial({color:'#ffcc73',size:.09,transparent:true,opacity:.8}));embers.position.set(0,1,-62);scene.add(embers);
   // Forest shrine, flowering terraces and entrance architecture.
-  const shrine=group(-40,-108);box(shrine,0,.12,0,7,.24,6,stone,true);for(const x of [-2.7,2.7]){cyl(shrine,x,2.3,-1,.3,4.3,trim);box(shrine,x,2.3,-1,.5,4.3,.5,trim,true);}roof(shrine,7,4,4.4,'#939d8b');box(shrine,0,.6,-.6,2,1.2,1.2,stone,true);const shrineMark=text('REMEMBER THE GODS',3);shrineMark.position.set(0,3.7,.9);shrine.add(shrineMark);
+  const shrine=group(forgottenShrine.x,forgottenShrine.z);shrine.rotation.y=forgottenShrine.rotation;box(shrine,0,.12,0,7,.24,6,stone,true);for(const x of [-2.7,2.7]){cyl(shrine,x,2.3,-1,.3,4.3,trim);box(shrine,x,2.3,-1,.5,4.3,.5,trim,true);}roof(shrine,7,4,4.4,'#939d8b');box(shrine,0,.6,-.6,2,1.2,1.2,stone,true);const shrineMark=text('REMEMBER THE GODS',3);shrineMark.position.set(0,3.7,.9);shrine.add(shrineMark);
   for(let row=0;row<7;row++)for(let j=0;j<32;j++){
    const x=-81+row*2.4+Math.sin(j*2.399+row)*.5,z=68.5+j*.48+Math.cos(row*2.4+j)*.14;
    flowerPlacements.push({x,z,scale:.95+(j%4)*.12,rotation:j*2.399,kind:row%3===0?'lavender':row%3===1?'daisy':'poppy'});
@@ -126,13 +126,13 @@ export function buildWorld(): World {
   const gate=group(0,98);for(const x of [-4.5,4.5]){box(gate,x,3.4,0,.55,6.8,.55,wood,true);lantern(gate,x,4, .4);}box(gate,0,6.3,0,10.5,.6,.55,wood);const gs=text('ASTERION SANCTUARY',9);gs.position.set(0,6.3,.31);gate.add(gs);
   // Paths are kept clear; all vegetation is deterministic and instanced.
   function nearPath(x:number,z:number,extra=0){return paths.some(p=>p.points.some(q=>Math.hypot(q.x-x,q.z-z)<p.width*.75+extra));}
-  function reserved(x:number,z:number){return inMainLandmark(x,z,1)||inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x,z+62)<18 || Math.hypot(x+40,z+108)<7 || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
+  function reserved(x:number,z:number){return inMainLandmark(x,z,1)||inGardenCourt(x,z,1) || insideTempleGrounds(x,z,2) || Math.hypot(x,z)<14 || Math.hypot(x+55,z-50)<16 || Math.hypot(x-46,z-43)<17 || Math.hypot(x,z+62)<18 || shrineDistance(x,z)<forgottenShrine.clearingRadius || ((x-91)/36)**2+(z/52)**2<1 || (x>-88&&x<-60&&z>65&&z<88) || (Math.abs(x)<9&&z>95);}
   const plants:PlantPlacement[]=buildCampGardens(scene,collision,flowerPlacements),planted:{x:number;z:number}[]=[];
-  for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(!insideCamp(x,z)||inWoodland(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(Math.abs(x)<40&&z>-35&&z<95)continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
+  for(let i=0;i<520;i++){const x=(rand()-.5)*290,z=(rand()-.5)*290;if(!insideCamp(x,z)||reserved(x,z)||nearPath(x,z,4)||planted.some(p=>Math.hypot(p.x-x,p.z-z)<10))continue;if(Math.abs(x)<40&&z>-35&&z<95)continue;if(z>-65&&Math.abs(x)<105&&rand()>.28)continue;
    const forest=z<-65||Math.abs(x)>105,scale=forest?.9+rand()*.1:.84+rand()*.16;planted.push({x,z});plants.push({id:forest?(forestDepth(x,z)>=.35?forestTreeIds[Math.floor(rand()*forestTreeIds.length)]:'camp_olive'):(i%2?'camp_olive':'camp_blossom'),x,y:h(x,z),z,scale,rotation:rand()*6.28});
    const c=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));c.position.set(x,h(x,z)+1.2,z);collision.add(c);
   }
-  for(let i=0;i<2600;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(!insideCamp(x,z)||inWoodland(x,z)||nearPath(x,z,.8)||rand()>groundHabitat(x,z).bush*.85)continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
+  for(let i=0;i<2600;i++){const x=(rand()-.5)*220,z=(rand()-.5)*250;if(!insideCamp(x,z)||nearPath(x,z,.8)||rand()>groundHabitat(x,z).bush*.85)continue;const forest=z<-72||Math.abs(x)>103;if(reserved(x,z))continue;plants.push({id:forest?(i%3===0?'forest_bramble':i%3===1?'forest_fern':'forest_bracken'):(i%4===0?'camp_laurel':i%4===1?'camp_myrtle':i%4===2?'camp_grass':'camp_flowers'),x,y:h(x,z),z,scale:.6+rand()*.45,rotation:rand()*6.28});}
   for(const theme of templeCatalog){const p=templePlacement(theme.id);for(const side of [-1,1]){const lx=side*5.4,lz=9.2,x=p.x+Math.cos(p.rotation)*lx+Math.sin(p.rotation)*lz,z=p.z-Math.sin(p.rotation)*lx+Math.cos(p.rotation)*lz;plants.push({id:theme.id==='aphrodite'||theme.id==='hera'?'camp_myrtle':'camp_laurel',x,y:h(x,z),z,scale:.28,rotation:p.rotation});}}
   for(const id of ['ares','artemis','dionysus'] as const){const site=templeSites[id],grove:{x:number;z:number}[]=[];for(let i=0;i<110&&grove.length<48;i++){const angle=rand()*Math.PI*2,r=Math.sqrt(24**2+rand()*(44**2-24**2)),x=site.x+Math.sin(angle)*r,z=site.z+Math.cos(angle)*r;if(forestDepth(x,z)<.35||!insideCamp(x,z,2)||nearPath(x,z,3)||insideTempleGrounds(x,z,2)||grove.some(p=>Math.hypot(p.x-x,p.z-z)<3))continue;grove.push({x,z});plants.push({id:forestTreeIds[Math.floor(rand()*forestTreeIds.length)],x,y:h(x,z),z,scale:.86+rand()*.14,rotation:rand()*Math.PI*2});const c=new T.Mesh(new T.CylinderGeometry(.12,.19,2.5,8));c.position.set(x,h(x,z)+1.2,z);collision.add(c);}}
   for(const [i,p] of plants.entries())if(p.id==='camp_flowers')flowerPlacements.push({x:p.x,z:p.z,scale:p.scale,rotation:p.rotation,kind:i%3===0?'lavender':i%3===1?'daisy':'poppy'});
@@ -142,7 +142,7 @@ export function buildWorld(): World {
   let fi=0;
   const up=new T.Vector3(0,1,0),normal=new T.Vector3(),tilt=new T.Quaternion(),turn=new T.Quaternion();
   for(let i=0;i<145000&&(gi<18000||wi<3200);i++){
-   const x=(rand()-.5)*340,z=(rand()-.5)*340,habitat=groundHabitat(x,z);if(!insideCampTerrain(x,z,-1)||inWoodland(x,z)||Math.hypot(x,z)<12.5||nearPath(x,z,.45)||(reserved(x,z)&&Math.hypot(x,z)>12.5)||rand()>habitat.grass*(.42+.48*habitat.patch))continue;
+   const x=(rand()-.5)*340,z=(rand()-.5)*340,habitat=groundHabitat(x,z);if(!insideCampTerrain(x,z,-1)||Math.hypot(x,z)<12.5||nearPath(x,z,.45)||(reserved(x,z)&&Math.hypot(x,z)>12.5)||rand()>habitat.grass*(.42+.48*habitat.patch))continue;
    const d=.35;normal.set(h(x-d,z)-h(x+d,z),d*2,h(x,z-d)-h(x,z+d)).normalize();tilt.setFromUnitVectors(up,normal);turn.setFromAxisAngle(up,rand()*Math.PI*2);dummy.position.set(x,h(x,z)+.006,z);dummy.quaternion.copy(tilt).multiply(turn);
    const tuft=.68+rand()*.72;dummy.scale.set(tuft*(.78+rand()*.38),tuft*(.72+rand()*.64),tuft*(.78+rand()*.38));dummy.updateMatrix();
    if(gi<18000)grass.setMatrixAt(gi++,dummy.matrix);
@@ -152,9 +152,8 @@ export function buildWorld(): World {
   grass.count=gi;wisps.count=wi;grass.receiveShadow=wisps.receiveShadow=true;scene.add(grass,wisps);
   const flowers=buildFlowers(scene,flowerPlacements);
   const reedGeo=new T.CylinderGeometry(.025,.04,1.8,5),reeds=new T.InstancedMesh(reedGeo,mat('#49633c'),300);let reedCount=0;for(let i=0;i<300;i++){const a=rand()*Math.PI*2,x=91+Math.cos(a)*(32+rand()),z=Math.sin(a)*(48+rand()),scale=.7+rand()*.6,lean=(rand()-.5)*.2;if(inMainLandmark(x,z,.5)||Math.abs(z-5)<3)continue;dummy.position.set(x,Math.max(h(x,z),.18)+.85*scale,z);dummy.scale.setScalar(scale);dummy.rotation.set(.1,0,lean);dummy.updateMatrix();reeds.setMatrixAt(reedCount++,dummy.matrix);}reeds.count=reedCount;scene.add(reeds);
-  const woodland=buildWoodland(scene,collision,(x,z,pad)=>reserved(x,z)||nearPath(x,z,pad)||(Math.abs(x+40)<2+pad&&z>-108&&z<-92));
   // Discovery plaques sit at the shared map coordinates.
-  for(const l of landmarks){const x=l.id==='cabins'?12:l.id==='lake'?54.5:l.id==='training'?-58:l.x+2.5,z=l.id==='cabins'?12:l.id==='lake'?9:l.id==='training'?-13:l.z;const s=sign(l.name.toUpperCase(),x,z,0,3.5);s.userData.landmark=l.id;}
+  for(const l of landmarks){const x=l.id==='cabins'?12:l.id==='lake'?54.5:l.id==='training'?-58:l.id==='shrine'?shrinePoint(4.8,4.2).x:l.x+2.5,z=l.id==='cabins'?12:l.id==='lake'?9:l.id==='training'?-13:l.id==='shrine'?shrinePoint(4.8,4.2).z:l.z;const s=sign(l.name.toUpperCase(),x,z,l.id==='shrine'?forgottenShrine.rotation:0,3.5);s.userData.landmark=l.id;}
   // The physical perimeter follows the compact forest, behind its first trees.
   const perimeter=boundaryContour();
   for(let i=0;i<perimeter.length;i++){
@@ -171,13 +170,13 @@ export function buildWorld(): World {
   surface.dispose();delete scene.userData.terrainSurface;
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps];
-  return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{woodland.setQuality(q);planting.setQuality(q);},update(time,camera){
-    atmosphere.update(time,camera);campLighting.update(camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);woodland.update(time,camera);planting.update(time,camera);flowers.update(time,camera);
+  return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{planting.setQuality(q);},update(time,camera){
+    atmosphere.update(time,camera);campLighting.update(camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);planting.update(time,camera);flowers.update(time,camera);
     flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
     const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
     (water.material as T.MeshStandardMaterial).roughness=.17+Math.sin(time*.4)*.012;
     meadow.update(time);
-  },dispose(){atmosphere.dispose();forestBorder.dispose();woodland.dispose();planting.dispose();flowers.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points||o instanceof T.Line){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};
+  },dispose(){atmosphere.dispose();forestBorder.dispose();planting.dispose();flowers.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points||o instanceof T.Line){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};
 }
 
 

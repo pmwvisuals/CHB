@@ -1,4 +1,5 @@
 import {templeSites,sitePlacement} from './sanctuary-layout';
+import {forgottenShrine,shrineDistance} from './shrine-layout';
 import {dockWalkHeight} from './landmark-layout';
 export type Quality = 'low' | 'medium' | 'high';
 export interface Settings { sensitivity: number; volume: number; quality: Quality; headBob: boolean }
@@ -10,7 +11,7 @@ export const landmarks = [
   { id: 'lake', name: 'The Mirror Lake', subtitle: 'Still waters, old stories', x: 64, z: 5, text: 'Follow the shore to the open marble pavilion or the timber boat dock. Canoes rock against their moorings, reeds catch the breeze, and the causeway leads to the island sanctuary. Even heroes need somewhere quiet.' },
   { id: 'training', name: 'The Training Grounds', subtitle: 'Discipline before glory', x: -67, z: -20, text: 'A bronze-marked sparring court, three archery lanes and straw practice dummies form the sanctuary’s training yard. Spears and shields wait in the shaded equipment pavilion. Here, patience and practice matter as much as courage.' },
   { id: 'fire', name: 'The Amphitheatre', subtitle: 'An ember of belonging', x: 0, z: -62, text: 'When training ends, residents gather around these flames. For now, listen to the fire and watch the sparks drift into the evening.' },
-  { id: 'shrine', name: 'The Forgotten Shrine', subtitle: 'Some paths reward curiosity', x: -40, z: -108, text: 'A small marble shrine rests beneath the forest canopy. Someone has left flowers here. You have found the quietest corner of the sanctuary.' },
+  { id: 'shrine', name: 'The Forgotten Shrine', subtitle: 'Some paths reward curiosity', x: forgottenShrine.x, z: forgottenShrine.z, text: 'A small marble shrine rests among the dark trees at the sanctuary boundary. Its quiet clearing rewards those who follow the narrow path into the woods.' },
 ] as const;
 export const poseidonTemple=sitePlacement('poseidon');
 export const temples = [
@@ -24,7 +25,7 @@ export function groundHeight(x: number, z: number) {
   const smooth=(a:number,b:number,t:number)=>{t=Math.max(0,Math.min(1,(t-a)/(b-a)));return t*t*(3-2*t);};
   // Blend softly back to existing foundations, lake and arrival route.
   let influence=smooth(42,54,Math.hypot(x,z));
-  for(const [cx,cz,r] of [[-55,50,17],[46,43,18],[-67,-34,20],[0,-62,18],[-40,-108,8],[-40,-121,7],[-76,77,16]])influence*=smooth(r,r+12,Math.hypot(x-cx,z-cz));
+  for(const [cx,cz,r] of [[-55,50,17],[46,43,18],[-67,-34,20],[0,-62,18],[-40,-121,7],[-76,77,16]])influence*=smooth(r,r+12,Math.hypot(x-cx,z-cz));
   influence*=smooth(1,1.35,((x-91)/37)**2+(z/54)**2);
   influence*=1-smooth(77,94,z)*(1-smooth(12,26,Math.abs(x)));
   const hill=(cx:number,cz:number,height:number,r:number)=>height*Math.exp(-((x-cx)**2+(z-cz)**2)/(r*r));
@@ -40,6 +41,8 @@ export function groundHeight(x: number, z: number) {
   elevation+=.9*Math.exp(-Math.pow((Math.sqrt(lake)-1.04)/.09,2));
   const belvedere=1-smooth(5,9,Math.hypot(x-65,z-35));elevation=elevation*(1-belvedere)+.9*belvedere;
   const island=1-smooth(13.5,17,Math.hypot(x-templeSites.poseidon.x,z-templeSites.poseidon.z));elevation=elevation*(1-island)+templeSites.poseidon.height*island;
+  const shrineBlend=1-smooth(6,11,shrineDistance(x,z));
+  elevation=elevation*(1-shrineBlend)+forgottenShrine.height*shrineBlend;
   return elevation;
 }
 export function outdoorWalkHeight(x:number,z:number){if(Math.abs(z-5)<1.8&&x>=55&&x<=84.7)return x<64?(groundHeight(55,5)+.05)*(1-(x-55)/9)+1.15*(x-55)/9:1.15;return dockWalkHeight(x,z,groundHeight)??groundHeight(x,z);}

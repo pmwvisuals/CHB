@@ -1,4 +1,5 @@
 import {CatmullRomCurve3,Vector3} from 'three';
+import {shrineTrail} from './shrine-layout';
 /** The same routes drive ground surfaces, vegetation clearance and the map. */
 export const campRoutes=[
  {name:'Arrival walk',width:5.5,points:[[0,122],[0,96],[3,76],[0,52],[0,15],[0,0]]},
@@ -9,6 +10,7 @@ export const campRoutes=[
  {name:'Training walk',width:3.4,points:[[-28,0],[-44,-8],[-62,-14],[-67,-20]]},
  {name:'Ember walk',width:3.6,points:[[0,-28],[0,-38],[0,-49]]},
  {name:'Forest walk',width:2.5,points:[[-17,-23],[-25,-47],[-24,-75],[-40,-96],[-40,-108]]},
+ {name:'Shrine trail',width:1.65,points:shrineTrail},
  {name:'Garden walk',width:2.8,points:[[-55,64],[-91,62],[-93,87],[-68,92],[-32,88],[0,96]]},
  {name:'Eastern promenade',width:3.2,points:[[46,55],[61,49],[57,27],[48,15],[55,5]]},
  {name:'Lakeside pavilion walk',width:2.6,points:[[55,5],[55,14],[58,25],[65,29],[65,35]]},

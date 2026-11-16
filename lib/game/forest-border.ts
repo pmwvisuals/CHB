@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {forgottenShrine,shrineDistance,shrineApproachDistance} from './shrine-layout';
 import {groundHeight} from './data';
 import {insideTempleGrounds} from './sanctuary-layout';
 import {roadCover} from './ground-surface';
@@ -13,7 +14,7 @@ export function forestBorderPlacements(){
  const cells=new Map<string,PlantPlacement[]>(),cellSize=3.2;
  const place=(px:number,pz:number,edge=false)=>{
   const patch=forestPatch(px,pz);
-  if(forestDepth(px,pz)<.35||!insideCamp(px,pz,3)||insideTempleGrounds(px,pz,-1)||roadCover(px,pz)>.05)return;
+  if(shrineApproachDistance(px,pz)<4.5||shrineDistance(px,pz)<forgottenShrine.clearingRadius||forestDepth(px,pz)<.35||!insideCamp(px,pz,3)||insideTempleGrounds(px,pz,-1)||roadCover(px,pz)>.05)return;
   if(!edge&&(random()>.25+patch*.75||(patch<.26&&random()<.65)))return;
   const cx=Math.floor(px/cellSize),cz=Math.floor(pz/cellSize),spacing=2.0+(1-patch)*1.3;let crowded=false;
   for(let dx=-1;dx<=1&&!crowded;dx++)for(let dz=-1;dz<=1&&!crowded;dz++)for(const p of cells.get(`${cx+dx}:${cz+dz}`)||[]){if(Math.hypot(px-p.x,pz-p.z)<spacing){crowded=true;break;}}

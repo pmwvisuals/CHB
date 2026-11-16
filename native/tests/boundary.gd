@@ -82,7 +82,7 @@ func run():
 	check(camp.key_light.sky_mode==DirectionalLight3D.SKY_MODE_LIGHT_ONLY,"The built-in second solar disc remains disabled")
 	var spheres := 0
 	for part in camp.find_children("*","MeshInstance3D",true,false):
-		if part.mesh is SphereMesh:
+		if part.mesh is SphereMesh and part.global_position.y-camp.height(part.global_position.x,part.global_position.z)>30:
 			spheres += 1
 	check(spheres==0,"No moon or celestial orbit meshes return")
 	app.queue_free()

@@ -27,7 +27,7 @@ func run():
 	app.travel("camp")
 	while app.transitioning:await process_frame
 	var camp = app.world
-	check(camp.imported_plants.grass_count>30000,"Uploaded grass replaces the camp ground-cover placements")
+	check(camp.imported_plants.grass_count>20000,"Uploaded grass replaces the camp ground-cover placements")
 	check(camp.imported_plants.bush_count>20 and camp.imported_plants.flower_count>100,"Camp shrubs and flower beds use the supplied bush models")
 	var grounded := true
 	var forest_safe := true

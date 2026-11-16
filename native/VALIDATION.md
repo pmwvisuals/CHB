@@ -1,3 +1,15 @@
+# Forgotten Shrine moved into the boundary forest — 16 November 2026
+
+The shrine now stands at `(-92,-155)`, rotated toward the camp, inside the northwestern boundary forest between Zeus and Hephaestus. Its small level clearing has an 8.5-metre radius. The narrow 1.65-width source approach, discovery coordinates, inscription and sign share the new site. Nearby tree roots leave 4.5 metres of approach clearance so crowns do not obstruct the view. The native export records the same shrine metadata. The former shrine at `(-40,-108)` and its bespoke woodland overlay are removed from the camp; the normal grass and scattered planting fill that area. Deepwood Gate and the rounded 125,186-square-metre map outline remain unchanged. The legacy standalone browser woodland page retains its own builder.
+
+Native scenery, physics, surface cells, habitat and contact/canopy lighting were rebuilt. All 92 native checks passed: 57 camp regressions, nine shrine relocation checks, ten plant checks and sixteen boundary checks. Physical rays verify that the new foundation collides at the visible platform and the old altar has disappeared. Player-height approach, forecourt and former-site views were rendered and inspected. Source checks verify forest placement, level foundations, surrounding trees, unobstructed planting, continuous road coverage and the unchanged boundary. TypeScript, the browser build, forest/boundary tests and all twelve temple pages pass.
+
+The remaining camp planting uses 21,501 imported grass clumps, 103 shrubs and 204 small flowering bushes. The grass budget check now allows removal of the old dense grove. The boundary test limits its celestial-sphere check to high-altitude objects so local forge flames do not produce a false failure.
+
+The updated candidate is `builds/asterion-shrine-relocation-test.apk`. Android device performance for this change remains unmeasured. The complete editable project includes the prepared camp assets and scripts.
+
+## Earlier checkpoints
+
 # Camp road joins and temple approaches — 16 November 2026
 
 All eleven land temple approaches now extend from their former 16-metre endpoints to local z=9.8, overlapping the entrance ramp at z=10. A waypoint at z=16 aligns the final approach. Browser rendering, walkable collision, vegetation road masks and exported map routes share these extensions. Poseidon retains its dedicated causeway. Road terminal footprints receive rounded caps, and road-border junction rejection uses the full paved width plus block clearance. The four circular flower courts are temporarily removed, including soil overlays, planting, fountains and edging; arbor walks remain.

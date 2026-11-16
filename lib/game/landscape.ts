@@ -15,7 +15,7 @@ export function landNoise(x:number,z:number){const ix=Math.floor(x),iz=Math.floo
 export function groundHabitat(x:number,z:number){
  const warpX=x+8*landNoise(x*.027+19,z*.027),warpZ=z+8*landNoise(x*.031,z*.031+31);
  const patch=.72*landNoise(warpX*.065,warpZ*.065)+.28*landNoise(x*.19+9,z*.19);
- const forest=Math.max(1-smooth(23,42,Math.hypot(x+40,z+96)),1-smooth(-90,-62,z),smooth(99,124,Math.abs(x)));
+ const forest=Math.max(1-smooth(-90,-62,z),smooth(99,124,Math.abs(x)));
  const grass=surfaceCover(x,z)*(.85+.15*patch),bush=smooth(.54,.74,patch)*grass;
  return {grass,bush,forest,patch};
 }
