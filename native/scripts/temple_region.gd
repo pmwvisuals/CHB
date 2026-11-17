@@ -73,16 +73,23 @@ func prepare():
 func height(_x:float,_z:float) -> float:return 0.0
 
 func install_statue():
-	# Poseidon's supplied download is incomplete; do not fabricate its mesh.
-	if temple_id not in ["zeus","ares"]:return
+	if temple_id not in Session.OPEN_TEMPLES:return
 	var statue=load("res://assets/temple-statues/"+temple_id+".glb").instantiate()
 	statue.name="CultStatue"
 	statue.position=Vector3(0,.42,-15)
 	if temple_id=="ares":statue.rotation.y=PI/2
 	add_child(statue)
+	if temple_id=="poseidon":
+		var marble:=ShaderMaterial.new()
+		marble.shader=preload("res://shaders/temple_stone.gdshader")
+		marble.set_shader_parameter("stone_tint",Color("a4a5a1"))
+		marble.set_shader_parameter("marble",true)
+		marble.set_shader_parameter("grain",.045)
+		for part in statue.find_children("Poseidon_Marble*","MeshInstance3D",true,false):
+			part.material_override=marble
 	var collider:=CollisionShape3D.new()
 	var shape:=BoxShape3D.new()
-	shape.size=Vector3(3.8,5.8 if temple_id=="zeus" else 4.6,2.8)
+	shape.size=Vector3(3.8,4.6 if temple_id=="ares" else 5.8,3.4 if temple_id=="poseidon" else 2.8)
 	collider.shape=shape
 	collider.position=statue.position+Vector3.UP*shape.size.y*.5
 	solids.add_child(collider)

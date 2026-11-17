@@ -27,7 +27,15 @@ func run():
 		check(room.find_children("TempleArchitecture_*","MeshInstance3D",true,false).size()==6,id+" batches stone, marble trim, pigment, bronze, timber and clay")
 		check(not room.player.combat_enabled() and not room.player.weapon.visible,id+" is a safe sacred space")
 		check(room.flames.size()==6 and room.find_children("*","OmniLight3D",true,false).size()==7,id+" has six visible oil lamps and a sanctum fill light")
-		check(room.has_node("CultStatue")== (id in ["zeus","ares"]),id+" uses its complete supplied sculpture; incomplete Poseidon stays absent")
+		check(room.has_node("CultStatue"),id+" uses its complete supplied sculpture")
+		if id=="poseidon":
+			var stone=room.get_node("CultStatue").find_children("Poseidon_Marble*","MeshInstance3D",true,false)
+			var trident=room.get_node("CultStatue").find_children("Trident_Attached*","MeshInstance3D",true,false)
+			check(stone.size()==1 and trident.size()==1,"Poseidon and the attached trident share one imported model")
+			if stone.size()==1:
+				var mat:ShaderMaterial=stone[0].material_override
+				var tint:Color=mat.get_shader_parameter("stone_tint")
+				check(absf(tint.r-tint.b)<.03 and mat.get_shader_parameter("marble"),"Poseidon uses neutral ash marble rather than the original blue material")
 		room.player.hud.open_map()
 		check(not session.paused and not is_instance_valid(room.player.hud.map_panel),"Camp map cannot be opened against a temple scene")
 		room.player.hud.open_journal()

@@ -1,6 +1,6 @@
 """Prepare the user-supplied sculptures; never read a partial download as a GLB."""
 from pathlib import Path
-import bpy, json, zipfile, io, shutil, hashlib
+import bpy, json, zipfile, io, shutil, hashlib, runpy
 from mathutils import Vector
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -65,6 +65,10 @@ for name,path,height in [('zeus',SOURCE/'zeus/Zeus_300k_ZR.OBJ',6.0),('ares',SOU
     report[name]={'height':height,'source_bounds':[list(lo),list(hi)],'meshes':len(meshes),'bytes':(OUT/(name+'.glb')).stat().st_size}
     print('STATUE',name,json.dumps(report[name]))
 
+(OUT/'preparation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
+if (SOURCE/'poseidon.glb').exists():
+    runpy.run_path(str(ROOT/'scripts/blender/prepare_poseidon.py'),run_name='__main__')
+
 (OUT/'CREDITS.txt').write_text('''User-supplied temple sculptures
 
 Zeus: supplied zeus.zip; OBJ, MTL and two original texture tiles.
@@ -78,14 +82,14 @@ Noncommercial prototype use only. Textures resized, mesh simplified and scale ad
 Trident by Finn the Demon Cat
 https://sketchfab.com/3d-models/trident-66d41b0b9115486f9ec5112902028d1d
 CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
-Scale adapted; prepared for attaching to the Poseidon model when download completes.
+Scaled, turned and attached to Poseidon's lower hand as part of the combined sculpture.
 
-Poseidon is NOT included: Unconfirmed 673757.crdownload has only 2,870,766 of
-39,891,876 declared bytes. It cannot be imported or combined with the trident.
-Header identifies Revopoint 3D, CC BY 4.0:
+Poseidon statue - 3D Scanned by Revopoint Trackit, by Revopoint 3D
 https://sketchfab.com/3d-models/poseidon-statue-3d-scanned-by-revopoint-trackit-13793d04fd974061aeaec2f68ce57648
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Complete supplied scan: 39,891,876 bytes. Mesh simplified, pedestal leveled,
+blue source material replaced by ash-grey marble, and the separate trident attached.
 ''',encoding='utf-8')
-(OUT/'preparation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 manifest_path=ROOT/'native/assets-manifest.json'
 manifest=json.loads(manifest_path.read_text(encoding='utf-8'))
 manifest['assets']=[a for a in manifest['assets'] if not a['file'].startswith('assets/temple-statues/')]

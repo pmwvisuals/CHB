@@ -11,9 +11,10 @@ Noncommercial prototype use only. Textures resized, mesh simplified and scale ad
 Trident by Finn the Demon Cat
 https://sketchfab.com/3d-models/trident-66d41b0b9115486f9ec5112902028d1d
 CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
-Scale adapted; prepared for attaching to the Poseidon model when download completes.
+Scaled, turned and attached to Poseidon's lower hand as part of the combined sculpture.
 
-Poseidon is NOT included: Unconfirmed 673757.crdownload has only 2,870,766 of
-39,891,876 declared bytes. It cannot be imported or combined with the trident.
-Header identifies Revopoint 3D, CC BY 4.0:
+Poseidon statue - 3D Scanned by Revopoint Trackit, by Revopoint 3D
 https://sketchfab.com/3d-models/poseidon-statue-3d-scanned-by-revopoint-trackit-13793d04fd974061aeaec2f68ce57648
+CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+Complete supplied scan: 39,891,876 bytes. Mesh simplified, pedestal leveled,
+blue source material replaced by ash-grey marble, and the separate trident attached.

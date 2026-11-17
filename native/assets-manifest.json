@@ -271,34 +271,40 @@
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "file": "assets/temple-statues/ares.glb",
       "bytes": 27667772,
+      "file": "assets/temple-statues/ares.glb",
       "sha256": "86d8ea6ae6734e3e943232b6b319d789a3880267d29a9af9ca9941b57c71ec09",
-      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     },
     {
+      "bytes": 1116,
       "file": "assets/temple-statues/CREDITS.txt",
-      "bytes": 1024,
-      "sha256": "1ce196b71c62b057bb877e46e7f25baf7b7da1868aac7943af52a0e8923797ec",
-      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+      "sha256": "7597c6755a436b5aa61aec02a140ca09f7eb268ce88d6f944d50483b4f688968",
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     },
     {
+      "bytes": 7504232,
+      "file": "assets/temple-statues/poseidon.glb",
+      "sha256": "45d517be915bfc2d48a4c2f60f6ede4342f8c6124723fd4324a020e7140b503c",
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
+    },
+    {
+      "bytes": 1451,
       "file": "assets/temple-statues/preparation.json",
-      "bytes": 976,
-      "sha256": "847f85d32679f6c356badf4137b4c9f6ac2d4d10640e862c5f2cf9a334a4b50f",
-      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+      "sha256": "9b4d5579782301cfece71d1af5af7a24931037256d9831b8b1828af0c5f5d2ff",
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     },
     {
-      "file": "assets/temple-statues/trident.glb",
       "bytes": 23232,
+      "file": "assets/temple-statues/trident.glb",
       "sha256": "5be0771ffb3e1f34248c552e4304d7d32d8ca32aa2a773d33d8ff03040e26b66",
-      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     },
     {
-      "file": "assets/temple-statues/zeus.glb",
       "bytes": 26543352,
+      "file": "assets/temple-statues/zeus.glb",
       "sha256": "349acc1b5ad3de79fc4bc5f0eba9ae28ebfd32bd9a5e9ed4ad2be5fec6e0c33e",
-      "source": "User-supplied temple models; scripts/blender/prepare_temple_statues.py; see CREDITS.txt"
+      "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     }
   ]
 }

@@ -49,5 +49,24 @@
     ],
     "meshes": 17,
     "bytes": 23232
+  },
+  "poseidon": {
+    "source_bytes": 39891876,
+    "source_triangles": 1485025,
+    "triangles": 219982,
+    "base_normal": [
+      -0.06471262872219086,
+      -0.3402157425880432,
+      0.9381181001663208
+    ],
+    "grip_blender": [
+      -0.07999999821186066,
+      0.019999999552965164,
+      2.9100000858306885
+    ],
+    "trident_height": 6.7,
+    "material": "neutral ash-grey marble; aged bronze trident",
+    "meshes": 2,
+    "bytes": 7504232
   }
 }
