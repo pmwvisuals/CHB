@@ -4,6 +4,22 @@ Imported the complete 39,891,876-byte Revopoint scan, replaced its blue finish w
 
 The 43 real-renderer temple checks pass, covering all three supplied statues, combined Poseidon/trident nodes, ash-marble material, floor contact, safe controls, return travel, scene release and all twelve entrance statuses. Player-height views were rendered on Windows OpenGL and inspected. Android performance is not measured by these checks. The new export uses the existing optimized ARM32/ARM64 template and local test signing key.
 
+# Rectangular camp street network — 17 November 2026
+
+Camp route sampling now uses straight axis-aligned legs and exact right-angle corners rather than Catmull-Rom curves. The main promenade forms a rectangular loop, Arrival Walk is straight, and a short street reaches Deepwood Gate. Square-ended rectangles supply the actual pavement and its walking collision. The border is extracted from their combined occupied footprint, including the central court, so only exposed edges receive limestone and no internal intersection kerbs remain. The vegetation road mask and exported map routes follow the same layout. Collinear reversals retain their outer endpoint, including Apollo's alignment waypoint.
+
+The browser game/walking suite passed across the main camp routes, including lakeside, dock and training access. TypeScript, rectangular-route/union tests, landscape geometry and compact-boundary checks pass. Native camp and physical temple-approach checks verify the prepared build; player-height intersection views were inspected. The lakeside route stays on the shore before turning toward its pavilion, and temple approach paving is wider to bridge rectangular turns. The existing camp footprint and buildings are retained.
+
+The editable project and `builds/asterion-rectangular-roads-test.apk` contain the new paving, outline, collision, map data, habitat and contact/canopy shading. Physical Android performance for this road rebuild remains unmeasured.
+
+## Earlier checkpoints
+
+# Poseidon ash-marble sculpture and fitted trident — 17 November 2026
+
+Imported the complete 39,891,876-byte Revopoint scan, replaced its blue finish with neutral ash-grey marble, leveled the scanned base and fitted the separately supplied trident through the lower fist with an outward lean. The assembly is one GLB with two meshes. The scan falls from 1,485,025 to 219,982 triangles; original face, beard and cloth detail remain visible in the inspected Blender and temple renders. An editable assembly is preserved under assets-source/temple-statues. Both CC BY 4.0 source attributions and adaptations are included in the asset credits and pause screen.
+
+The 43 real-renderer temple checks pass, covering all three supplied statues, combined Poseidon/trident nodes, ash-marble material, floor contact, safe controls, return travel, scene release and all twelve entrance statuses. Player-height views were rendered on Windows OpenGL and inspected. Android performance is not measured by these checks. The new export uses the existing optimized ARM32/ARM64 template and local test signing key.
+
 # Supplied temple sculptures — 17 November 2026
 
 Prepared and installed the complete Zeus OBJ/textures and Ares GLB on their temple daises. Corrected Zeus source up-axis and Ares entrance orientation. Added collision, localized statue lighting, original texture adaptation and credits. The trident is prepared but not placed separately. Poseidon is blocked by a truncated 2.9 MB download whose GLB header declares 39.9 MB. The original source files are retained under assets-source/temple-statues. Ares is CC BY-NC 4.0; Zeus rights are unverified. See TEMPLES.md and the asset credits.

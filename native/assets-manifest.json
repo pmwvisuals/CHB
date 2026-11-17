@@ -193,84 +193,6 @@
       "source": "Extracted from supplied GLBs; original resolution, VRAM compression import setting"
     },
     {
-      "bytes": 61233528,
-      "file": "assets/camp/camp-static.glb",
-      "sha256": "eee73b821e24a2f04009e7f346500a053ba76aba9d2892a03d24368c79474d9f",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 13598060,
-      "file": "assets/camp/camp-prototypes.glb",
-      "sha256": "5f0f835b634a0e5fab1ff2f2a3a6feb016d0378977a628706d22de7d7d6ba53f",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 20873624,
-      "file": "assets/camp/camp-collision.glb",
-      "sha256": "2d89788e8a034c03fafb02087db8cef6a9d7ec748587761acd7a31dde781863f",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 157,
-      "file": "assets/camp/surface-cells.json",
-      "sha256": "1d639e019ebac285671c4f1d2553c68e3461dde0917637d5e562139053f81f63",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 70974,
-      "file": "assets/camp/habitat.png",
-      "sha256": "5f76559de7134b726a51d83302a484a1595e1405630a0a371809baa290c1c281",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 770172,
-      "file": "assets/camp/ground-albedo.png",
-      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 1268157,
-      "file": "assets/camp/ground-normal.png",
-      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 498771,
-      "file": "assets/camp/ground-roughness.png",
-      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 4889463,
-      "file": "assets/camp/camp-layout.json",
-      "sha256": "f6d35c1682bde7d27c91cf0aa4bc6f29ed50eea0e4259143cb53a759d23eb9ee",
-      "source": "generated from lib/game browser sources"
-    },
-    {
-      "bytes": 2479755,
-      "file": "assets/camp/camp-physics.scn",
-      "sha256": "92762bd767efc310e3d5055bc74f72c10e3fc601b59b7f1ead1c4972244bfeb6",
-      "source": "exact collision faces from camp-collision.glb; physics only"
-    },
-    {
-      "file": "assets/atmosphere/bake-report.json",
-      "bytes": 563,
-      "sha256": "f92da1bf36146aefdc6376cd296163e28b9f1342ac8df2e53a2bc41d43b9a505",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "file": "assets/atmosphere/cloud-banks.png",
-      "bytes": 81676,
-      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "file": "assets/atmosphere/ground-light.png",
-      "bytes": 1982171,
-      "sha256": "6ed99c7242d0bf49ca9fcc8b4d1f0eb0d3b616e8a22fb3415ce8f5db31ed446c",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
       "bytes": 27667772,
       "file": "assets/temple-statues/ares.glb",
       "sha256": "86d8ea6ae6734e3e943232b6b319d789a3880267d29a9af9ca9941b57c71ec09",
@@ -305,6 +227,84 @@
       "file": "assets/temple-statues/zeus.glb",
       "sha256": "349acc1b5ad3de79fc4bc5f0eba9ae28ebfd32bd9a5e9ed4ad2be5fec6e0c33e",
       "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
+    },
+    {
+      "bytes": 55538544,
+      "file": "assets/camp/camp-static.glb",
+      "sha256": "641b4621bb5d033b09edf859bd6c039d510b5c5d612707703ae9e573cd8cf705",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 13598064,
+      "file": "assets/camp/camp-prototypes.glb",
+      "sha256": "bf2c04519035acb593005122ec429095e9c492116c27081b810b60fd4dec8999",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 17332848,
+      "file": "assets/camp/camp-collision.glb",
+      "sha256": "bf17bc330d1b70ed754cacf1c6b38819b71a3f8992038a6d571056a83dfbc726",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 157,
+      "file": "assets/camp/surface-cells.json",
+      "sha256": "b1f6ca4bd45d713df5aa4adac589e56d8bf9996a94ba81a623c0a077aba7bf76",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 69414,
+      "file": "assets/camp/habitat.png",
+      "sha256": "4f4383a66f639e3936e4da670aa3429cd6dcd05f4e3c2e6c31063cb7b0f97d60",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 770172,
+      "file": "assets/camp/ground-albedo.png",
+      "sha256": "3293929d9867481a5fdaafecff89d440073b1ee041ceca530a8bab9c809ebb5a",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1268157,
+      "file": "assets/camp/ground-normal.png",
+      "sha256": "4c67efe91b9c6cac3c92efab35c03865e8199f6218fed93a55fc0054e3dac487",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 498771,
+      "file": "assets/camp/ground-roughness.png",
+      "sha256": "c4366e69bab874f411a5178b5cdd2af89c0893f7624ccac8e2e986363fe91289",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 4831553,
+      "file": "assets/camp/camp-layout.json",
+      "sha256": "d0a65985caf7c458de5dfe58d7c3167dc8989c009815db069cf762d282b8c650",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1956004,
+      "file": "assets/camp/camp-physics.scn",
+      "sha256": "1ec3a41f9883ab2cc258e7657eacb8ad0d64bdf510c180a44a5a46e609cfd024",
+      "source": "exact collision faces from camp-collision.glb; physics only"
+    },
+    {
+      "file": "assets/atmosphere/bake-report.json",
+      "bytes": 563,
+      "sha256": "d680626c5128238e1b84c5338c7a4b717821c51d0032d173138b6665377fc457",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/cloud-banks.png",
+      "bytes": 81676,
+      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/ground-light.png",
+      "bytes": 2002791,
+      "sha256": "171f35ff96624ca2b31f4c72265da13ee4c8cda7b4b9306e0906b1612fcdd9af",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     }
   ]
 }

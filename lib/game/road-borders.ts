@@ -1,7 +1,8 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {groundHeight as h} from './data';
-import {insideCentralCourt,centralCourtOutline} from './camp-layout';
+import {centralCourt} from './camp-layout';
+import {roadRectangles,rectangleOutline} from './rectangular-roads';
 
 export interface BorderRoute {points:T.Vector3[];width:number}
 export interface RoadKerb {x:number;z:number;route:number;side:number;forward:T.Vector3}
@@ -63,43 +64,16 @@ export function buildLimestoneBlocks(scene:T.Scene,placements:Pick<RoadKerb,'x'|
 
 /** A connected bevelled stone ribbon; joints share vertices instead of separate blocks. */
 export function continuousRoadBorderGeometry(routes:BorderRoute[]){
- const vertices:number[]=[],indices:number[]=[];let runs=0;const ends:{x:number;z:number;run:number}[]=[];
- const profile=[[-.16,.025],[-.16,.15],[-.12,.19],[.12,.19],[.16,.15],[.16,.025]];
- const segments=routes.flatMap((r,id)=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,id,width:r.width})));
- const cells=new Map<string,typeof segments>(),cell=8;
- for(const s of segments){const pad=s.width*.72+.4;for(let x=Math.floor((Math.min(s.a.x,s.b.x)-pad)/cell);x<=Math.floor((Math.max(s.a.x,s.b.x)+pad)/cell);x++)for(let z=Math.floor((Math.min(s.a.z,s.b.z)-pad)/cell);z<=Math.floor((Math.max(s.a.z,s.b.z)+pad)/cell);z++){const key=x+':'+z,list=cells.get(key)||[];list.push(s);cells.set(key,list);}}
- routes.forEach((route,id)=>{
-  const lengths=[0];for(let i=1;i<route.points.length;i++)lengths.push(lengths[i-1]+route.points[i].distanceTo(route.points[i-1]));
-  const total=lengths.at(-1)!,closed=route.points[0].distanceTo(route.points.at(-1)!)<.1,steps=Math.ceil(total/.45);
-  for(const side of [-1,1]){let previous=-1;let segment=1;
-   const cap=()=>{if(previous<0)return;ends.push({x:(vertices[previous*3]+vertices[(previous+5)*3])/2,z:(vertices[previous*3+2]+vertices[(previous+5)*3+2])/2,run:runs});for(let k=1;k<5;k++)indices.push(previous,previous+k+1,previous+k);previous=-1;};
-   for(let j=0;j<=steps;j++){
-    const distance=total*j/steps;while(segment<lengths.length-1&&lengths[segment]<distance)segment++;
-    const a=route.points[segment-1],b=route.points[segment],t=(distance-lengths[segment-1])/(lengths[segment]-lengths[segment-1]||1),point=a.clone().lerp(b,t),f=b.clone().sub(a).normalize(),right=new T.Vector3(f.z,0,-f.x),edge=route.width*.72+.13,x=point.x+right.x*edge*side,z=point.z+right.z*edge*side;
-    const covered=(cells.get(Math.floor(x/cell)+':'+Math.floor(z/cell))||[]).some(s=>{if(s.id===id)return false;const dx=s.b.x-s.a.x,dz=s.b.z-s.a.z,u=T.MathUtils.clamp(((x-s.a.x)*dx+(z-s.a.z)*dz)/(dx*dx+dz*dz||1),0,1);return Math.hypot(x-s.a.x-dx*u,z-s.a.z-dz*u)<s.width*.72+.24;});
-    if((id===routes.length-1&&route.width===0?false:insideCentralCourt(x,z,.15))||covered||(!closed&&(distance<.8||distance>total-.8))){cap();continue;}
-    const index=vertices.length/3;
-    for(const [offset,y] of profile){const px=x+right.x*offset,pz=z+right.z*offset;vertices.push(px,h(px,pz)+y,pz);}
-    if(previous>=0){for(let k=0;k<6;k++){const next=(k+1)%6;indices.push(previous+k,index+k,previous+next,previous+next,index+k,index+next);}}
-    else{runs++;ends.push({x,z,run:runs});for(let k=1;k<5;k++)indices.push(index,index+k,index+k+1);}
-    previous=index;
-   }cap();
-  }
- });
- // Short rectangular returns close sharp grass-island tips without pointed wedges.
- const joined=new Set<number>();
- for(let i=0;i<ends.length;i++){if(joined.has(i))continue;const a=ends[i];let nearest=-1,distance=1.8;
-  for(let j=i+1;j<ends.length;j++){if(joined.has(j)||ends[j].run===a.run)continue;const d=Math.hypot(a.x-ends[j].x,a.z-ends[j].z);if(d>.08&&d<distance){distance=d;nearest=j;}}
-  if(nearest<0)continue;const b=ends[nearest],dx=(b.x-a.x)/distance,dz=(b.z-a.z)/distance,start=vertices.length/3;
-  for(const p of [a,b])for(const [offset,y] of profile){const x=p.x+dz*offset,z=p.z-dx*offset;vertices.push(x,h(x,z)+y,z);}
-  for(let k=0;k<6;k++){const n=(k+1)%6;indices.push(start+k,start+6+k,start+n,start+n,start+6+k,start+6+n);}
-  joined.add(i);joined.add(nearest);
+ const c=centralCourt,rectangles=routes.flatMap(r=>roadRectangles(r.points,r.width));rectangles.push({x0:c.x-c.halfWidth,x1:c.x+c.halfWidth,z0:c.z-c.halfDepth,z1:c.z+c.halfDepth});
+ const edges=rectangleOutline(rectangles),vertices:number[]=[],indices:number[]=[],profile=[[-.14,.025],[-.14,.15],[-.10,.19],[.10,.19],[.14,.15],[.14,.025]];
+ for(const edge of edges){const count=Math.max(1,Math.ceil((edge.b-edge.a)/.65)),start=vertices.length/3;
+  for(let j=0;j<=count;j++){const t=edge.a+(edge.b-edge.a)*j/count;for(const [offset,y] of profile){const x=edge.horizontal?t:edge.fixed+offset,z=edge.horizontal?edge.fixed+offset:t;vertices.push(x,h(x,z)+y,z);}}
+  for(let j=0;j<count;j++)for(let k=0;k<6;k++){const a=start+j*6+k,b=start+j*6+(k+1)%6,d=a+6,e=b+6;if(edge.horizontal)indices.push(a,b,d,b,e,d);else indices.push(a,d,b,b,d,e);}
  }
- const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.userData.runs=runs;return geometry;
+ const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.userData.runs=edges.length;return geometry;
 }
 export function buildRoadBorders(scene:T.Scene,routes:BorderRoute[]){
- const geometry=continuousRoadBorderGeometry([...routes,{points:centralCourtOutline(),width:0}]),material=new T.MeshStandardMaterial({color:'#bdb398',roughness:.94});
+ const geometry=continuousRoadBorderGeometry(routes),material=new T.MeshStandardMaterial({color:'#bdb398',roughness:.94,side:T.DoubleSide});
  const border=new T.Mesh(geometry,material);border.name='Continuous limestone road outline';border.receiveShadow=true;border.castShadow=false;scene.add(border);
- scene.userData.roadBorders={blocks:0,routes:routes.length,runs:geometry.userData.runs};
- return border;
+ scene.userData.roadBorders={blocks:0,routes:routes.length,runs:geometry.userData.runs};return border;
 }
