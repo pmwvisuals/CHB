@@ -1,3 +1,11 @@
+# Compact arrival court — 17 November 2026
+
+Reduce the central paved court from 30 by 26 metres to 14 by 12 metres. Its dedicated footprint falls from 780 to 168 square metres (78.5 percent smaller); the ordinary connected street strips remain. Shared court dimensions update paving, union-derived stone edging, vegetation clearance, road shading and walking collision. The removed apron returns to regular camp ground. Building positions and the right-angle road layout are preserved.
+
+Rebuild the prepared camp, collision, surface cells and contact/canopy maps. Rectangular-road geometry checks pass and native temple-approach views/checks verify the smaller prepared layout. The browser build succeeds. Local editable project and `builds/asterion-compact-court-test.apk` include this change; physical Android performance remains unmeasured.
+
+## Earlier checkpoints
+
 # Poseidon ash-marble sculpture and fitted trident — 17 November 2026
 
 Imported the complete 39,891,876-byte Revopoint scan, replaced its blue finish with neutral ash-grey marble, leveled the scanned base and fitted the separately supplied trident through the lower fist with an outward lean. The assembly is one GLB with two meshes. The scan falls from 1,485,025 to 219,982 triangles; original face, beard and cloth detail remain visible in the inspected Blender and temple renders. An editable assembly is preserved under assets-source/temple-statues. Both CC BY 4.0 source attributions and adaptations are included in the asset credits and pause screen.
