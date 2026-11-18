@@ -1,5 +1,9 @@
 # Asterion Sanctuary — native prototype
 
+**Dawnwing riding test:** use Map → Wayfarer Hall, approach the pale Pegasus and interact to mount. Move, Run to trot, Jump to leap and Interact to dismount. See [PEGASUS.md](PEGASUS.md). The current candidate is `builds/asterion-pegasus-test.apk`; this is ground riding only, with Android performance still unmeasured.
+
+**Current street layout:** one primary street with required access branches; disconnected pads, duplicate routes and the central plaza are removed. The map now shows the actual paved footprint. See [STREETS.md](STREETS.md) for the full review. The local candidate is `builds/asterion-street-review-test.apk`; installed-device results below refer to earlier builds.
+
 The first playable adventure chapter is available: **Journal → A Steady Hand** begins three story quests, two optional exploration surveys and a repeatable patrol. Discover four numbered survey marks, keep their history in the Journal, train and hunt four forest creatures with sword or bow, collect caches, earn XP/gold and buy healing supplies in camp. Levels, quests, inventory and rewards save locally. See [ADVENTURE.md](ADVENTURE.md) for controls, rules and the test coverage. Known Android performance/loading limitations remain.
 
 Open `project.godot` in **standard Godot 4.7.2**, wait for the first asset import to finish, then press **F5** and choose **Enter Sanctuary**. No Blender plug-ins are required to run it.
@@ -16,9 +20,7 @@ After A Steady Hand, accept **Read the Woods** in the camp Journal to start the 
 
 The busy arrival junction is now one rectangular 14-by-12-metre paved court. Internal road outlines and pointed grass islands are removed from this area; the surrounding paths join its outside edge. The same court footprint clears vegetation and supplies the walking surface.
 
-Road edging now uses a continuous low limestone ribbon instead of separate Greek-key blocks. Shared vertices follow the curves and hills. Road crossings remain open, with short rectangular returns closing tight grass-island tips.
-
-Temple approach paving continues through the last six metres to the entrance ramps, aligned with each front gate. Rounded road terminals soften joins, and junction clearance uses the full paved width when placing limestone edging. The four circular flower courts, including their soil overlays, fountains, planting and surrounding blocks, are temporarily removed. Arbor walks remain.
+Road paving, its continuous limestone outline, planting clearance, walking collision and map now share one connected footprint. The street system uses straight rectangular legs with open right-angle junctions. Short entrance landings bridge the rotated temple ramps. The removed central court and redundant street strips return to ordinary camp ground. The four circular flower courts remain absent.
 
 The Forgotten Shrine is tucked into the northwestern boundary forest at `(-92,-155)`, between the Zeus and Hephaestus areas. A narrow approach reaches its level 8.5-metre clearing; nearby dark trees leave enough crown clearance along the path. Its former grove near `(-40,-108)` uses normal camp terrain and scattered planting, with the bespoke olive grove and dense grass layer removed. Deepwood Gate remains at `(-40,-121)`. The camp outline is unchanged. The retired giant woodland fern remains absent.
 

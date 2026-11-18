@@ -18,18 +18,3 @@ export type SiteId=keyof typeof templeSites;
 export function sitePlacement(id:SiteId){const s=templeSites[id];return {...s,rotation:id==='poseidon'?-Math.PI/2:Math.atan2(-s.x,-s.z),threshold:id==='poseidon'?.6:4.5};}
 export function sitePoint(id:SiteId,x:number,z:number){const p=sitePlacement(id);return {x:p.x+Math.cos(p.rotation)*x+Math.sin(p.rotation)*z,z:p.z-Math.sin(p.rotation)*x+Math.cos(p.rotation)*z};}
 export function insideTempleGrounds(x:number,z:number,pad=0){return Object.values(templeSites).some(p=>Math.hypot(x-p.x,z-p.z)<19+pad);}
-/** Waypoints avoid the lake, central hall, service buildings and neighboring sites. */
-export const templeTrails:Record<SiteId,number[][]>={
- zeus:[[0,-25],[21,-51],[28,-110],[20,-143]],
- hera:[[-6,92],[-23,117]],
- poseidon:[[64,5],[78,5]],
- demeter:[[-55,64],[-95,63],[-106,77]],
- ares:[[21,-22],[57,-44],[103,-63],[122,-102]],
- athena:[[-28,0],[-49,10],[-62,10]],
- apollo:[[12,90],[39,116],[73,122],[91,119]],
- artemis:[[-62,10],[-111,22],[-152,1]],
- hephaestus:[[-67,-20],[-90,-32],[-96,-86],[-127,-111]],
- aphrodite:[[60,52],[128,61],[154,78]],
- hermes:[[8,76],[23,76],[36,76]],
- dionysus:[[-67,-20],[-90,-32],[-91,-44],[-99,-53]],
-};

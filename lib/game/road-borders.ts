@@ -1,7 +1,7 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {groundHeight as h} from './data';
-import {centralCourt} from './camp-layout';
+import {streetRectangles} from './camp-streets';
 import {roadRectangles,rectangleOutline} from './rectangular-roads';
 
 export interface BorderRoute {points:T.Vector3[];width:number}
@@ -64,7 +64,7 @@ export function buildLimestoneBlocks(scene:T.Scene,placements:Pick<RoadKerb,'x'|
 
 /** A connected bevelled stone ribbon; joints share vertices instead of separate blocks. */
 export function continuousRoadBorderGeometry(routes:BorderRoute[]){
- const c=centralCourt,rectangles=routes.flatMap(r=>roadRectangles(r.points,r.width));rectangles.push({x0:c.x-c.halfWidth,x1:c.x+c.halfWidth,z0:c.z-c.halfDepth,z1:c.z+c.halfDepth});
+ const rectangles=streetRectangles;
  const edges=rectangleOutline(rectangles),vertices:number[]=[],indices:number[]=[],profile=[[-.14,.025],[-.14,.15],[-.10,.19],[.10,.19],[.14,.15],[.14,.025]];
  for(const edge of edges){const count=Math.max(1,Math.ceil((edge.b-edge.a)/.65)),start=vertices.length/3;
   for(let j=0;j<=count;j++){const t=edge.a+(edge.b-edge.a)*j/count;for(const [offset,y] of profile){const x=edge.horizontal?t:edge.fixed+offset,z=edge.horizontal?edge.fixed+offset:t;vertices.push(x,h(x,z)+y,z);}}

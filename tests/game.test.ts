@@ -35,12 +35,14 @@ pass('visible limestone road supports player feet, consistent standing eye heigh
 player=p(0,45,groundHeight(0,45));player.keys.add('KeyW');step(player,world.octree,1200);assert.ok(player.collider.start.z<5,`courtyard blocked at ${player.collider.start.z}`);pass('gap between cabins leads into courtyard');
 player=p(-55,62,groundHeight(-55,62));player.keys.add('KeyW');step(player,world.octree,360);assert.ok(player.collider.start.z<52&&player.collider.start.z>43,`house entry at ${player.collider.start.z}`);pass('Big House ground-floor doorway is enterable');
 player=p(55,20,groundHeight(55,20));player.yaw=-Math.PI/2;player.keys.add('KeyW');step(player,world.octree,900);assert.ok(player.collider.start.x<66);pass('lakeshore stops entry into deep water');
-for(const name of ['Garden promenade','Wayfarer walk','Dining walk','Lake walk','Training walk','Ember walk','Lakeside pavilion walk','Boat dock walk']){
+const blockedStreets:string[]=[];
+for(const name of ['Main street','West service lane','Wayfarer walk','East service lane','Dining walk','Lake walk','Training walk','Training entrance','Ember walk','Lakeside pavilion walk','Boat dock walk']){
  const route=campRoutes.find(r=>r.name===name)!,points=routePoints(route.points);player=p(points[0].x,points[0].z,groundHeight(points[0].x,points[0].z));player.keys.add('KeyW');
- for(let j=8;j<=160;j+=8){const target=points[j];let frames=0;while(Math.hypot(target.x-player.collider.start.x,target.z-player.collider.start.z)>.65&&frames++<500){player.yaw=Math.atan2(player.collider.start.x-target.x,player.collider.start.z-target.z);step(player,world.octree,1);}assert.ok(frames<500,`${name} blocked near ${player.collider.start.x}, ${player.collider.start.z}`);}
- pass(name+' is continuously walkable');
+ for(let j=8;j<=160;j+=8){const target=points[j];let frames=0;while(Math.hypot(target.x-player.collider.start.x,target.z-player.collider.start.z)>.65&&frames++<500){player.yaw=Math.atan2(player.collider.start.x-target.x,player.collider.start.z-target.z);step(player,world.octree,1);}if(frames>=500){blockedStreets.push(`${name} blocked near ${player.collider.start.x}, ${player.collider.start.z}`);break;}}
+ if(!blockedStreets.some(s=>s.startsWith(name+' blocked')))pass(name+' is continuously walkable');
 }
 
+assert.deepEqual(blockedStreets,[],'all destination paths must be continuously walkable');
 Object.assign(globalThis,{localStorage:{getItem:()=>'{broken'}});assert.deepEqual(readSave().settings,defaults);pass('corrupt saved data safely uses defaults');
 Object.assign(globalThis,{localStorage:{getItem:()=>{throw new Error('unavailable');}}});assert.deepEqual(readSave().discoveries,[]);pass('unavailable storage does not block play');
 
@@ -71,8 +73,8 @@ for(const theme of templeCatalog){
 const sample=buildWorld();
 const legacyPatches:any[]=[];sample.scene.traverse(o=>{if(o.name==='Woodland grass patch')legacyPatches.push(o);});
 assert.equal(legacyPatches.length,0,'former shrine grove is replaced by ordinary camp ground cover');
-player=p(-40,-96,groundHeight(-40,-96));player.keys.add('KeyW');step(player,sample.octree,160);
-assert.ok(player.collider.start.z<-101&&player.grounded,'former shrine site remains walkable');
+player=p(-40,-96,groundHeight(-40,-96));player.keys.add('KeyW');step(player,sample.octree,160);player.keys.clear();step(player,sample.octree,60);
+assert.ok(player.collider.start.z<-101&&player.grounded,`former shrine site remains walkable: ${player.collider.start.toArray()}, grounded=${player.grounded}`);
 sample.dispose();pass('former shrine grove uses regular camp terrain and stays walkable');
 console.log('All game checks passed.');
 

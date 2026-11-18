@@ -1,22 +1,37 @@
 import {Vector3} from 'three';
+import {sitePoint,type SiteId} from './sanctuary-layout';
 import {shrineTrail} from './shrine-layout';
 /** The same routes drive ground surfaces, vegetation clearance and the map. */
-export const campRoutes=[
- {name:'Arrival walk',width:5.5,points:[[0,122],[0,0]]},
- {name:'Garden promenade',width:3.8,points:[[0,28],[28,28],[28,-28],[-28,-28],[-28,28],[0,28]]},
- {name:'Wayfarer walk',width:4,points:[[0,32],[-22,37],[-40,64],[-55,64],[-55,60]]},
- {name:'Dining walk',width:4,points:[[0,32],[20,39],[34,55],[46,55],[46,51]]},
- {name:'Lake walk',width:3.8,points:[[0,0],[28,0],[44,5],[55,5]]},
- {name:'Training walk',width:3.4,points:[[-28,0],[-44,-8],[-62,-14],[-67,-20]]},
- {name:'Ember walk',width:3.6,points:[[0,-28],[0,-38],[0,-49]]},
- {name:'Forest walk',width:2.5,points:[[-17,-23],[-25,-47],[-24,-75],[-40,-96],[-40,-108]]},
- {name:'Deepwood entrance',width:2.5,points:[[-40,-108],[-40,-121]]},
- {name:'Shrine trail',width:1.65,points:shrineTrail},
- {name:'Garden walk',width:2.8,points:[[-55,64],[-91,62],[-93,87],[-68,92],[-32,88],[0,96]]},
- {name:'Eastern promenade',width:3.2,points:[[46,55],[61,49],[57,27],[48,15],[55,5]]},
- {name:'Lakeside pavilion walk',width:2.6,points:[[55,5],[55,29],[65,29],[65,35]]},
- {name:'Boat dock walk',width:2.8,points:[[55,5],[52,-5],[53,-12],[53,-18]]},
-] as const;
+type StreetRoute={name:string;width:number;kind:'main'|'access';points:number[][]};
+const entry=(id:SiteId)=>{const p=sitePoint(id,0,16);return [p.x,p.z];};
+const templeAccess=(id:SiteId,points:number[][]):StreetRoute=>{const a=entry(id),e=sitePoint(id,0,9.8);return {name:id+' approach',kind:'access',width:1.9,points:[...points,a,[e.x,e.z]]};};
+/** A single authored connected tree: one main street, only destination access branches. */
+export const campRoutes:StreetRoute[]=[
+ {name:'Main street',kind:'main',width:3.2,points:[[0,122],[0,20],[-24,20],[-24,-95],[-40,-95],[-40,-121]]},
+ {name:'Great Hall entrance',kind:'access',width:2.2,points:[[-24,14],[0,14],[0,10.8]]},
+ {name:'West service lane',kind:'access',width:2.2,points:[[0,64],[-146,64],[-146,-10]]},
+ {name:'Wayfarer walk',kind:'access',width:2.0,points:[[-55,64],[-55,60]]},
+ {name:'East service lane',kind:'access',width:2.2,points:[[0,64],[64,64],[64,108]]},
+ {name:'Dining walk',kind:'access',width:2.0,points:[[46,64],[46,51]]},
+ {name:'Training walk',kind:'access',width:2.0,points:[[-24,-12],[-96,-12],[-96,-110]]},
+ {name:'Training entrance',kind:'access',width:2.0,points:[[-67,-12],[-67,-20]]},
+ {name:'Ember walk',kind:'access',width:1.8,points:[[-24,-62],[-15,-62]]},
+ {name:'Lake walk',kind:'access',width:2.0,points:[[0,20],[34,20],[34,5],[55,5]]},
+ {name:'Lakeside pavilion walk',kind:'access',width:1.8,points:[[55,5],[55,29],[65,29],[65,35]]},
+ {name:'Boat dock walk',kind:'access',width:1.8,points:[[53,5],[53,-18]]},
+ {name:'Shrine trail',kind:'access',width:1.3,points:shrineTrail},
+ templeAccess('zeus',[[-24,-90],[0,-90]]),
+ templeAccess('hera',[[0,96],[-26,96],[-26,entry('hera')[1]]]),
+ templeAccess('demeter',[[-110,64],[-110,entry('demeter')[1]]]),
+ templeAccess('athena',[[-24,entry('athena')[1]]]),
+ templeAccess('artemis',[[-146,-10],[-146,entry('artemis')[1]]]),
+ templeAccess('dionysus',[[-96,entry('dionysus')[1]]]),
+ templeAccess('hephaestus',[[-96,-110],[-128,-110],[-128,entry('hephaestus')[1]]]),
+ templeAccess('hermes',[[entry('hermes')[0],64]]),
+ templeAccess('apollo',[[64,108],[entry('apollo')[0],108]]),
+ templeAccess('aphrodite',[[64,64],[150,64],[150,entry('aphrodite')[1]]]),
+ templeAccess('ares',[[-24,-82],[110,-82],[110,entry('ares')[1]]])
+];
 /** Straight axis-aligned legs with exact right-angle corners; no spline interpolation. */
 export function routePoints(points:readonly (readonly number[])[]){
  const corners:Vector3[]=[];
@@ -29,7 +44,7 @@ export function routePoints(points:readonly (readonly number[])[]){
 export const gardenCourts:{x:number;z:number;rx:number;rz:number}[]=[];
 export function inGardenCourt(x:number,z:number,pad=0){return gardenCourts.some(g=>((x-g.x)/(g.rx+pad))**2+((z-g.z)/(g.rz+pad))**2<1);}
 
-/** One simple gathering court replaces the pointed islands at the arrival junction. */
-export const centralCourt={x:0,z:32,halfWidth:7,halfDepth:6};
-export function insideCentralCourt(x:number,z:number,pad=0){return Math.abs(x-centralCourt.x)<=centralCourt.halfWidth+pad&&Math.abs(z-centralCourt.z)<=centralCourt.halfDepth+pad;}
+/** Legacy compatibility: the former central court is disabled. */
+export const centralCourt={x:0,z:32,halfWidth:0,halfDepth:0};
+export function insideCentralCourt(x:number,z:number,pad=0){return false;}
 export function centralCourtOutline(){const c=centralCourt;return [[-1,-1],[1,-1],[1,1],[-1,1],[-1,-1]].map(([x,z])=>new Vector3(c.x+x*c.halfWidth,0,c.z+z*c.halfDepth));}

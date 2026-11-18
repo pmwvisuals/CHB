@@ -6,7 +6,7 @@ A single-player first-person browser game inspired by ancient Greek mythology, b
 
 The twelve temples now occupy distinct landscapes across the map, each with its own decorative grounds. The Great Hall anchors the central camp, and Wayfarer Hall has a new guild-house exterior and beacon tower. Press **M** and select a temple marker to visit its grounds. See [TEMPLE-EXTERIORS.md](TEMPLE-EXTERIORS.md) for designs and validation.
 
-The camp streets now use simple worn limestone flagstones, with chamfered Greek-key borders and open junctions. Modelled daisies, poppies and lavender replace the geometric flower placeholders, with matching garden borders and a smoother lake bank. See [LANDSCAPE-POLISH.md](LANDSCAPE-POLISH.md) for the landscape changes and verification limits.
+The camp streets now use one primary road with required access branches, simple worn limestone and a continuous low outline. Duplicate temple trails, disconnected pads and the central plaza are removed, reducing dry paving by 53.6%. The native map opens in a clear street-plan view showing actual road widths; place numbers can be toggled. See [native/STREETS.md](native/STREETS.md) for the full review and validation.
 
 **Browser lighting** remains fixed daylight, with directional shadows and opaque blue lake water. The native app uses the fixed evening atmosphere described above. The day/night cycle and sun/moon models have been removed. The browser retains slow moving clouds and their shadows. Terrain is clipped to the compact forest boundary, enclosing approximately 117,935 square metres, 46.6% less than the former playable square. Five dark tree varieties and dense undergrowth mark that shared edge. See [ATMOSPHERE.md](ATMOSPHERE.md) and [FOREST-BORDER.md](FOREST-BORDER.md).
 

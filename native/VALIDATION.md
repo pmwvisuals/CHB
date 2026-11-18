@@ -1,3 +1,17 @@
+# Dawnwing ground-riding prototype — 18 November 2026
+
+The original Pegasus now has a 31-bone rig and Idle, Walk, Trot, Jump and Wingbeat clips. A 139,991-triangle game model retains twelve skinned meshes and its coat/feather maps. The full static asset remains unchanged. Native riding tests pass 22 checks covering spawning, mounting, eye/collision changes, physical movement, leap/landing, wall blocking, pause, safe dismount, saving, map travel and scene release. The existing 57 camp and 44 training checks also pass. Actual Windows OpenGL pose, companion and first-person riding captures were inspected.
+
+The exported game GLB was re-imported and validated for its skeleton, one-to-four normalized skin weights, texture retention and finite pose bounds across five clips. This is a first ground-riding pass: animation polish, full wing folding and flight locomotion remain future work. No physical Android result or performance improvement is claimed. See PEGASUS.md.
+
+# Complete street review — 18 November 2026
+
+Replaced the redundant camp road systems with one primary street and required destination branches. The dry union area drops from 12,219.2 to 5,664.5 square metres (53.6 percent), with one connected network and no freestanding plaza. Shared paving, continuous border, terrain masks, plants, collision and exact map footprints are rebuilt. The map defaults to a clear street view with optional place numbers. See [STREETS.md](STREETS.md) for findings and the plan.
+
+The complete browser/source game suite, TypeScript, production build and page checks pass. Native street/map review, camp smoke and bounded surface preservation pass. Windows player-height and map renders were inspected. The signed ARM32/ARM64 local APK is `builds/asterion-street-review-test.apk`; physical Android performance has not been measured for this revision. This supersedes the compact central court described below.
+
+## Earlier checkpoints
+
 # Compact arrival court — 17 November 2026
 
 Reduce the central paved court from 30 by 26 metres to 14 by 12 metres. Its dedicated footprint falls from 780 to 168 square metres (78.5 percent smaller); the ordinary connected street strips remain. Shared court dimensions update paving, union-derived stone edging, vegetation clearance, road shading and walking collision. The removed apron returns to regular camp ground. Building positions and the right-angle road layout are preserved.

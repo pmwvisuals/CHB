@@ -19,3 +19,6 @@ await import('../tests/training.test.ts');
 await import('../tests/deep-forest.test.ts');
 
 await import('../tests/shrine-layout.test.ts');
+
+await import('../tests/rectangular-roads.test.ts');
+await import('../tests/street-network.test.ts');

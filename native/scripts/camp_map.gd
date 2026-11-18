@@ -5,6 +5,9 @@ var world
 var map_center := Vector2(332,386)
 var map_scale := 1.15
 var marker_lines:Array = []
+var road_review := true
+var place_markers:Array[Button] = []
+var map_canvas:Control
 
 func _ready():
 	theme = Session.ui_theme
@@ -21,10 +24,11 @@ func _ready():
 	title.add_theme_font_size_override("font_size",26)
 	add_child(title)
 	var hint := Label.new()
-	hint.text = "Choose a place to travel."
+	hint.text = "Street plan · Gold: main road · Cream: access paths · Grey: buildings"
 	hint.position = Vector2(36,70)
 	add_child(hint)
 	var canvas := Control.new()
+	map_canvas = canvas
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.draw.connect(draw_map.bind(canvas))
 	canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -46,6 +50,8 @@ func _ready():
 		grid.add_child(button)
 		var marker := Button.new()
 		marker.text = str(index+1)
+		place_markers.append(marker)
+		marker.visible = not road_review
 		var actual:Vector2 = map_center+destination.point*map_scale
 		var at := actual-Vector2(19,18)
 		for attempt in range(12):
@@ -60,6 +66,17 @@ func _ready():
 		marker.tooltip_text = destination.name
 		marker.pressed.connect(choose.bind(destination))
 		add_child(marker)
+	var view_toggle := Button.new()
+	view_toggle.text = "SHOW PLACE NUMBERS"
+	view_toggle.position = Vector2(36,112)
+	view_toggle.size = Vector2(250,38)
+	view_toggle.pressed.connect(func():
+		road_review=not road_review
+		view_toggle.text="SHOW PLACE NUMBERS" if road_review else "SHOW STREET PLAN"
+		for marker in place_markers:marker.visible=not road_review
+		map_canvas.queue_redraw()
+	)
+	add_child(view_toggle)
 	var exit := Button.new()
 	exit.text = "CLOSE MAP"
 	exit.position = Vector2(1000,620)
@@ -87,14 +104,44 @@ func draw_map(canvas:Control):
 		var angle := i*TAU/64
 		lake.append(map_center+(Vector2(91,0)+Vector2(cos(angle)*31,sin(angle)*47))*map_scale)
 	canvas.draw_colored_polygon(lake,Color("285c76"))
-	for route in world.layout.routes:
-		var line := PackedVector2Array()
-		for point in route.points:
-			line.append(map_center+Vector2(point[0],point[1])*map_scale)
-		canvas.draw_polyline(line,Color("b6a787"),2,true)
-	for line in marker_lines:
-		canvas.draw_line(line[0],line[1],Color("b6a787"),1,true)
+	var plan:Dictionary=world.layout.get("roadPlan",{})
+	for r in plan.get("paving",[]):
+		canvas.draw_rect(Rect2(map_center+Vector2(r[0],r[1])*map_scale,Vector2(r[2]-r[0],r[3]-r[1])*map_scale),Color("d0bea0"))
+	for r in plan.get("main",[]):
+		canvas.draw_rect(Rect2(map_center+Vector2(r[0],r[1])*map_scale,Vector2(r[2]-r[0],r[3]-r[1])*map_scale),Color("d3a84e"))
+	for temple in world.layout.temples:
+		draw_building(canvas,Vector2(temple.x,temple.z),Vector2(13,16),temple.rotation,temple.name)
+	for entry in [[Vector2(0,0),Vector2(16,18),"Hall"],[Vector2(-55,50),Vector2(25,19),"Wayfarer"],[Vector2(46,43),Vector2(20,16),"Dining"],[Vector2(65,35),Vector2(10,10),"Lakeside"]]:
+		draw_building(canvas,entry[0],entry[1],0.0,entry[2])
+	draw_building(canvas,Vector2(-40,-121),Vector2(5.4,.8),0.0,"Deepwood Gate")
+	canvas.draw_rect(Rect2(map_center+Vector2(53,-20.1)*map_scale,Vector2(22,4.2)*map_scale),Color("806448"))
+	if road_review:
+		canvas.draw_circle(map_center+Vector2(0,-62)*map_scale,10*map_scale,Color("70523b"),false,1.5)
+		canvas.draw_string(get_theme_default_font(),map_center+Vector2(0,-62)*map_scale+Vector2(-25,-12),"Campfire",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
+		canvas.draw_string(get_theme_default_font(),map_center+Vector2(0,114)*map_scale+Vector2(10,0),"Arrival Ridge",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
+		canvas.draw_string(get_theme_default_font(),map_center+Vector2(75,-18)*map_scale+Vector2(4,0),"Dock",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
+	var shrine:Dictionary=world.layout.get("shrine",{})
+	if not shrine.is_empty():draw_building(canvas,Vector2(shrine.x,shrine.z),Vector2(7,6),shrine.rotation,"Shrine")
+	if road_review:
+		var at:Vector2=map_center+Vector2(-67,-34)*map_scale
+		canvas.draw_rect(Rect2(at-Vector2(22,20)*map_scale,Vector2(44,40)*map_scale),Color("8d7856"),false,1.0)
+		canvas.draw_string(get_theme_default_font(),at+Vector2(-23,5),"Training",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("e8e0c6"))
+	else:
+		for line in marker_lines:canvas.draw_line(line[0],line[1],Color("b6a787"),1,true)
 	canvas.draw_circle(map_center+Vector2(world.player.position.x,world.player.position.z)*map_scale,6,Color("ffda81"))
+
+func draw_building(canvas:Control,at:Vector2,extent:Vector2,turn:float,label:String):
+	var points:=PackedVector2Array()
+	for corner in [Vector2(-1,-1),Vector2(1,-1),Vector2(1,1),Vector2(-1,1)]:
+		var p:Vector2=corner*extent*.5
+		points.append(map_center+(at+Vector2(cos(turn)*p.x+sin(turn)*p.y,-sin(turn)*p.x+cos(turn)*p.y))*map_scale)
+	canvas.draw_colored_polygon(points,Color("849084"))
+	points.append(points[0]);canvas.draw_polyline(points,Color("e0decd"),1.0,true)
+	if road_review:
+		var font:=get_theme_default_font()
+		var size:=14
+		var width:=font.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,size).x
+		canvas.draw_string(font,map_center+at*map_scale+Vector2(-width*.5,-extent.y*map_scale*.5-5),label,HORIZONTAL_ALIGNMENT_LEFT,-1,size,Color("f0e8cd"))
 
 func choose(destination:Dictionary):
 	world.travel_to(destination)

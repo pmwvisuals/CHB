@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {roadRectangles} from './rectangular-roads';
+import {roadRectangles,type RoadRectangle} from './rectangular-roads';
 import {groundHeight} from './data';
 
 export const pavingLift=.065;
@@ -7,8 +7,11 @@ export const pavingLift=.065;
 export const pavingTextureRepeat=3.2;
 /** One surface is used by rendering and walking collision, including on hills. */
 export function pavedRoadGeometry(points:T.Vector3[],width:number,height=groundHeight){
+ return pavedRectangleGeometry(roadRectangles(points,width),height);
+}
+export function pavedRectangleGeometry(rectangles:RoadRectangle[],height=groundHeight){
  const vertices:number[]=[],uv:number[]=[],indices:number[]=[],polygons:number[][]=[];
- for(const r of roadRectangles(points,width)){const start=vertices.length/3;for(const [x,z] of [[r.x0,r.z0],[r.x0,r.z1],[r.x1,r.z1],[r.x1,r.z0]]){vertices.push(x,height(x,z)+pavingLift,z);uv.push(x/pavingTextureRepeat,z/pavingTextureRepeat);}polygons.push([start,start+1,start+2,start+3]);indices.push(start,start+1,start+2,start,start+2,start+3);}
+ for(const r of rectangles){const start=vertices.length/3;for(const [x,z] of [[r.x0,r.z0],[r.x0,r.z1],[r.x1,r.z1],[r.x1,r.z0]]){vertices.push(x,height(x,z)+pavingLift,z);uv.push(x/pavingTextureRepeat,z/pavingTextureRepeat);}polygons.push([start,start+1,start+2,start+3]);indices.push(start,start+1,start+2,start,start+2,start+3);}
  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.userData.surfacePolygons=polygons;geo.computeVertexNormals();return geo;
 }
 

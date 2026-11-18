@@ -1,8 +1,6 @@
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {campRoutes,routePoints} from '../lib/game/camp-layout';
-import {templeCatalog} from '../lib/game/temple-catalog';
-import {templeTrails,sitePoint} from '../lib/game/sanctuary-layout';
 import {roadBorderPlacements,roadKerbGeometry,buildRoadBorders} from '../lib/game/road-borders';
 import {flowerGeometry,buildFlowers} from '../lib/game/flowers';
 import {groundHeight} from '../lib/game/data';
@@ -10,7 +8,6 @@ import {terrainGeometry} from '../lib/game/landscape';
 if(typeof document==='undefined'){const ctx=new Proxy({}, {get:()=>()=>{}});Object.assign(globalThis,{document:{createElement:()=>({width:128,height:128,getContext:()=>ctx})}});}
 
 const routes=campRoutes.map(r=>({points:routePoints(r.points),width:r.width}));
-for(const t of templeCatalog)if(t.id!=='poseidon'){const alignment=sitePoint(t.id,0,16),end=sitePoint(t.id,0,9.8);routes.push({points:routePoints([...templeTrails[t.id],[alignment.x,alignment.z],[end.x,end.z]]),width:3.8});}
 const placements=roadBorderPlacements(routes);
 assert.ok(placements.length>2000,'all routes receive edging without a fixed capacity cutoff');
 const straight=roadBorderPlacements([{points:[new T.Vector3(0,0,0),new T.Vector3(0,0,100)],width:4}]);

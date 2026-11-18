@@ -8,10 +8,11 @@ import {forgottenShrine,shrineDistance,shrinePoint} from './shrine-layout';
 import type { Settings } from './data';
 import { gardenGrass, plantCollection, forestTreeIds, type PlantPlacement } from './vegetation';
 import { terrainGeometry,groundMaterial,groundHabitat } from './landscape';
-import {limestoneRoadMaterial,pavedRoadGeometry} from './road-paving';
+import {streetRectangles} from './camp-streets';
+import {limestoneRoadMaterial,pavedRectangleGeometry} from './road-paving';
 import { buildTempleExteriors,buildGreatHall } from './temple-exteriors';
 import { templeCatalog,templePlacement } from './temple-catalog';
-import {sanctuaryExtent,templeTrails,insideTempleGrounds,templeSites,sitePoint} from './sanctuary-layout';
+import {sanctuaryExtent,insideTempleGrounds,templeSites,sitePoint} from './sanctuary-layout';
 import {campRoutes,routePoints,inGardenCourt,centralCourt,insideCentralCourt} from './camp-layout';
 import {buildCampGardens} from './camp-gardens';
 import {buildWayfarerHall} from './wayfarer';
@@ -67,14 +68,8 @@ export function buildWorld(): World {
   const campLighting=buildCampLighting(scene,atmosphere.state);
   // Preserve the accepted, seeded camp planting when replacing the old clouds.
   for(let i=0;i<144;i++)rand();
-  const paths: { points:T.Vector3[]; width:number }[]=[];
-  const paving=limestoneRoadMaterial();
-  function path(coords:readonly (readonly number[])[],width=3.5){const points=routePoints(coords);paths.push({points,width});
-    const footprint=pavedRoadGeometry(points,width),geo=surface.stamp(footprint,.11),road=mesh(geo,paving,scene);road.name='Walkable limestone road';road.castShadow=false;collision.add(new T.Mesh(geo));
-  }
-  for(const route of campRoutes)path(route.points,route.width);
-  const courtFootprint=new T.PlaneGeometry(centralCourt.halfWidth*2,centralCourt.halfDepth*2);courtFootprint.rotateX(-Math.PI/2);courtFootprint.translate(centralCourt.x,0,centralCourt.z);
-  const courtGeometry=surface.stamp(courtFootprint,.11),court=mesh(courtGeometry,paving,scene);court.name='Central limestone court';court.castShadow=false;collision.add(new T.Mesh(courtGeometry));
+  const paths=campRoutes.map(r=>({points:routePoints(r.points),width:r.width}));
+  const paving=limestoneRoadMaterial(),streetGeometry=surface.stamp(pavedRectangleGeometry(streetRectangles),.11),street=mesh(streetGeometry,paving,scene);street.name='Walkable limestone road';street.castShadow=false;collision.add(new T.Mesh(streetGeometry));
   function circleGround(x:number,z:number,r:number,color:string){const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);geo.translate(x,0,z);geo.userData.surfacePolygons=[Array.from({length:64},(_,i)=>i+1)];const fitted=surface.stamp(geo,.025),m=mesh(fitted,mat(color),scene);m.castShadow=false;return m;}
   // The communal green shares the living terrain, rather than two flat coloured discs.
 
@@ -86,13 +81,12 @@ export function buildWorld(): World {
   function windowAt(g:T.Object3D,x:number,z:number,dy=0){box(g,x,2.2+dy,z,1.45,1.65,.12,trim);box(g,x,2.2+dy,z+.08,1.2,1.4,.08,mat('#6d9e9e',.25));box(g,x,2.2+dy,z+.14,.06,1.4,.07,trim);box(g,x,2.2+dy,z+.14,1.2,.06,.07,trim);box(g,x,1.3+dy,z+.2,1.75,.15,.55,wood);}
   function bench(g:T.Object3D,x:number,z:number,w=3){box(g,x,.65,z,w,.18,.7,wood,true);for(const s of [-1,1])box(g,x+s*(w/2-.25),.3,z,.15,.6,.55,wood);}
   const templeExteriors=buildTempleExteriors(scene,collision);buildGreatHall(scene,collision);
-  templeCatalog.filter(theme=>theme.id!=='poseidon').forEach(theme=>{const alignment=sitePoint(theme.id,0,16),endpoint=sitePoint(theme.id,0,9.8);path([...templeTrails[theme.id],[alignment.x,alignment.z],[endpoint.x,endpoint.z]],3.8);});
   buildWayfarerHall(scene,collision);
   // Dining pavilion with columns, garlands and communal tables.
   const pavilion=group(46,43);box(pavilion,0,.08,0,20,.16,16,stone,true);
   for(const x of [-9,9])for(const z of [-7,0,7]){cyl(pavilion,x,2.8,z,.35,5.6,trim);box(pavilion,x,2.8,z,.6,5.6,.6,trim,true);box(pavilion,x,.3,z,1,.4,1,stone);box(pavilion,x,5.4,z,1,.4,1,trim);}
   roof(pavilion,20,16,5.7,'#a2684e');for(const z of [-4,0,4]){box(pavilion,0,1.2,z,12,.22,1.7,wood,true);for(const x of [-4,4])box(pavilion,x,.6,z,.25,1.2,1.3,wood);bench(pavilion,0,z-1.5,12);bench(pavilion,0,z+1.5,12);for(let x=-4;x<=4;x+=2)cyl(pavilion,x,1.34,z,.32,.035,trim);}
-  sign('DINING PAVILION',46,53,0,5);
+  sign('DINING PAVILION',50,53,0,5);
   const trainingGround=buildTrainingGround(scene,collision),lakeside=buildLakeside(scene,collision),water=lakeside.water;
   // Invisible barrier follows the shore, leaving the dock walkable.
   for(let i=0;i<80;i++){const a=i/80*Math.PI*2;const x=91+Math.cos(a)*30,z=Math.sin(a)*46;if(x<75&&(Math.abs(z-5)<3||Math.abs(z+18)<3))continue;const b=new T.Mesh(boxGeo);b.matrixAutoUpdate=false;b.matrix.copy(new T.Matrix4().compose(new T.Vector3(x,1,z),new T.Quaternion(),new T.Vector3(3,3,3)));collision.add(b);}
