@@ -128,6 +128,8 @@ func save_game(player = null):
 		return true
 	if is_instance_valid(player):
 		var p:Vector3 = player.global_position
+		# Resume on the safe boarding spot, never inside a mounted horse.
+		if is_instance_valid(player.mount):p=player.mount.boarding_position
 		data.positions[data.zone] = [p.x,p.y,p.z]
 	var payload = data.duplicate(true)
 	payload.version = 1

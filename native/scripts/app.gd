@@ -69,6 +69,7 @@ func travel(zone:String):
 	transitioning = true
 	if is_instance_valid(world):
 		Session.save_game(null if Session.recovering else world.player)
+		if is_instance_valid(world.player.mount):world.player.mount.release_rider()
 		world.queue_free()
 		world = null
 	Session.clear_touch()

@@ -17,6 +17,7 @@ var bow_strings:Array[MeshInstance3D] = []
 var draw_time := 0.0
 var primary_held := false
 var primary_pressed := false
+var mount
 
 func _ready():
 	var collision := CollisionShape3D.new()
@@ -104,7 +105,7 @@ func look(amount:Vector2):
 	camera.rotation.x = pitch
 
 func combat_enabled() -> bool:
-	return is_instance_valid(world) and world.combat_allowed(global_position)
+	return not is_instance_valid(mount) and is_instance_valid(world) and world.combat_allowed(global_position)
 
 func sync_combat():
 	var active := combat_enabled()
@@ -176,6 +177,9 @@ func _physics_process(delta):
 	sync_combat()
 	if Session.paused:
 		cancel_draw()
+		return
+	if is_instance_valid(mount):
+		mount.drive(self,delta)
 		return
 	if Session.heal_requested:Session.use_draught()
 	Session.heal_requested=false

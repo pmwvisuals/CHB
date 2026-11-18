@@ -1,0 +1,33 @@
+{
+  "bones": 31,
+  "clips": {
+    "Idle": {
+      "frames": 72,
+      "seconds": 3.0,
+      "loop": true
+    },
+    "Walk": {
+      "frames": 34,
+      "seconds": 1.4,
+      "loop": true
+    },
+    "Trot": {
+      "frames": 20,
+      "seconds": 0.85,
+      "loop": true
+    },
+    "Jump": {
+      "frames": 26,
+      "seconds": 1.1,
+      "loop": false
+    },
+    "Wingbeat": {
+      "frames": 41,
+      "seconds": 1.7,
+      "loop": true
+    }
+  },
+  "rig": "Explicit deform skeleton; no external rigging add-on",
+  "game_reduction": 0.52,
+  "riding": "First ground-riding prototype; flight locomotion is not implemented"
+}

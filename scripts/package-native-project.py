@@ -9,7 +9,7 @@ native = root / "native"
 archive = root / "asterion-native-project.zip"
 manifest = json.loads((native / "assets-manifest.json").read_text(encoding="utf-8"))
 files = [native / name for name in (
-    "project.godot", "export_presets.cfg", "README.md", "VALIDATION.md", "XIAOMI-TEST.md", "RENDER-OPTIMIZATION.md", "RENDER-PROFILE.json", "ADVENTURE.md", "TEMPLES.md", "STREETS.md", "PEGASUS.md", "assets-manifest.json"
+    "project.godot", "export_presets.cfg", "README.md", "VALIDATION.md", "XIAOMI-TEST.md", "RENDER-OPTIMIZATION.md", "RENDER-PROFILE.json", "ADVENTURE.md", "TEMPLES.md", "STREETS.md", "PEGASUS.md", "PEGASUS.md", "assets-manifest.json"
 )]
 for folder in ("scenes", "scripts", "tests", "shaders", "themes", "fonts"):
     files += sorted(p for p in (native / folder).rglob("*")

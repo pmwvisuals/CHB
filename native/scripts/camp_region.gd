@@ -18,6 +18,7 @@ var training_hits := 0
 var foliage_stream
 var collision_root:Node3D
 var imported_plants
+var pegasus
 
 func apply_graphics():
 	super.apply_graphics()
@@ -43,6 +44,12 @@ func finish_preparation():
 	training = preload("res://scripts/training.gd").new()
 	training.world = self
 	add_child(training)
+	pegasus=preload("res://scripts/pegasus.gd").new()
+	pegasus.world=self
+	var paddock:=Vector2(-31,55)
+	pegasus.position=Vector3(paddock.x,walking_surface_height(paddock)+.06,paddock.y)
+	pegasus.home=pegasus.position
+	add_child(pegasus)
 	if not Session.render_profile.is_empty():
 		var arrival:Dictionary = destinations.filter(func(d): return d.id == "arrival")[0]
 		travel_to(arrival)
@@ -322,6 +329,8 @@ func near_temple() -> Dictionary:
 	return {}
 
 func interaction_text() -> String:
+	if is_instance_valid(player.mount):return "Dismount Dawnwing"
+	if is_instance_valid(pegasus) and player.position.distance_to(pegasus.position)<3.2:return "Ride Dawnwing"
 	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:return "Camp quest board"
 	if near_gate():
 		return "Enter the woodland"
@@ -329,6 +338,12 @@ func interaction_text() -> String:
 	return ("Enter "+temple.name if temple.id in Session.OPEN_TEMPLES else temple.name+" · Coming soon") if not temple.is_empty() else ""
 
 func interact():
+	if is_instance_valid(player.mount):
+		player.mount.dismount()
+		return
+	if is_instance_valid(pegasus) and player.position.distance_to(pegasus.position)<3.2:
+		pegasus.mount_player(player)
+		return
 	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:
 		player.hud.open_journal()
 		return
@@ -341,6 +356,7 @@ func interact():
 		else:Session.message=temple.name+" · Coming soon. Zeus, Ares and Poseidon are open."
 
 func travel_to(destination:Dictionary):
+	if is_instance_valid(player.mount):player.mount.release_rider()
 	var point:Vector2 = destination.point
 	player.position = Vector3(point.x,walking_surface_height(point)+.06,point.y)
 	player.velocity = Vector3.ZERO
@@ -349,4 +365,7 @@ func travel_to(destination:Dictionary):
 	player.camera.rotation.x = 0
 	player.sync_combat()
 	Session.message = destination.name
+	if destination.id=="wayfarer" and is_instance_valid(pegasus):
+		player.rotation.y=atan2(player.position.x-pegasus.position.x,player.position.z-pegasus.position.z)
+		Session.message="Wayfarer Hall · Dawnwing waits in the nearby field. Approach and interact to ride."
 

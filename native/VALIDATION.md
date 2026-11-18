@@ -1,5 +1,11 @@
 # Dawnwing ground-riding prototype — 18 November 2026
 
+The original Pegasus now has a 31-bone rig and Idle, Walk, Trot, Jump and Wingbeat clips. A 139,991-triangle game model retains twelve skinned meshes and its coat/feather maps. The full static asset remains unchanged. Native riding tests pass 24 checks covering spawning, mounting, eye/collision changes, physical movement, leap/landing, wall blocking, pause, safe dismount, saving, map travel and scene release. The existing 57 camp and 44 training checks also pass. Actual Windows OpenGL pose, companion and first-person riding captures were inspected.
+
+The exported game GLB was re-imported and validated for its skeleton, one-to-four normalized skin weights, texture retention and finite pose bounds across five clips. This is a first ground-riding pass: animation polish, full wing folding and flight locomotion remain future work. No physical Android result or performance improvement is claimed. See PEGASUS.md.
+
+# Dawnwing ground-riding prototype — 18 November 2026
+
 The original Pegasus now has a 31-bone rig and Idle, Walk, Trot, Jump and Wingbeat clips. A 139,991-triangle game model retains twelve skinned meshes and its coat/feather maps. The full static asset remains unchanged. Native riding tests pass 22 checks covering spawning, mounting, eye/collision changes, physical movement, leap/landing, wall blocking, pause, safe dismount, saving, map travel and scene release. The existing 57 camp and 44 training checks also pass. Actual Windows OpenGL pose, companion and first-person riding captures were inspected.
 
 The exported game GLB was re-imported and validated for its skeleton, one-to-four normalized skin weights, texture retention and finite pose bounds across five clips. This is a first ground-riding pass: animation polish, full wing folding and flight locomotion remain future work. No physical Android result or performance improvement is claimed. See PEGASUS.md.

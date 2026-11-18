@@ -1,5 +1,7 @@
 # Dawnwing Pegasus — first static companion model
 
+The static files described below are preserved. A subsequent rig and native ground-riding prototype are documented in [PEGASUS-RIDING.md](PEGASUS-RIDING.md).
+
 An original pale Pegasus for a future rideable companion. This checkpoint covers the model: horse anatomy, ivory coat, silver flax mane and tail, two layered feather wings, slate hooves and removable leather/linen/bronze tack. It is not yet rigged, animated, rideable or placed in the live camp.
 
 The horse's skin is one welded mesh. Feather vanes are closed geometry with overlapping coverts and their own texture. Body color and short-coat normal detail are baked into 2048-pixel maps; feathers share a 1024-pixel map. All art is authored in this project without downloaded meshes or third-party textures.

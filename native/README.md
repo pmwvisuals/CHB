@@ -2,6 +2,8 @@
 
 **Dawnwing riding test:** use Map → Wayfarer Hall, approach the pale Pegasus and interact to mount. Move, Run to trot, Jump to leap and Interact to dismount. See [PEGASUS.md](PEGASUS.md). The current candidate is `builds/asterion-pegasus-test.apk`; this is ground riding only, with Android performance still unmeasured.
 
+**Dawnwing riding test:** use Map → Wayfarer Hall, approach the pale Pegasus and interact to mount. Move, Run to trot, Jump to leap and Interact to dismount. See [PEGASUS.md](PEGASUS.md). The current candidate is `builds/asterion-pegasus-test.apk`; this is ground riding only, with Android performance still unmeasured.
+
 **Current street layout:** one primary street with required access branches; disconnected pads, duplicate routes and the central plaza are removed. The map now shows the actual paved footprint. See [STREETS.md](STREETS.md) for the full review. The local candidate is `builds/asterion-street-review-test.apk`; installed-device results below refer to earlier builds.
 
 The first playable adventure chapter is available: **Journal → A Steady Hand** begins three story quests, two optional exploration surveys and a repeatable patrol. Discover four numbered survey marks, keep their history in the Journal, train and hunt four forest creatures with sword or bow, collect caches, earn XP/gold and buy healing supplies in camp. Levels, quests, inventory and rewards save locally. See [ADVENTURE.md](ADVENTURE.md) for controls, rules and the test coverage. Known Android performance/loading limitations remain.

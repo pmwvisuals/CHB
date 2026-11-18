@@ -270,6 +270,8 @@ func _process(delta):
 	xp_meter.value=Session.data.xp-previous
 	quest_tracker.text=rules.tracker(Session.data)
 	quest_tracker.visible=not Session.paused
+	if is_instance_valid(world.player.mount):
+		info.text="DAWNWING · RIDING · INTERACT TO DISMOUNT"
 	if is_instance_valid(heal_button):
 		heal_button.visible=world.forest and not Session.paused
 		heal_button.text="HEAL · %d"%Session.data.adventure.potions
@@ -294,6 +296,7 @@ func _process(delta):
 		drill_button.text = ("" if Session.touch_controls else "R  ")+("RETRY" if world.training.completed else "DRILL")
 	if is_instance_valid(controls):
 		controls.text = "WASD  Move   SHIFT  Run   MOUSE  Look   SPACE  Jump   E  Interact   M  Map   J  Journal   ESC  Pause"+(("   1/2 Weapon   H Heal" if world.forest else "   1/2 Weapon   R Drill") if armed else "")
+		if is_instance_valid(world.player.mount):controls.text="WASD  Ride   SHIFT  Trot   MOUSE  Look   SPACE  Leap   E  Dismount   M  Map   ESC  Pause"
 	if last_message != Session.message:
 		last_message = Session.message
 		toast_time = 5.5
