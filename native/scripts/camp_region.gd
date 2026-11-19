@@ -19,6 +19,7 @@ var foliage_stream
 var collision_root:Node3D
 var imported_plants
 var pegasus
+var architecture_stream
 
 func apply_graphics():
 	super.apply_graphics()
@@ -54,6 +55,15 @@ func finish_preparation():
 	if not Session.render_profile.is_empty():
 		var arrival:Dictionary = destinations.filter(func(d): return d.id == "arrival")[0]
 		travel_to(arrival)
+	if Session.touch_controls:
+		apply_mobile_view_distance()
+		architecture_stream = preload("res://scripts/architecture_stream.gd").new()
+		architecture_stream.name = "ArchitectureStream"
+		architecture_stream.camera = player.camera
+		architecture_stream.decorate = finish_import
+		scenery.add_child(architecture_stream)
+		Session.app.build_progress(.97,"Loading nearby buildings…")
+		await architecture_stream.prepare_view(player.position)
 
 func combat_allowed(at:Vector3) -> bool:
 	return absf(at.x+67)<23 and absf(at.z+34)<23
@@ -369,4 +379,9 @@ func travel_to(destination:Dictionary):
 	if destination.id=="wayfarer" and is_instance_valid(pegasus):
 		player.rotation.y=atan2(player.position.x-pegasus.position.x,player.position.z-pegasus.position.z)
 		Session.message="Wayfarer Hall · Dawnwing waits in the nearby field. Approach and interact to ride."
+
+func prepare_destination_view(destination:Dictionary):
+	if is_instance_valid(architecture_stream):
+		var point:Vector2 = destination.point
+		await architecture_stream.prepare_view(Vector3(point.x,0,point.y))
 

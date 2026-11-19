@@ -68,6 +68,8 @@ Pause freezes arrows and the drill timer. Opening the map cancels a held draw; s
 
 ## Graphics settings
 
+On phones and tablets, Balanced limits outdoor visibility to 96 m and High to 128 m. Camp building sections load on a background thread before reaching the visible area and release their mesh resources when you leave. Map travel keeps the map open until the destination's buildings are ready. The camp terrain, roads and collision stay loaded.
+
 Choose **Graphics** on the welcome screen, or **Pause → Graphics** during play. Both options use the same camp, models, textures, nearby planting and gameplay. High retains more distant leaf detail and longer shadows. Balanced reduces distant detail and the 3D rendering resolution while keeping the interface at full resolution.
 
 | Setting | Balanced | High |
@@ -90,6 +92,8 @@ On first launch, mobile devices with less than 6 GiB physical memory or a 32-bit
 The supplied `asterion-native-project.zip` contains every required asset, including the camp scenery, collision and shared-mesh GLBs, terrain maps and layout data. Extract the complete archive before importing it. Godot generates its own import and extracted-texture files on first opening.
 
 The archive includes both the complete `assets/` and `fonts/` directories. For a source checkout, copy both directories from that archive. Alternatively, run `node scripts/fetch-native-fonts.mjs` for the verified original fonts; `node scripts/stage-native-assets.mjs` for the original local creature/plant files; `node --max-old-space-size=6144 scripts/export-native-camp.mjs` to bake and rebatch the camp; and `node scripts/export-native-weapons.mjs` for the sword, bow and arrow GLBs. After regenerating the camp, import it in Godot and run `scripts/bake-native-physics.gd` with the native project as `--path` and the script's absolute path as `--script`. This produces the required physics-only scene and updates the asset manifest. The mesh exporters use Node and the existing project dependencies; physics baking uses Godot. After regenerating the camp, also run `blender --background --factory-startup --python scripts/bake-native-atmosphere.py` from the repository root, then reimport the native project. This bakes the original cloud shapes and contact shading against the current layout, and updates the asset manifest. NumPy is bundled inside Blender; no plug-in or download is required. The atmosphere assets are already included in the complete archive, so Blender is only needed to rebuild them. `assets-manifest.json` records art file sizes and hashes. The fonts include their original SIL Open Font License files, also included by the Android export preset.
+
+After importing an updated camp, also run `scripts/bake-native-architecture.gd` the same way as the physics bake. It creates the mobile ground scene, separate building scenes, shared palette materials and their index in `assets/camp/architecture/`. The Android preset includes those scenes. Run `tests/architecture_stream.gd -- --touch-controls` to check the streaming and map transition on a computer.
 
 ## Build an Android APK
 

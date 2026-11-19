@@ -8,6 +8,14 @@ root = Path(__file__).resolve().parent.parent
 native = root / "native"
 archive = root / "asterion-native-project.zip"
 manifest = json.loads((native / "assets-manifest.json").read_text(encoding="utf-8"))
+manifest_paths = {asset["file"]: asset for asset in manifest["assets"]}
+architecture = json.loads((native / "assets/camp/architecture/index.json").read_text(encoding="utf-8"))
+assert architecture["source_sha256"] == manifest_paths["assets/camp/camp-static.glb"]["sha256"], (
+    "Camp architecture sections are stale. Import the new camp and run scripts/bake-native-architecture.gd."
+)
+assert all(chunk["path"].removeprefix("res://") in manifest_paths for chunk in architecture["chunks"]), (
+    "The asset manifest is missing camp architecture sections."
+)
 files = [native / name for name in (
     "project.godot", "export_presets.cfg", "README.md", "VALIDATION.md", "XIAOMI-TEST.md", "RENDER-OPTIMIZATION.md", "RENDER-PROFILE.json", "ADVENTURE.md", "TEMPLES.md", "STREETS.md", "PEGASUS.md", "PEGASUS.md", "assets-manifest.json"
 )]

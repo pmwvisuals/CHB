@@ -1,0 +1,10 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://scripts/camp_region.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/camp/architecture/ground.scn" id="2"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-prototypes.glb" id="3"]
+[ext_resource type="PackedScene" path="res://assets/camp/camp-physics.scn" id="4"]
+[node name="Camp" type="Node3D"]
+script = ExtResource("1")
+scenery_scene = ExtResource("2")
+prototypes_scene = ExtResource("3")
+collision_scene = ExtResource("4")

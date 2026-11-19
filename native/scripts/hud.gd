@@ -237,6 +237,8 @@ func open_map():
 
 func close_map():
 	if is_instance_valid(map_panel):
+		if map_panel.traveling:
+			return
 		map_panel.queue_free()
 	Session.paused = false
 	Session.clear_touch()

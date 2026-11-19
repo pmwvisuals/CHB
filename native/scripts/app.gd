@@ -83,7 +83,8 @@ func travel(zone:String):
 	# Release the previous region before requesting the next one.
 	await get_tree().process_frame
 	Session.data.zone = zone
-	loading_path = "res://scenes/" + zone + ".tscn"
+	var scene_name := "camp_mobile" if zone == "camp" and Session.touch_controls else zone
+	loading_path = "res://scenes/" + scene_name + ".tscn"
 	var result := ResourceLoader.load_threaded_request(loading_path)
 	if result != OK:
 		load_failed()

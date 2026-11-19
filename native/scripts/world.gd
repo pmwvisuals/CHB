@@ -85,7 +85,7 @@ func prepare():
 	hud.world = self
 	add_child(hud)
 	player.hud = hud
-	finish_preparation()
+	await finish_preparation()
 	apply_graphics()
 	if forest and beast_scene:
 		enemy = create_creature()

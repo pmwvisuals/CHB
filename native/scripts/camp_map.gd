@@ -8,6 +8,8 @@ var marker_lines:Array = []
 var road_review := true
 var place_markers:Array[Button] = []
 var map_canvas:Control
+var traveling := false
+var travel_hint:Label
 
 func _ready():
 	theme = Session.ui_theme
@@ -23,10 +25,10 @@ func _ready():
 	title.position = Vector2(34,24)
 	title.add_theme_font_size_override("font_size",26)
 	add_child(title)
-	var hint := Label.new()
-	hint.text = "Street plan · Gold: main road · Cream: access paths · Grey: buildings"
-	hint.position = Vector2(36,70)
-	add_child(hint)
+	travel_hint = Label.new()
+	travel_hint.text = "Street plan · Gold: main road · Cream: access paths · Grey: buildings"
+	travel_hint.position = Vector2(36,70)
+	add_child(travel_hint)
 	var canvas := Control.new()
 	map_canvas = canvas
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -144,7 +146,13 @@ func draw_building(canvas:Control,at:Vector2,extent:Vector2,turn:float,label:Str
 		canvas.draw_string(font,map_center+at*map_scale+Vector2(-width*.5,-extent.y*map_scale*.5-5),label,HORIZONTAL_ALIGNMENT_LEFT,-1,size,Color("f0e8cd"))
 
 func choose(destination:Dictionary):
+	if traveling:
+		return
+	traveling = true
+	travel_hint.text = "Loading nearby buildings…"
+	await world.prepare_destination_view(destination)
 	world.travel_to(destination)
+	traveling = false
 	closed.emit()
 
 func _unhandled_input(event):

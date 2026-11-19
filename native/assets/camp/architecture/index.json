@@ -1,0 +1,618 @@
+{
+  "chunks": [
+    {
+      "max": [
+        -95.6553115844727,
+        -95.7768630981445
+      ],
+      "meshes": 3,
+      "min": [
+        -152.154479980469,
+        -143.558563232422
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_-120.scn",
+      "triangles": 12270
+    },
+    {
+      "max": [
+        -96.1540679931641,
+        -154.816329956055
+      ],
+      "meshes": 1,
+      "min": [
+        -96.2020492553711,
+        -154.875442504883
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_-168.scn",
+      "triangles": 2
+    },
+    {
+      "max": [
+        -96.1466217041016,
+        -10.4199981689453
+      ],
+      "meshes": 1,
+      "min": [
+        -97.5800018310547,
+        -48.0226821899414
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_-24.scn",
+      "triangles": 720
+    },
+    {
+      "max": [
+        -97.3000030517578,
+        -48.0226821899414
+      ],
+      "meshes": 3,
+      "min": [
+        -128.016754150391,
+        -96.4196243286133
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_-72.scn",
+      "triangles": 85868
+    },
+    {
+      "max": [
+        -114.790901184082,
+        101.182945251465
+      ],
+      "meshes": 2,
+      "min": [
+        -135.209106445313,
+        89.3410339355469
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_120.scn",
+      "triangles": 11223
+    },
+    {
+      "max": [
+        -95.665168762207,
+        101.182945251465
+      ],
+      "meshes": 3,
+      "min": [
+        -144.416000366211,
+        62.2760009765625
+      ],
+      "path": "res://assets/camp/architecture/cell_-120_72.scn",
+      "triangles": 73301
+    },
+    {
+      "max": [
+        -136.779205322266,
+        -120.624847412109
+      ],
+      "meshes": 2,
+      "min": [
+        -158.459869384766,
+        -143.558563232422
+      ],
+      "path": "res://assets/camp/architecture/cell_-168_-120.scn",
+      "triangles": 20252
+    },
+    {
+      "max": [
+        -144.276000976563,
+        0.181999206542969
+      ],
+      "meshes": 3,
+      "min": [
+        -182.328491210938,
+        -21.3932056427002
+      ],
+      "path": "res://assets/camp/architecture/cell_-168_-24.scn",
+      "triangles": 42902
+    },
+    {
+      "max": [
+        -144.276000976563,
+        48.1352996826172
+      ],
+      "meshes": 1,
+      "min": [
+        -147.723999023438,
+        0.100210189819336
+      ],
+      "path": "res://assets/camp/architecture/cell_-168_24.scn",
+      "triangles": 1776
+    },
+    {
+      "max": [
+        -143.703720092773,
+        65.7239990234375
+      ],
+      "meshes": 1,
+      "min": [
+        -147.723999023438,
+        48.1002960205078
+      ],
+      "path": "res://assets/camp/architecture/cell_-168_72.scn",
+      "triangles": 660
+    },
+    {
+      "max": [
+        -1.22800064086914,
+        -95.8843307495117
+      ],
+      "meshes": 1,
+      "min": [
+        -42.4440002441406,
+        -144.002487182617
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_-120.scn",
+      "triangles": 2304
+    },
+    {
+      "max": [
+        6.5,
+        -144.002487182617
+      ],
+      "meshes": 3,
+      "min": [
+        -9.16129589080811,
+        -177.899993896484
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_-168.scn",
+      "triangles": 17309
+    },
+    {
+      "max": [
+        8.5,
+        8.5
+      ],
+      "meshes": 4,
+      "min": [
+        -48.7220458984375,
+        -48.7220458984375
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_-24.scn",
+      "triangles": 11379
+    },
+    {
+      "max": [
+        1.75480270385742,
+        -47.1245994567871
+      ],
+      "meshes": 3,
+      "min": [
+        -42.4440002441406,
+        -96.1167984008789
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_-72.scn",
+      "triangles": 4870
+    },
+    {
+      "max": [
+        5.25,
+        152.627593994141
+      ],
+      "meshes": 4,
+      "min": [
+        -51.4671173095703,
+        95.915397644043
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_120.scn",
+      "triangles": 31303
+    },
+    {
+      "max": [
+        -32.9156723022461,
+        156.283935546875
+      ],
+      "meshes": 2,
+      "min": [
+        -53.9048233032227,
+        136.58544921875
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_168.scn",
+      "triangles": 30225
+    },
+    {
+      "max": [
+        8.5,
+        59.5
+      ],
+      "meshes": 4,
+      "min": [
+        -48.2395439147949,
+        -8.55599212646484
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_24.scn",
+      "triangles": 13709
+    },
+    {
+      "max": [
+        -2.16399765014648,
+        95.915397644043
+      ],
+      "meshes": 4,
+      "min": [
+        -49.0499992370605,
+        40.5
+      ],
+      "path": "res://assets/camp/architecture/cell_-24_72.scn",
+      "triangles": 7872
+    },
+    {
+      "max": [
+        -82.7574310302734,
+        -95.8638381958008
+      ],
+      "meshes": 1,
+      "min": [
+        -96.295654296875,
+        -144.167358398438
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_-120.scn",
+      "triangles": 1410
+    },
+    {
+      "max": [
+        -82.7574310302734,
+        -144.151702880859
+      ],
+      "meshes": 3,
+      "min": [
+        -96.5409927368164,
+        -159.366226196289
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_-168.scn",
+      "triangles": 968
+    },
+    {
+      "max": [
+        -47.1245994567871,
+        -10.4200019836426
+      ],
+      "meshes": 3,
+      "min": [
+        -96.1466217041016,
+        -48.7220458984375
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_-24.scn",
+      "triangles": 14303
+    },
+    {
+      "max": [
+        -50.9000663757324,
+        -47.1245994567871
+      ],
+      "meshes": 2,
+      "min": [
+        -94.6999969482422,
+        -95.8638381958008
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_-72.scn",
+      "triangles": 3387
+    },
+    {
+      "max": [
+        -45.0508193969727,
+        151.741760253906
+      ],
+      "meshes": 2,
+      "min": [
+        -53.9318923950195,
+        131.810424804688
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_120.scn",
+      "triangles": 6799
+    },
+    {
+      "max": [
+        -36.6155281066895,
+        156.255157470703
+      ],
+      "meshes": 2,
+      "min": [
+        -53.9606704711914,
+        136.58544921875
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_168.scn",
+      "triangles": 13193
+    },
+    {
+      "max": [
+        -42.5,
+        59.5
+      ],
+      "meshes": 4,
+      "min": [
+        -91.6207885742188,
+        0.586750030517578
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_24.scn",
+      "triangles": 47696
+    },
+    {
+      "max": [
+        -42.5,
+        87.0800018310547
+      ],
+      "meshes": 4,
+      "min": [
+        -96.3135147094727,
+        40.5
+      ],
+      "path": "res://assets/camp/architecture/cell_-72_72.scn",
+      "triangles": 14500
+    },
+    {
+      "max": [
+        149.027587890625,
+        -95.609992980957
+      ],
+      "meshes": 3,
+      "min": [
+        108.491996765137,
+        -137.12922668457
+      ],
+      "path": "res://assets/camp/architecture/cell_120_-120.scn",
+      "triangles": 41895
+    },
+    {
+      "max": [
+        122.0,
+        0.677883148193359
+      ],
+      "meshes": 2,
+      "min": [
+        86.0999984741211,
+        -45.5914688110352
+      ],
+      "path": "res://assets/camp/architecture/cell_120_-24.scn",
+      "triangles": 3554
+    },
+    {
+      "max": [
+        111.508003234863,
+        -80.4919967651367
+      ],
+      "meshes": 1,
+      "min": [
+        95.6640396118164,
+        -96.2543106079102
+      ],
+      "path": "res://assets/camp/architecture/cell_120_-72.scn",
+      "triangles": 1044
+    },
+    {
+      "max": [
+        118.062377929688,
+        138.229568481445
+      ],
+      "meshes": 3,
+      "min": [
+        95.6738510131836,
+        106.491996765137
+      ],
+      "path": "res://assets/camp/architecture/cell_120_120.scn",
+      "triangles": 32523
+    },
+    {
+      "max": [
+        122.0,
+        45.5914688110352
+      ],
+      "meshes": 2,
+      "min": [
+        86.0999984741211,
+        -1.53074264526367
+      ],
+      "path": "res://assets/camp/architecture/cell_120_24.scn",
+      "triangles": 10129
+    },
+    {
+      "max": [
+        144.219329833984,
+        65.5080032348633
+      ],
+      "meshes": 1,
+      "min": [
+        96.0781860351563,
+        62.492000579834
+      ],
+      "path": "res://assets/camp/architecture/cell_120_72.scn",
+      "triangles": 1770
+    },
+    {
+      "max": [
+        149.064514160156,
+        -114.929748535156
+      ],
+      "meshes": 2,
+      "min": [
+        136.791915893555,
+        -137.087768554688
+      ],
+      "path": "res://assets/camp/architecture/cell_168_-120.scn",
+      "triangles": 4101
+    },
+    {
+      "max": [
+        179.121612548828,
+        99.273796081543
+      ],
+      "meshes": 2,
+      "min": [
+        165.5390625,
+        92.183837890625
+      ],
+      "path": "res://assets/camp/architecture/cell_168_120.scn",
+      "triangles": 6579
+    },
+    {
+      "max": [
+        182.998413085938,
+        98.3939514160156
+      ],
+      "meshes": 3,
+      "min": [
+        143.569458007813,
+        62.492000579834
+      ],
+      "path": "res://assets/camp/architecture/cell_168_72.scn",
+      "triangles": 76793
+    },
+    {
+      "max": [
+        1.50799942016602,
+        -95.7228851318359
+      ],
+      "meshes": 1,
+      "min": [
+        1.22800064086914,
+        -144.069854736328
+      ],
+      "path": "res://assets/camp/architecture/cell_24_-120.scn",
+      "triangles": 894
+    },
+    {
+      "max": [
+        9.16129589080811,
+        -144.069854736328
+      ],
+      "meshes": 3,
+      "min": [
+        -6.5,
+        -177.899993896484
+      ],
+      "path": "res://assets/camp/architecture/cell_24_-168.scn",
+      "triangles": 17373
+    },
+    {
+      "max": [
+        52.2999992370605,
+        8.5
+      ],
+      "meshes": 2,
+      "min": [
+        -8.55599212646484,
+        -48.7220458984375
+      ],
+      "path": "res://assets/camp/architecture/cell_24_-24.scn",
+      "triangles": 9045
+    },
+    {
+      "max": [
+        48.4060096740723,
+        -47.1245994567871
+      ],
+      "meshes": 3,
+      "min": [
+        -1.75480270385742,
+        -96.3675155639648
+      ],
+      "path": "res://assets/camp/architecture/cell_24_-72.scn",
+      "triangles": 2789
+    },
+    {
+      "max": [
+        51.2482986450195,
+        124.444000244141
+      ],
+      "meshes": 4,
+      "min": [
+        -5.25,
+        95.0026473999023
+      ],
+      "path": "res://assets/camp/architecture/cell_24_120.scn",
+      "triangles": 2833
+    },
+    {
+      "max": [
+        56.0000076293945,
+        51.5499992370605
+      ],
+      "meshes": 4,
+      "min": [
+        -8.55599212646484,
+        -8.55599212646484
+      ],
+      "path": "res://assets/camp/architecture/cell_24_24.scn",
+      "triangles": 11773
+    },
+    {
+      "max": [
+        57.4710464477539,
+        99.0386962890625
+      ],
+      "meshes": 4,
+      "min": [
+        2.16399955749512,
+        47.6902503967285
+      ],
+      "path": "res://assets/camp/architecture/cell_24_72.scn",
+      "triangles": 22837
+    },
+    {
+      "max": [
+        101.900001525879,
+        0.677883148193359
+      ],
+      "meshes": 3,
+      "min": [
+        43.7000007629395,
+        -47.0
+      ],
+      "path": "res://assets/camp/architecture/cell_72_-24.scn",
+      "triangles": 13863
+    },
+    {
+      "max": [
+        96.3124389648438,
+        -80.4919967651367
+      ],
+      "meshes": 1,
+      "min": [
+        47.6825866699219,
+        -83.5080032348633
+      ],
+      "path": "res://assets/camp/architecture/cell_72_-72.scn",
+      "triangles": 1770
+    },
+    {
+      "max": [
+        96.3140563964844,
+        124.421157836914
+      ],
+      "meshes": 3,
+      "min": [
+        45.5814208984375,
+        92.74609375
+      ],
+      "path": "res://assets/camp/architecture/cell_72_120.scn",
+      "triangles": 1708
+    },
+    {
+      "max": [
+        101.900001525879,
+        51.5499992370605
+      ],
+      "meshes": 4,
+      "min": [
+        36.0,
+        -1.53074264526367
+      ],
+      "path": "res://assets/camp/architecture/cell_72_24.scn",
+      "triangles": 24736
+    },
+    {
+      "max": [
+        96.128303527832,
+        99.0386962890625
+      ],
+      "meshes": 4,
+      "min": [
+        36.0,
+        48.1500015258789
+      ],
+      "path": "res://assets/camp/architecture/cell_72_72.scn",
+      "triangles": 17822
+    }
+  ],
+  "meshes": 121,
+  "source_sha256": "868500b5c2810b13b2714836edf0fd2edd0b94f5ad96d7402ceb5b3329a9515e",
+  "triangles": 776032
+}
