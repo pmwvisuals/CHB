@@ -14,11 +14,11 @@ Dawnwing flies above camp and has an 18-metre altitude limit above the terrain. 
 
 ## Model and animation
 
-The polished rig is 71% of the original linear size. It has shorter ears, fuller cheeks, deeper-set eyes, draped reins and reshaped feathers. A shaded muzzle and subtle dappling add variation to the ivory coat. The feather maps add shaft and barb detail. The saddle, pad and fittings are separate parts in the Blender source.
+The polished rig is 71% of the original linear size. Its inset almond-shaped eyes have a painted iris and sculpted eyelids. The reins and cheek straps leave the eyes visible. A shaded muzzle and subtle dappling add variation to the ivory coat. The left and right wings are separate meshes in the Blender source, with smooth shoulder shapes and rows of rounded feathers. The saddle, pad and fittings are separate parts.
 
 Idle, Walk, Trot and Jump keep the wings tucked. Walk and trot use timed hoof contact with playback tied to movement speed. Takeoff opens the wings before the Wingbeat cycle, and Glide holds them outstretched. The flight controller blends back into the folded stance when the horse lands.
 
-The archive contains the editable Blender project, a full GLB, the approximately 140,000-triangle Godot GLB, texture maps and rendered previews. Both GLBs use 31 bones, 12 skinned meshes and seven animation clips. The rigging script uses the original static Blender file from the project as its source.
+The archive contains the editable Blender project, full and reduced GLBs, texture maps and rendered previews. Both GLBs use 31 bones, 13 skinned meshes and seven animation clips. The rigging script uses the original static Blender file for the horse and tack, and builds the two wings independently.
 
 ## Validation
 

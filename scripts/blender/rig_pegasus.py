@@ -1,10 +1,13 @@
 """Polish, rig and export Dawnwing's grounded and airborne poses."""
 from pathlib import Path
-import bpy,math,json,os,tempfile,hashlib
+import bpy,math,json,os,tempfile,hashlib,sys
+import bmesh
 import numpy as np
 from mathutils import Vector,Matrix,Euler,Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(Path(__file__).resolve().parent))
+from dawnwing_wings import JOINTS,build_wings
 BASE=ROOT/'assets-source/creatures/dawnwing-pegasus'
 OUT=BASE/'Rigged'
 OUT.mkdir(exist_ok=True)
@@ -16,6 +19,10 @@ scratch=BASE/'scratch';os.environ['TMP']=os.environ['TEMP']=str(scratch);tempfil
 bpy.ops.wm.open_mainfile(filepath=str(BASE/'Blender/DawnwingPegasus.blend'))
 scene=bpy.context.scene
 objects=[o for name in ['PEGASUS | original static companion','TACK | optional removable riding equipment'] for o in bpy.data.collections[name].objects if o.type=='MESH']
+old_wings=next(obj for obj in objects if 'flight_feathers' in obj.name.lower())
+feather_material=old_wings.data.materials[0]
+objects.remove(old_wings)
+bpy.data.objects.remove(old_wings,do_unlink=True)
 deps=bpy.context.evaluated_depsgraph_get()
 for obj in objects:
     data=bpy.data.meshes.new_from_object(obj.evaluated_get(deps),preserve_all_data_layers=True,depsgraph=deps)
@@ -33,43 +40,97 @@ for obj in objects:
     positions=points(obj)
     x,y,z=positions.T.copy()
     label=obj.name.lower()
-    if 'feather' in label:
-        vanes=positions.reshape(-1,2,11,7,3)
-        fronts=vanes.mean(axis=1)
-        spine=fronts.mean(axis=2,keepdims=True)
-        length=np.linalg.norm(spine[:,-1,0]-spine[:,0,0],axis=1)
-        phase=np.arange(len(vanes))*2.399963
-        along=np.linspace(0,1,11)[None,:,None,None]
-        width=(1+.13*smooth(.35,1.0,length)+.075*np.sin(phase))[:,None,None,None]
-        fronts=spine+(fronts-spine)*width*(1-.12*along**4)
-        fronts[...,1]+=(.048*length*np.sin(phase))[:,None,None]*along[...,0]**2
-        fronts[...,2]-=(.026*length)[:,None,None]*along[...,0]**3
-        thickness=.44+.20*(1-along**2)
-        vanes[:]=fronts[:,None]+(vanes-vanes.mean(axis=1,keepdims=True))*thickness[:,None]
-    else:
-        cheek=np.exp(-((y+1.56)/.26)**2-((z-2.87)/.17)**2)
-        nose=np.exp(-((y+2.10)/.17)**2-((z-2.53)/.19)**2)
-        positions[:,0]=x*(1+.115*cheek+.04*nose)
-        positions[:,1]=y+.084*smooth(1.59,2.23,-y)*smooth(2.27,2.47,z)
-        positions[:,2]=z-.13*smooth(3.16,3.53,z)*(1-smooth(-1.15,-.90,y))
-        if 'wet_eyes' in label or 'amber_iris' in label:
-            positions[:,0]-=np.sign(x)*.019
-        elif 'skin_details' in label:
-            eyelid=(1-smooth(.055,.095,np.abs(y+1.593)))*(1-smooth(.049,.074,np.abs(z-3.01)))
-            positions[:,0]-=np.sign(x)*.015*eyelid
-        elif 'mane_and_tail' in label:
-            mane=smooth(-1.48,-1.31,y)*(1-smooth(-.63,-.54,y))
-            positions[:,0]-=.115*mane*smooth(.015,.165,-x)
-            positions[:,2]+=.066*(1-smooth(.12,.18,np.abs(x)))*(1-smooth(-1.51,-1.37,y))
-        elif label.startswith('tack_') and 'leather' in label:
-            saddle_end=smooth(-1.23,-.30,y)*smooth(2.225,2.285,z)*(1-smooth(.36,.43,np.abs(x)))
-            positions[:,2]-=.18*saddle_end
-            positions[:,0]-=.085*np.sign(x)*saddle_end
-            positions[:,1]+=.17*saddle_end
-            side_clearance=smooth(-1.80,-1.24,y)*(1-smooth(-.62,-.18,y))*smooth(2.10,2.28,z)*(1-smooth(2.55,2.70,z))
-            positions[:,0]+=.12*np.sign(x)*side_clearance
+    cheek=np.exp(-((y+1.56)/.26)**2-((z-2.87)/.17)**2)
+    nose=np.exp(-((y+2.10)/.17)**2-((z-2.53)/.19)**2)
+    positions[:,0]=x*(1+.115*cheek+.04*nose)
+    positions[:,1]=y+.084*smooth(1.59,2.23,-y)*smooth(2.27,2.47,z)
+    positions[:,2]=z-.13*smooth(3.16,3.53,z)*(1-smooth(-1.15,-.90,y))
+    if 'mane_and_tail' in label:
+        mane=smooth(-1.48,-1.31,y)*(1-smooth(-.63,-.54,y))
+        positions[:,0]-=.115*mane*smooth(.015,.165,-x)
+        positions[:,2]+=.066*(1-smooth(.12,.18,np.abs(x)))*(1-smooth(-1.51,-1.37,y))
+    elif label.startswith('tack_') and 'leather' in label:
+        cheekstrap=(1-smooth(-1.52,-1.33,y))*np.exp(-((z-2.99)/.16)**2)
+        positions[:,1]+=.110*cheekstrap
+        positions[:,0]-=.015*np.sign(x)*cheekstrap
+        saddle_end=smooth(-1.23,-.30,y)*smooth(2.225,2.285,z)*(1-smooth(.36,.43,np.abs(x)))
+        positions[:,2]-=.18*saddle_end
+        positions[:,0]-=.085*np.sign(x)*saddle_end
+        positions[:,1]+=.17*saddle_end
+        side_clearance=smooth(-1.80,-1.24,y)*(1-smooth(-.62,-.18,y))*smooth(2.10,2.28,z)*(1-smooth(2.55,2.70,z))
+        positions[:,0]+=.12*np.sign(x)*side_clearance
     obj.data.vertices.foreach_set('co',positions.ravel())
     obj.data.update()
+
+body=next(obj for obj in objects if obj.name.startswith('Pegasus_Body'))
+small_details=next(obj for obj in objects if any('skin details' in material.name for material in obj.data.materials if material))
+details=bmesh.new()
+details.from_mesh(small_details.data)
+old_lids=[vertex for vertex in details.verts
+          if .12<abs(vertex.co.x)<.25 and -1.67<vertex.co.y<-1.52 and 2.95<vertex.co.z<3.08]
+old_spars=[vertex for vertex in details.verts
+           if abs(vertex.co.x)>.17 and -.85<vertex.co.y<.14 and vertex.co.z>1.79]
+assert old_lids and old_spars,'Original eye and wing geometry was not found'
+bmesh.ops.delete(details,geom=old_lids+old_spars,context='VERTS')
+details.to_mesh(small_details.data)
+details.free()
+small_details.data.update()
+
+def eye_surfaces(obj,levels,lid=False):
+    verts=[];faces=[];uvs=[]
+    segments=40
+    bpy.context.view_layer.update()
+    for side in (-1,1):
+        start=len(verts)
+        for level in levels:
+            for index in range(segments):
+                angle=index*math.tau/segments
+                along=math.cos(angle)
+                opening=math.sin(angle)*(.65+.35*math.sin(angle)**2)
+                u=level*along
+                v=level*opening
+                eye_y=-1.584+.060*u
+                eye_z=2.999+.028*v-.007*u
+                hit,surface,_,_=body.ray_cast(Vector((side,eye_y,eye_z)),Vector((-side,0,0)))
+                assert hit,(side,eye_y,eye_z)
+                if lid:
+                    depth=.0015+.0038*math.sin(math.pi*(level-.93)/(.28))
+                else:
+                    depth=.0027+.0085*(1-level*level)
+                verts.append((surface.x+side*depth,eye_y,eye_z))
+                uvs.append((.5+.43*u,.5+.43*v))
+        for row in range(len(levels)-1):
+            for index in range(segments):
+                index_next=(index+1)%segments
+                first=start+row*segments
+                quad=(first+index,first+segments+index,first+segments+index_next,first+index_next)
+                faces.append(quad if side>0 else tuple(reversed(quad)))
+        if not lid:
+            center=len(verts)
+            hit,surface,_,_=body.ray_cast(Vector((side,-1.584,2.999)),Vector((-side,0,0)))
+            assert hit
+            verts.append((surface.x+side*.0112,-1.584,2.999))
+            uvs.append((.5,.5))
+            for index in range(segments):
+                tri=(center,start+index,start+(index+1)%segments)
+                faces.append(tri if side>0 else tuple(reversed(tri)))
+    material=obj.data.materials[0]
+    mesh=bpy.data.meshes.new('Sculpted eyelid margins' if lid else 'Inset almond-shaped corneas')
+    mesh.from_pydata(verts,[],faces)
+    mesh.materials.append(material)
+    uv_layer=mesh.uv_layers.new(name='UVMap')
+    for loop in mesh.loops:uv_layer.data[loop.index].uv=uvs[loop.vertex_index]
+    for polygon in mesh.polygons:polygon.use_smooth=True
+    mesh.update()
+    obj.data=mesh
+
+eye=next(obj for obj in objects if 'wet_eyes' in obj.name.lower())
+lids=next(obj for obj in objects if 'amber_iris' in obj.name.lower())
+eye_surfaces(eye,(.18,.38,.57,.76,1.0))
+eye_surfaces(lids,(.93,.99,1.07,1.15,1.21),lid=True)
+lids.name='Pegasus_soft_eyelid_margins'
+wing_anchors=dict(build_wings(feather_material))
+objects.extend(wing_anchors)
 
 def texture(name,values,linear=False):
     height,width,_=values.shape
@@ -84,7 +145,28 @@ def image_node(material,image):
     node=material.node_tree.nodes.new('ShaderNodeTexImage');node.image=image
     return node
 
-feather_material=next(obj.data.materials[0] for obj in objects if 'feather' in obj.name.lower())
+eye_material=eye.data.materials[0]
+eye_shader=eye_material.node_tree.nodes.get('Principled BSDF')
+eyev,eyeu=np.mgrid[0:256,0:256].astype(np.float32)/255
+eyev=(eyev-.5)/.43
+eyeu=(eyeu-.46)/.43
+iris_radius=np.hypot(eyeu*.96,eyev*.66)
+iris_angle=np.arctan2(eyev*.66,eyeu*.96)
+iris=(1-smooth(.55,.71,iris_radius))*smooth(.17,.37,iris_radius)
+iris*=.86+.08*np.sin(iris_angle*41+iris_radius*15)+.06*np.sin(iris_angle*23)
+pupil=1-smooth(.82,1.05,np.hypot(eyeu/.48,(eyev+.03)/.22))
+eye_rgba=np.ones((256,256,4),np.float32)
+for channel,value in enumerate((.16,.071,.026)):
+    eye_rgba[...,channel]=.006+value*iris*(1-pupil)
+eye_color=image_node(eye_material,texture('Dawnwing_Eye_BaseColor',eye_rgba))
+eye_material.node_tree.links.new(eye_color.outputs['Color'],eye_shader.inputs['Base Color'])
+eye_shader.inputs['Roughness'].default_value=.29
+lids_material=lids.data.materials[0]
+lids_material.name='Pegasus | soft taupe eyelid margins'
+lids_shader=lids_material.node_tree.nodes.get('Principled BSDF')
+lids_shader.inputs['Base Color'].default_value=(.32,.29,.25,1)
+lids_shader.inputs['Roughness'].default_value=.70
+
 node_tree=feather_material.node_tree
 shader=node_tree.nodes.get('Principled BSDF')
 yy,xx=np.mgrid[0:1024,0:1024].astype(np.float32)/1023
@@ -106,7 +188,6 @@ normal_map.inputs['Strength'].default_value=.45
 node_tree.links.new(normal_image.outputs['Color'],normal_map.inputs['Color'])
 node_tree.links.new(normal_map.outputs[0],shader.inputs['Normal'])
 
-body=next(obj for obj in objects if obj.name.startswith('Pegasus_Body'))
 coat=body.data.materials[0]
 node_tree=coat.node_tree
 shader=node_tree.nodes.get('Principled BSDF')
@@ -138,21 +219,16 @@ for obj in objects:
     if 'mane_and_tail' in obj.name.lower():
         shader.inputs['Base Color'].default_value=(.31,.32,.30,1)
         material.diffuse_color=(.31,.32,.30,1)
-    elif 'amber_iris' in obj.name.lower():
-        shader.inputs['Base Color'].default_value=(.045,.022,.010,1)
-        shader.inputs['Roughness'].default_value=.36
 print('DAWNWING SURFACES BAKED',flush=True)
 arm_data=bpy.data.armatures.new('Pegasus skeleton')
 arm=bpy.data.objects.new('PegasusRig',arm_data)
 bpy.data.collections['PEGASUS | original static companion'].objects.link(arm)
 arm.show_in_front=True
 bpy.ops.object.select_all(action='DESELECT');arm.select_set(True);bpy.context.view_layer.objects.active=arm;bpy.ops.object.mode_set(mode='EDIT')
-spec={}
 def bone(name,a,b,parent=None,deform=True):
     eb=arm_data.edit_bones.new(name);eb.head=a;eb.tail=b;eb.use_deform=deform
     eb.matrix=Matrix.Translation(Vector(a))@(Vector(b)-Vector(a)).to_track_quat('Y','X').to_matrix().to_4x4();eb.length=(Vector(b)-Vector(a)).length
     if parent:eb.parent=arm_data.edit_bones[parent]
-    spec[name]={'a':list(a),'b':list(b),'parent':parent}
 bone('Root',(0,0,0),(0,0,.3),deform=False)
 bone('Pelvis',(0,.8,1.7),(0,.15,1.7),'Root')
 bone('Spine',(0,.15,1.7),(0,-.45,1.8),'Pelvis')
@@ -176,7 +252,7 @@ for suffix,side in [('L',-1),('R',1)]:
         bone(stem+'.Lower',knee,fetlock,stem+'.Upper')
         bone(stem+'.Foot',fetlock,toe,stem+'.Lower')
         legs[stem]=(Vector(root),Vector(knee),Vector(fetlock),Vector(toe))
-    joints=[(side*.34,-.35,2.04),(side*.96,-.22,2.58),(side*1.49,-.17,2.92),(side*2.15,-.27,3.18),(side*2.66,-.37,3.28)]
+    joints=[(side*x,y,z) for x,y,z in JOINTS]
     for i in range(4):bone('Wing.'+suffix+'.'+str(i+1),joints[i],joints[i+1],'Chest' if i==0 else 'Wing.'+suffix+'.'+str(i))
     bone('Ear.'+suffix,(side*.13,-1.40,3.17),(side*.18,-1.37,3.37),'Head')
 bpy.ops.object.mode_set(mode='OBJECT')
@@ -209,7 +285,7 @@ def body_weights(p):
 def wing_weights(p):
     w=np.zeros((len(p),len(names)),np.float32)
     x=np.abs(p[:,0])
-    transitions=[smooth(joint-.12,joint+.12,x) for joint in [.96,1.49,2.15]]
+    transitions=[smooth(joint[0]-.17,joint[0]+.17,x) for joint in JOINTS[1:4]]
     blend=[1-transitions[0],transitions[0]-transitions[1],transitions[1]-transitions[2],transitions[2]]
     for side in ['L','R']:
         sign=p[:,0]<0 if side=='L' else p[:,0]>=0
@@ -229,11 +305,13 @@ def bind(obj,w):
 
 for obj in objects:
     p=points(obj);w=body_weights(p);name=obj.name.lower()
-    if 'feather' in name:
-        # All vane vertices inherit the same root weights, avoiding elastic feathers.
-        assert len(p)%154==0
-        roots=np.array([p[i:i+7].mean(axis=0) for i in range(0,len(p),154)])
-        w=np.repeat(wing_weights(roots),154,axis=0)
+    if obj in wing_anchors:
+        anchored=p.copy()
+        anchored[:,0]=np.sign(p[:,0])*wing_anchors[obj]
+        w=wing_weights(anchored)
+        joined=smooth(.26,.56,wing_anchors[obj])
+        w*=joined[:,None]
+        w[:,indices['Chest']]+=1-joined
     elif name.startswith('tack_'):
         if 'leather' not in name:
             w[:]=0;w[:,indices['Spine']]=1
@@ -243,10 +321,10 @@ for obj in objects:
             back=(p[:,1]>-.40).astype(np.float32)
             w*=1-back[:,None];w[:,indices['Spine']]+=back
             w*=1-head[:,None];w[:,indices['Head']]+=head
-    elif any('skin details' in m.name for m in obj.data.materials if m) or 'coronet' in name:
-        mask=(np.abs(p[:,0])>.42)&(p[:,2]>1.85)&(p[:,1]>-.95)&(p[:,1]<1.5)
-        w[mask]=wing_weights(p[mask])
-    if 'feather' not in name and not name.startswith('tack_') and 'mane' not in name:
+    elif obj in (eye,lids):
+        w[:]=0
+        w[:,indices['Head']]=1
+    if obj not in wing_anchors and not name.startswith('tack_') and 'mane' not in name:
         ear=smooth(3.17,3.29,p[:,2])*(1-smooth(.07,.13,np.abs(p[:,1]+1.40)))*smooth(.045,.105,np.abs(p[:,0]))
         w*=1-ear[:,None]
         w[:,indices['Ear.L']]+=ear*(p[:,0]<0)
@@ -266,23 +344,16 @@ def axes(direction,trailing):
     return Matrix((along,across,along.cross(across))).transposed()
 
 def fold(amount=1.0):
-    folded_axes=[
-        ((.40,.40,-.82),(.09,.90,.05)),
-        ((.10,-.85,.52),(.08,.92,-.15)),
-        ((.045,.77,.64),(.11,.90,-.43)),
-        ((.04,.83,.56),(.11,.91,-.41)),
-    ]
     for side,sign in [('L',-1),('R',1)]:
-        parent=Quaternion()
-        for j,((out,back,up),(trailing_x,trailing_y,trailing_z)) in enumerate(folded_axes,1):
-            name=f'Wing.{side}.{j}'
-            rest=Vector(spec[name]['b'])-Vector(spec[name]['a'])
-            start=axes(rest,(sign*.20,1,-.26))
-            end=axes((sign*out,back,up),(sign*trailing_x,trailing_y,trailing_z))
-            posed=Quaternion().slerp((end@start.transposed()).to_quaternion(),amount)
-            bone_basis=arm_data.bones[name].matrix_local.to_quaternion()
-            arm.pose.bones[name].rotation_quaternion=bone_basis.inverted()@parent.inverted()@posed@bone_basis
-            parent=posed
+        name=f'Wing.{side}.1'
+        start=axes((sign,-.035,.33),(0,1,-.18))
+        end=axes((sign*.09,.994,.055),(sign*.105,.02,-1))
+        posed=Quaternion().slerp((end@start.transposed()).to_quaternion(),amount)
+        bone_basis=arm_data.bones[name].matrix_local.to_quaternion()
+        shoulder=arm.pose.bones[name]
+        shoulder.rotation_quaternion=bone_basis.inverted()@posed@bone_basis
+        shoulder.location=bone_basis.inverted()@Vector((sign*.20,.012,-.086))*amount
+        shoulder.scale=(1-.29*amount,)*3
 
 def solve_leg(stem,target,hoof_pitch=0):
     a,k,f,toe=legs[stem];l1=(k-a).length;l2=(f-k).length
@@ -358,6 +429,8 @@ for name,seconds in [('Idle',3.0),('Walk',7/6),('Trot',2/3),('Jump',.54),('Takeo
         for pb in arm.pose.bones:
             pb.keyframe_insert('rotation_quaternion',frame=frame)
             pb.keyframe_insert('location',frame=frame)
+            if pb.name in {'Wing.L.1','Wing.R.1'}:
+                pb.keyframe_insert('scale',frame=frame)
     for curve in action.fcurves if hasattr(action,'fcurves') else []:
         for point in curve.keyframe_points:point.interpolation='LINEAR'
     clips[name]={'frames':frames,'seconds':seconds,'loop':name not in one_shots}
@@ -382,7 +455,7 @@ def select_asset():
 select_asset()
 bpy.ops.export_scene.gltf(filepath=str(OUT/'DawnwingPegasus-Rigged.glb'),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=True)
 for obj in objects:
-    if len(obj.data.polygons)>100:
+    if obj not in (eye,lids) and len(obj.data.polygons)>100:
         bpy.context.view_layer.objects.active=obj
         mod=obj.modifiers.new('Game surface reduction','DECIMATE');mod.ratio=.52
         while obj.modifiers.find(mod.name)>0:bpy.ops.object.modifier_move_up(modifier=mod.name)

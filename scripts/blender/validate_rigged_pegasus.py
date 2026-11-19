@@ -10,7 +10,8 @@ arm=next(o for o in bpy.context.scene.objects if o.type=='ARMATURE')
 # Blender adds an Icosphere custom bone-display helper on import. Validate the
 # actual skinned asset meshes rather than that importer-owned display object.
 meshes=[o for o in bpy.context.scene.objects if o.type=='MESH' and any(m.type=='ARMATURE' for m in o.modifiers)]
-assert len(arm.data.bones)==31 and len(meshes)==12
+assert len(arm.data.bones)==31 and len(meshes)==13
+assert all(any(mesh.name.startswith(f'Dawnwing {side} Wing') for mesh in meshes) for side in ('Left','Right'))
 triangles=0
 for obj in meshes:
     obj.data.calc_loop_triangles();triangles+=len(obj.data.loop_triangles)
@@ -19,7 +20,14 @@ for obj in meshes:
         assert 1<=len([g for g in v.groups if g.weight>0])<=4
         assert abs(sum(g.weight for g in v.groups)-1)<.015
 assert triangles<150000
-assert len(bpy.data.images)>=4
+assert len(bpy.data.images)>=5
+assert any(image.name.startswith('Dawnwing_Eye_BaseColor') and image.packed_file for image in bpy.data.images)
+for part in ('Pegasus_dark_wet_eyes','Pegasus_soft_eyelid_margins'):
+    surface=next(mesh for mesh in meshes if mesh.name.startswith(part))
+    assert len(surface.data.polygons)>150
+    for vertex in surface.data.vertices:
+        assert len(vertex.groups)==1
+        assert surface.vertex_groups[vertex.groups[0].group].name=='Head'
 actions={}
 for action in bpy.data.actions:
     for name in ['Idle','Walk','Trot','Jump','Takeoff','Wingbeat','Glide']:
@@ -55,6 +63,6 @@ for name in ['Idle','Walk','Trot','Jump']:
     assert poses[name]['min'][2]>-.055,(name,poses[name])
 assert span('Glide')>3.7 and span('Wingbeat')>3.7
 assert 2.15<poses['Idle']['max'][2]<2.55,poses['Idle']
-report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and twelve skinned meshes','Every vertex has one to four normalized finite skin weights','Coat and feather color and normal maps are retained','All seven clips have finite bounded deformation','The wings stay compact in all ground clips and extend in flight','Game model below 150k triangles'],'limitations':['Gait contact is authored on level ground','Android performance not measured']}
+report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and thirteen skinned meshes','Both independent wing meshes are retained','Every vertex has one to four normalized finite skin weights','Coat and feather maps and the new iris texture are retained','Corneas and eyelid margins follow the head as rigidly attached surfaces','All seven clips have finite bounded deformation','The wings stay compact in all ground clips and extend in flight','Game model below 150k triangles'],'limitations':['Gait contact is authored on level ground','Android performance not measured']}
 (BASE/'Rigged/validation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print('RIGGED PEGASUS VALIDATED',json.dumps(report),flush=True)

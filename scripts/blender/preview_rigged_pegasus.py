@@ -24,8 +24,14 @@ views = [
     ("Walking", "Walk", 6, (6.45, -2.1, 2.62), (0, -.05, 1.12), 65, 0),
     ("Flight", "Wingbeat", 8, (4.1, -8.6, 5.8), (0, -.06, 2.18), 52, 1.1),
     ("Portrait", "Idle", 9, (2.35, -3.9, 2.52), (0, -1.04, 1.96), 100, 0),
+    ("Wings", "Glide", 0, (0, -3.60, 8.35), (0, .06, 2.28), 42, .50),
 ]
 for label, name, frame, viewpoint, target, focal_length, lift in views:
+    if label == "Wings":
+        for collection in ("PEGASUS | original static companion", "TACK | optional removable riding equipment"):
+            for obj in bpy.data.collections[collection].objects:
+                if obj.type == "MESH":
+                    obj.hide_render = True
     action = bpy.data.actions[name]
     armature.animation_data.action = action
     armature.animation_data.action_slot = action.slots[0]
