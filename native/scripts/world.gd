@@ -109,6 +109,23 @@ func create_creature():
 func apply_graphics():
 	key_light.directional_shadow_max_distance = Session.graphics_preset().shadow_range
 
+func apply_mobile_view_distance():
+	if not Session.touch_controls:
+		return
+	var distance:float = Session.GRAPHICS.MOBILE_VIEW_DISTANCE[Session.graphics_quality()]
+	player.camera.far = distance
+	environment.fog_depth_begin = distance * 0.58
+	environment.fog_depth_end = distance * 0.94
+	environment.fog_density = 1.0
+	environment.fog_sun_scatter = 0.0
+	environment.fog_light_energy = 1.0
+	# Continue the distant haze below the horizon when looking down from flight.
+	var sky_material:ShaderMaterial = environment.sky.sky_material
+	var haze:Color = environment.fog_light_color if forest else sky_material.get_shader_parameter("horizon_tint")
+	environment.fog_light_color = haze
+	sky_material.set_shader_parameter("horizon_tint",haze)
+	sky_material.set_shader_parameter("ground_tint",haze)
+
 func build_sky():
 	var world := WorldEnvironment.new()
 	environment = Environment.new()

@@ -40,6 +40,8 @@ func _ready():
 		choices[id] = choice
 	var explanation := Label.new()
 	explanation.text = "The same world, models and textures in both modes.\nBalanced favors smoother play.\nHigh shows more detail in the distance."
+	if Session.touch_controls:
+		explanation.text = "Balanced limits outdoor view to 96 m for smoother play.\nHigh extends it to 128 m.\nDistant scenery fades into haze as you explore."
 	explanation.custom_minimum_size.x = 512
 	explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	explanation.add_theme_font_size_override("font_size",20)

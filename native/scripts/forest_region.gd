@@ -311,6 +311,7 @@ func recover_tree_position(at:Vector3) -> Vector3:
 
 func apply_graphics():
 	super.apply_graphics()
+	apply_mobile_view_distance()
 	var high:bool = Session.graphics_quality()=="high"
 	for node in detail_nodes:
 		node.visibility_range_end = 52 if high else 42
@@ -348,9 +349,14 @@ func _process(delta):
 	if Session.paused or not is_instance_valid(player):
 		return
 	var rim := smoothstep(210,270,Vector2(player.position.x,player.position.z).length())
-	environment.fog_depth_begin = lerpf(65,18,rim)
-	environment.fog_depth_end = lerpf(210,55,rim)
-	environment.fog_density = lerpf(.7,.98,rim)
+	var fog_start := 65.0
+	var fog_end := 210.0
+	if Session.touch_controls:
+		fog_start = player.camera.far * 0.58
+		fog_end = player.camera.far * 0.94
+	environment.fog_depth_begin = lerpf(fog_start,18,rim)
+	environment.fog_depth_end = lerpf(fog_end,55,rim)
+	environment.fog_density = 1.0 if Session.touch_controls else lerpf(.7,.98,rim)
 	collision_tick += delta
 	if collision_tick>=.4:
 		collision_tick = 0

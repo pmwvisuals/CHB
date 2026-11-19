@@ -22,6 +22,7 @@ var pegasus
 
 func apply_graphics():
 	super.apply_graphics()
+	apply_mobile_view_distance()
 	var preset:Dictionary = Session.graphics_preset()
 	if is_instance_valid(scenery):
 		for part in scenery.find_children("SceneryCell_*","MeshInstance3D",true,false):

@@ -5,6 +5,11 @@ const PRESETS := {
 	"high":{"name":"High","scale":1.0,"leaf_range":85.0,"near_range":112.0,"shadow_range":65.0,"lod":.6,"far_lod":.45,"scenery_lod":.85}
 }
 
+const MOBILE_VIEW_DISTANCE := {
+	"balanced": 96.0,
+	"high": 128.0,
+}
+
 static func recommend(memory_bytes:int,mobile:bool,architecture:String) -> String:
 	if mobile and (memory_bytes<6*1024*1024*1024 or not "64" in architecture):
 		return "balanced"
