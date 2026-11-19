@@ -12,7 +12,7 @@ func touch(index:int,pressed:bool,position:Vector2):
 	event.index = index
 	event.pressed = pressed
 	event.position = position
-	Input.parse_input_event(event)
+	root.push_input(event,true)
 	await process_frame
 
 func drag(index:int,position:Vector2,relative:Vector2):
@@ -20,7 +20,7 @@ func drag(index:int,position:Vector2,relative:Vector2):
 	event.index = index
 	event.position = position
 	event.relative = relative
-	Input.parse_input_event(event)
+	root.push_input(event,true)
 	await process_frame
 
 func _initialize():

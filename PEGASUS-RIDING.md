@@ -1,33 +1,25 @@
-# Dawnwing — first ground-riding prototype
+# Dawnwing Pegasus
 
-Dawnwing now waits in the field near Wayfarer Hall. Use **Map → Wayfarer Hall**; arrival faces toward the companion. Walk up and choose **Ride Dawnwing / E**. Normal movement controls steer the horse, **Run / Shift** selects a trot, **Jump / Space** performs a short leap, and **Interact / E** dismounts after landing. Touch uses the existing joystick, Run, Jump and interaction controls.
+Dawnwing waits in the field near Wayfarer Hall. Use **Map → Wayfarer Hall**, approach the pale Pegasus and press **E** or tap **Ride Dawnwing**.
 
-Mounting raises the first-person eye position to 3.15 metres and disables the on-foot collision body while the Pegasus's physical body handles movement. Dismounting raycasts to walkable ground and checks space for the player's capsule. If there is no open position or the horse is airborne, dismount is refused. The normal 1.82-metre eye height and collision return afterward. Pause freezes movement and animation. Map travel and scene changes release the rider. Saving while mounted records the safe boarding position, so a resumed player does not appear inside the horse.
+| Action | Keyboard | Touch |
+| --- | --- | --- |
+| Steer | WASD | Joystick |
+| Trot on the ground | Shift | Run |
+| Leap or climb | Space | Jump or Climb |
+| Take off, land or cancel a landing | F | Flight, Land or Cancel |
+| Dismount on the ground | E | Dismount Dawnwing |
 
-This prototype stays on safe camp land. It rejects the training yard, lake, narrow causeway and map exterior. Mounting equips no combat weapons. The horse returns to its home field whenever camp is reconstructed; its roaming position is not persisted. The full wings remain moderately open, and feathers can overlap scenery: a finished ground-fold pose and wing-aware obstacle avoidance remain future refinement.
+Dawnwing flies above camp and has an 18-metre altitude limit above the terrain. To land, fly over clear ground and use the flight control again. The lake, practice yard, roofs and steep ground are unsuitable for landing. Saving while mounted records the boarding position. Map travel releases the rider and returns an airborne Dawnwing to the field.
 
-## Rig and animation files
+## Model and animation
 
-The static model is retained. New files under `assets-source/creatures/dawnwing-pegasus/Rigged/` include:
+The polished rig is 71% of the original linear size. It has shorter ears, fuller cheeks, deeper-set eyes, draped reins and reshaped feathers. A shaded muzzle and subtle dappling add variation to the ivory coat. The feather maps add shaft and barb detail. The saddle, pad and fittings are separate parts in the Blender source.
 
-- `DawnwingPegasus-Rigged.blend`: the full original surface with explicit 31-bone deform skeleton and five Blender actions.
-- `DawnwingPegasus-Rigged.glb`: the full skinned model and clips.
-- `rig-report.json` and `validation.json`: clip timing and export/weight/pose checks.
+Idle, Walk, Trot and Jump keep the wings tucked. Walk and trot use timed hoof contact with playback tied to movement speed. Takeoff opens the wings before the Wingbeat cycle, and Glide holds them outstretched. The flight controller blends back into the folded stance when the horse lands.
 
-The game uses `native/assets/pegasus/dawnwing.glb`, one 139,991-triangle mesh set shared by both graphics presets. It retains twelve skinned parts, the baked coat/feather maps and removable tack. Distant geometry culls at 100 metres, and an unmounted horse stops animation past 55 metres. The controller and skeletal model leave scene memory when camp is released.
+The archive contains the editable Blender project, a full GLB, the approximately 140,000-triangle Godot GLB, texture maps and rendered previews. Both GLBs use 31 bones, 12 skinned meshes and seven animation clips. The rigging script uses the original static Blender file from the project as its source.
 
-| Clip | Purpose |
-| --- | --- |
-| Idle | Breathing, head/ear/tail motion, moderately raised wings |
-| Walk | Initial ground gait |
-| Trot | Faster diagonal gait |
-| Jump | Leg tuck and a partial wing opening during the physical leap |
-| Wingbeat | Standalone animation for later flight development |
+## Validation
 
-The actions are a first animation pass, not commercial-quality final animation. Gait contact and feather overlap need further artistic refinement. Wingbeat does not provide flight locomotion, and this version has no takeoff, aerial controls or flying quests. Android smoothness and startup reliability are not established by desktop testing.
-
-## Verification
-
-The native riding suite checks grounded spawning, all five imported clips, distance/zone restrictions, mounting, rider height/collision, safe saving, physical walk/trot/leap, landing, solid-wall collision, pause, dismount, remount, map travel and scene release. The existing camp and training suites are also run. The export validator reimports the game GLB, verifies normalized one-to-four-bone weights, texture retention and sample pose bounds across all five actions. Isolated idle/walk/wingbeat views and first-person camp views are rendered with the actual Godot Compatibility renderer.
-
-Rebuild with `scripts/blender/rig_pegasus.py`, then `scripts/blender/validate_rigged_pegasus.py`. Run Godot with `--path native --script tests/pegasus.gd` for gameplay checks and `tests/pegasus_preview.gd` for pose images. `scripts/package-rigged-pegasus.py` creates the checked model archive. The complete editable native project also contains the runtime model and controller.
+The Godot suite exercises ground riding, takeoff, climb, glide, landing, dismount, map travel and scene release. The Blender validator reimports the game GLB and checks skin weights, retained maps and the pose bounds for the ground and flight clips. The Android APK uses the local test key. Performance on a physical Android device remains unmeasured.

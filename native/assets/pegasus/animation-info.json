@@ -7,27 +7,40 @@
       "loop": true
     },
     "Walk": {
-      "frames": 34,
-      "seconds": 1.4,
-      "loop": true
+      "frames": 28,
+      "seconds": 1.1666666666666667,
+      "loop": true,
+      "reference_speed_mps": 1.3
     },
     "Trot": {
-      "frames": 20,
-      "seconds": 0.85,
-      "loop": true
+      "frames": 16,
+      "seconds": 0.6666666666666666,
+      "loop": true,
+      "reference_speed_mps": 2.85
     },
     "Jump": {
-      "frames": 26,
-      "seconds": 1.1,
+      "frames": 13,
+      "seconds": 0.5416666666666666,
+      "loop": false
+    },
+    "Takeoff": {
+      "frames": 15,
+      "seconds": 0.625,
       "loop": false
     },
     "Wingbeat": {
-      "frames": 41,
-      "seconds": 1.7,
+      "frames": 35,
+      "seconds": 1.4583333333333333,
+      "loop": true
+    },
+    "Glide": {
+      "frames": 48,
+      "seconds": 2.0,
       "loop": true
     }
   },
   "rig": "Explicit deform skeleton; no external rigging add-on",
   "game_reduction": 0.52,
-  "riding": "First ground-riding prototype; flight locomotion is not implemented"
+  "scale_from_original": 0.71,
+  "riding": "Compact fold on the ground, with takeoff, wingbeat and glide clips for camp flight"
 }

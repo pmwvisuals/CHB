@@ -22,6 +22,8 @@ var graphics_panel:Control
 var journal_panel:Control
 var quest_tracker:Label
 var heal_button:Button
+var flight_button:Button
+var jump_button:Button
 var return_button:Button
 var xp_meter:ProgressBar
 
@@ -163,8 +165,11 @@ func _ready():
 		pin(attack_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-130,112,80))
 		heal_button=button(root,"HEAL",Vector2.ZERO,Vector2(112,52),func():Session.heal_requested=true,true)
 		pin(heal_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-198,112,52))
-		var jump = button(root,"JUMP",Vector2.ZERO,Vector2(94,64),func(): Session.jump_requested=true,true)
-		pin(jump,Control.PRESET_BOTTOM_RIGHT,Rect2(-270,-112,94,64))
+		jump_button = button(root,"JUMP",Vector2.ZERO,Vector2(94,64),func(): Session.jump_requested=true,true)
+		pin(jump_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-270,-112,94,64))
+		flight_button=button(root,"FLIGHT",Vector2.ZERO,Vector2(112,64),func(): Session.flight_requested=true,true)
+		pin(flight_button,Control.PRESET_BOTTOM_RIGHT,Rect2(-152,-112,112,64))
+		flight_button.hide()
 		var sprint := button(root,"RUN",Vector2.ZERO,Vector2(76,54),func(): pass,true)
 		pin(sprint,Control.PRESET_BOTTOM_LEFT,Rect2(280,-94,76,54))
 		sprint.button_down.connect(func(): Session.sprint_requested=true)
@@ -270,8 +275,15 @@ func _process(delta):
 	xp_meter.value=Session.data.xp-previous
 	quest_tracker.text=rules.tracker(Session.data)
 	quest_tracker.visible=not Session.paused
-	if is_instance_valid(world.player.mount):
-		info.text="DAWNWING · RIDING · INTERACT TO DISMOUNT"
+	var mounted:bool=is_instance_valid(world.player.mount)
+	var flying:bool=mounted and world.player.mount.airborne
+	var landing:bool=flying and world.player.mount.landing
+	if mounted:
+		info.text="DAWNWING · "+("LANDING" if landing else "IN FLIGHT" if flying else "RIDING")
+	if is_instance_valid(flight_button):
+		flight_button.visible=mounted and not Session.paused
+		flight_button.text="CANCEL" if landing else "LAND" if flying else "FLIGHT"
+		jump_button.text="CLIMB" if flying else "JUMP"
 	if is_instance_valid(heal_button):
 		heal_button.visible=world.forest and not Session.paused
 		heal_button.text="HEAL · %d"%Session.data.adventure.potions
@@ -296,7 +308,7 @@ func _process(delta):
 		drill_button.text = ("" if Session.touch_controls else "R  ")+("RETRY" if world.training.completed else "DRILL")
 	if is_instance_valid(controls):
 		controls.text = "WASD  Move   SHIFT  Run   MOUSE  Look   SPACE  Jump   E  Interact   M  Map   J  Journal   ESC  Pause"+(("   1/2 Weapon   H Heal" if world.forest else "   1/2 Weapon   R Drill") if armed else "")
-		if is_instance_valid(world.player.mount):controls.text="WASD  Ride   SHIFT  Trot   MOUSE  Look   SPACE  Leap   E  Dismount   M  Map   ESC  Pause"
+		if mounted:controls.text="WASD  Steer   SPACE  Climb   F  Land / cancel   M  Map   ESC  Pause" if flying else "WASD  Ride   SHIFT  Trot   SPACE  Leap   F  Take off   E  Dismount   M  Map   ESC  Pause"
 	if last_message != Session.message:
 		last_message = Session.message
 		toast_time = 5.5

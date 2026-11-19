@@ -6,6 +6,20 @@ func check(ok:bool,label:String):
 	if not ok:failures+=1
 func frames(count:int):
 	for i in range(count):await physics_frame
+func request_flight(session,player):
+	if not session.touch_controls:
+		session.flight_requested=true
+		return
+	await process_frame
+	var button:Button=player.hud.flight_button
+	var event:=InputEventScreenTouch.new()
+	event.index=3
+	event.position=button.get_global_rect().get_center()
+	event.pressed=true
+	root.push_input(event,true)
+	event=event.duplicate()
+	event.pressed=false
+	root.push_input(event,true)
 func run():
 	var session=root.get_node("Session")
 	session.save_path="res://tests/_pegasus-save.json"
@@ -22,7 +36,7 @@ func run():
 	var mount=camp.pegasus
 	await frames(30)
 	check(is_instance_valid(mount) and mount.is_on_floor(),"Dawnwing spawns grounded in the camp field")
-	check(mount.clips.size()==5,"The native model imports idle, walk, trot, jump and wingbeat clips")
+	check(mount.clips.size()==7,"The native model imports four ground clips and three flight clips")
 	check(not mount.mount_player(player),"Mounting is blocked from a distance")
 	player.set_physics_process(false)
 	player.position=mount.position+Vector3(140,0,0)
@@ -33,10 +47,12 @@ func run():
 	mount._physics_process(.31)
 	check(mount.model.visible and mount.animation.speed_scale==1,"Approaching restores the Pegasus model and animation")
 	var boarding:Vector3=player.position
+	if session.touch_controls:
+		check(not player.hud.flight_button.visible,"Touch flight control is hidden when on foot")
 	check(camp.interaction_text()=="Ride Dawnwing","A nearby player sees the riding interaction")
 	camp.interact()
 	check(player.mount==mount and mount.rider==player,"The normal camp interaction mounts the companion")
-	check(is_equal_approx(player.camera.position.y,3.15) and player.collision_layer==0 and not player.combat_enabled(),"Mounting raises rider eye height and sheathes weapons")
+	check(is_equal_approx(player.camera.position.y,2.52) and player.collision_layer==0 and not player.combat_enabled(),"The smaller mount puts the player's eyes above the saddle and sheathes weapons")
 	session.save_game(player)
 	check(Vector3(session.data.positions.camp[0],session.data.positions.camp[1],session.data.positions.camp[2]).is_equal_approx(boarding),"Saving while mounted records the safe pre-mount foot position")
 	var start:Vector3=mount.position
@@ -45,7 +61,7 @@ func run():
 	for i in range(65):
 		await physics_frame
 		mount.drive(player,1.0/60)
-	check(mount.position.distance_to(start)>1.7 and mount.active_clip=="Walk","Mounted movement drives real physics and the walk animation")
+	check(mount.position.distance_to(start)>1.0 and mount.active_clip=="Walk","Mounted movement drives real physics and the walk animation")
 	check(player.position.distance_to(mount.position)<.3,"The rider remains attached to the saddle during movement")
 	if "--capture" in OS.get_cmdline_user_args():
 		for i in range(4):await process_frame
@@ -55,7 +71,7 @@ func run():
 	for i in range(35):
 		await physics_frame
 		mount.drive(player,1.0/60)
-	check(Vector2(mount.velocity.x,mount.velocity.z).length()>4 and mount.active_clip=="Trot","Run selects a faster trot")
+	check(Vector2(mount.velocity.x,mount.velocity.z).length()>2.5 and mount.active_clip=="Trot","Run selects a faster trot")
 	session.touch_move=Vector2.ZERO
 	session.sprint_requested=false
 	for i in range(40):
@@ -70,6 +86,42 @@ func run():
 		await physics_frame
 		mount.drive(player,1.0/60)
 	check(mount.is_on_floor(),"The Pegasus lands on the physical camp surface")
+	var takeoff:Vector3=mount.position
+	await request_flight(session,player)
+	await physics_frame
+	mount.drive(player,1.0/60)
+	check(mount.airborne and mount.active_clip=="Takeoff","Flight opens the wings and begins takeoff")
+	if session.touch_controls:
+		await frames(2)
+		check(player.hud.flight_button.text=="LAND" and player.hud.jump_button.text=="CLIMB","Touch controls switch to Land and Climb in flight")
+	for i in range(105):
+		await physics_frame
+		mount.drive(player,1.0/60)
+	check(mount.position.y>takeoff.y+3 and mount.active_clip=="Wingbeat" and not mount.dismount(),"A real climb reaches wingbeat and blocks aerial dismount")
+	var climb_start:float=mount.position.y
+	session.jump_requested=true
+	session.touch_move=Vector2(0,-1)
+	for i in range(120):
+		await physics_frame
+		mount.drive(player,1.0/60)
+	check(mount.position.y>climb_start+2.0 and mount.position.distance_to(takeoff)>10.0 and mount.active_clip=="Glide","The rider steers, climbs and transitions into a glide")
+	if "--capture" in OS.get_cmdline_user_args():
+		player.camera.rotation.x=-.26
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://builds/pegasus-flight.png")
+		player.camera.rotation.x=0
+	session.touch_move=Vector2.ZERO
+	for i in range(90):
+		await physics_frame
+		mount.drive(player,1.0/60)
+	await request_flight(session,player)
+	await physics_frame
+	mount.drive(player,1.0/60)
+	check(mount.landing,"Flight requests a descent above open ground")
+	for i in range(240):
+		await physics_frame
+		mount.drive(player,1.0/60)
+	check(mount.is_on_floor() and not mount.airborne and mount.active_clip=="Idle","The Pegasus touches down and returns to the folded ground animation")
 	var obstacle:=StaticBody3D.new()
 	var collision:=CollisionShape3D.new()
 	var shape:=BoxShape3D.new()
@@ -103,8 +155,12 @@ func run():
 	check(player.position.distance_to(mount.position)>1,"Dismount places the player beside the horse")
 	player.position=mount.position+Vector3(2.3,.1,0)
 	check(mount.mount_player(player),"The same companion can be mounted again")
+	session.flight_requested=true
+	for i in range(35):
+		await physics_frame
+		mount.drive(player,1.0/60)
 	camp.travel_to(camp.destinations.filter(func(d):return d.id=="arrival")[0])
-	check(not is_instance_valid(player.mount) and not is_instance_valid(mount.rider) and is_equal_approx(player.camera.position.y,1.82),"Map travel safely releases both rider and companion")
+	check(not is_instance_valid(player.mount) and not is_instance_valid(mount.rider) and is_equal_approx(player.camera.position.y,1.82) and not mount.airborne and mount.position.is_equal_approx(mount.home),"Map travel releases the rider and returns an airborne companion to its field")
 	if "--capture" in OS.get_cmdline_user_args():
 		player.position=mount.position+Vector3(5,.1,6)
 		player.camera.look_at(mount.position+Vector3.UP*1.8)

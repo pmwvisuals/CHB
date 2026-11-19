@@ -307,15 +307,15 @@
       "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     },
     {
-      "file": "assets/pegasus/animation-info.json",
-      "bytes": 658,
-      "sha256": "4c0a311d24a7dd2d27704bc7b2fe71752edf81c11d4983c6912ad6fbce4abf0e",
+      "file": "assets/pegasus/dawnwing.glb",
+      "bytes": 11011824,
+      "sha256": "f3dd417b547caa9594178653a51081561fe33d4016d24acb71739cec73cfbe5f",
       "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
     },
     {
-      "file": "assets/pegasus/dawnwing.glb",
-      "bytes": 9403400,
-      "sha256": "25548fc0e3bf4f4a19c3966d446bde3cc4ed2805c50bcd9f94041b48f34f1803",
+      "file": "assets/pegasus/animation-info.json",
+      "bytes": 1016,
+      "sha256": "ba81a962ca4bd47f9bdb5b2ebacb5279807dbe01334c90c3f76933467e73c526",
       "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
     }
   ]

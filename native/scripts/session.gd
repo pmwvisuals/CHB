@@ -13,6 +13,7 @@ var graphics_recommended := "high"
 const TRAINING_KEYS := ["archery_best","sword_best","archery_rounds","sword_rounds","arrows_fired","target_hits","sword_hits","combos"]
 var touch_move := Vector2.ZERO
 var jump_requested := false
+var flight_requested := false
 var attack_requested := false
 var bow_held := false
 var weapon_requested := ""
@@ -42,8 +43,11 @@ func _ready():
 		if FileAccess.file_exists("user://render-profile.json") and reader.parse(FileAccess.get_file_as_string("user://render-profile.json")) == OK and reader.data is Dictionary:
 			render_profile = reader.data
 		print("PERF config=",JSON.stringify(render_profile))
-	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint","sword","bow","drill","journal","heal"]:
+	for action in ["left","right","forward","back","jump","attack","interact","pause","camp_map","sprint","sword","bow","drill","journal","heal","mount_flight"]:
 		InputMap.add_action(action)
+	var flight_key:=InputEventKey.new()
+	flight_key.physical_keycode=KEY_F
+	InputMap.action_add_event("mount_flight",flight_key)
 	var keys = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"jump":[KEY_SPACE],"interact":[KEY_E],"pause":[KEY_ESCAPE],"camp_map":[KEY_M],"sprint":[KEY_SHIFT],"sword":[KEY_1],"bow":[KEY_2],"drill":[KEY_R],"journal":[KEY_J],"heal":[KEY_H]}
 	for action in keys:
 		for code in keys[action]:
@@ -151,6 +155,7 @@ func save_game(player = null):
 func clear_touch():
 	touch_move = Vector2.ZERO
 	jump_requested = false
+	flight_requested = false
 	attack_requested = false
 	bow_held = false
 	weapon_requested = ""

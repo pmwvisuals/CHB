@@ -1,13 +1,17 @@
-"""Rig the original Pegasus and export the first ground-riding animation set."""
+"""Polish, rig and export Dawnwing's grounded and airborne poses."""
 from pathlib import Path
 import bpy,math,json,os,tempfile,hashlib
 import numpy as np
-from mathutils import Vector,Matrix,Euler
+from mathutils import Vector,Matrix,Euler,Quaternion
 
 ROOT=Path(__file__).resolve().parents[2]
 BASE=ROOT/'assets-source/creatures/dawnwing-pegasus'
 OUT=BASE/'Rigged'
 OUT.mkdir(exist_ok=True)
+TEXTURES=OUT/'Textures'
+TEXTURES.mkdir(exist_ok=True)
+MODEL_SCALE=.71
+REFERENCE_SPEEDS={'Walk':1.30,'Trot':2.85}
 scratch=BASE/'scratch';os.environ['TMP']=os.environ['TEMP']=str(scratch);tempfile.tempdir=str(scratch)
 bpy.ops.wm.open_mainfile(filepath=str(BASE/'Blender/DawnwingPegasus.blend'))
 scene=bpy.context.scene
@@ -16,6 +20,128 @@ deps=bpy.context.evaluated_depsgraph_get()
 for obj in objects:
     data=bpy.data.meshes.new_from_object(obj.evaluated_get(deps),preserve_all_data_layers=True,depsgraph=deps)
     data.transform(obj.matrix_world);obj.data=data;obj.matrix_world=Matrix.Identity(4);obj.modifiers.clear()
+
+def smooth(a,b,x):
+    t=np.clip((x-a)/(b-a),0,1);return t*t*(3-2*t)
+
+def points(obj):
+    positions=np.empty(len(obj.data.vertices)*3,np.float32)
+    obj.data.vertices.foreach_get('co',positions)
+    return positions.reshape(-1,3)
+
+for obj in objects:
+    positions=points(obj)
+    x,y,z=positions.T.copy()
+    label=obj.name.lower()
+    if 'feather' in label:
+        vanes=positions.reshape(-1,2,11,7,3)
+        fronts=vanes.mean(axis=1)
+        spine=fronts.mean(axis=2,keepdims=True)
+        length=np.linalg.norm(spine[:,-1,0]-spine[:,0,0],axis=1)
+        phase=np.arange(len(vanes))*2.399963
+        along=np.linspace(0,1,11)[None,:,None,None]
+        width=(1+.13*smooth(.35,1.0,length)+.075*np.sin(phase))[:,None,None,None]
+        fronts=spine+(fronts-spine)*width*(1-.12*along**4)
+        fronts[...,1]+=(.048*length*np.sin(phase))[:,None,None]*along[...,0]**2
+        fronts[...,2]-=(.026*length)[:,None,None]*along[...,0]**3
+        thickness=.44+.20*(1-along**2)
+        vanes[:]=fronts[:,None]+(vanes-vanes.mean(axis=1,keepdims=True))*thickness[:,None]
+    else:
+        cheek=np.exp(-((y+1.56)/.26)**2-((z-2.87)/.17)**2)
+        nose=np.exp(-((y+2.10)/.17)**2-((z-2.53)/.19)**2)
+        positions[:,0]=x*(1+.115*cheek+.04*nose)
+        positions[:,1]=y+.084*smooth(1.59,2.23,-y)*smooth(2.27,2.47,z)
+        positions[:,2]=z-.13*smooth(3.16,3.53,z)*(1-smooth(-1.15,-.90,y))
+        if 'wet_eyes' in label or 'amber_iris' in label:
+            positions[:,0]-=np.sign(x)*.019
+        elif 'skin_details' in label:
+            eyelid=(1-smooth(.055,.095,np.abs(y+1.593)))*(1-smooth(.049,.074,np.abs(z-3.01)))
+            positions[:,0]-=np.sign(x)*.015*eyelid
+        elif 'mane_and_tail' in label:
+            mane=smooth(-1.48,-1.31,y)*(1-smooth(-.63,-.54,y))
+            positions[:,0]-=.115*mane*smooth(.015,.165,-x)
+            positions[:,2]+=.066*(1-smooth(.12,.18,np.abs(x)))*(1-smooth(-1.51,-1.37,y))
+        elif label.startswith('tack_') and 'leather' in label:
+            saddle_end=smooth(-1.23,-.30,y)*smooth(2.225,2.285,z)*(1-smooth(.36,.43,np.abs(x)))
+            positions[:,2]-=.18*saddle_end
+            positions[:,0]-=.085*np.sign(x)*saddle_end
+            positions[:,1]+=.17*saddle_end
+            side_clearance=smooth(-1.80,-1.24,y)*(1-smooth(-.62,-.18,y))*smooth(2.10,2.28,z)*(1-smooth(2.55,2.70,z))
+            positions[:,0]+=.12*np.sign(x)*side_clearance
+    obj.data.vertices.foreach_set('co',positions.ravel())
+    obj.data.update()
+
+def texture(name,values,linear=False):
+    height,width,_=values.shape
+    image=bpy.data.images.new(name,width,height,alpha=False)
+    if linear:image.colorspace_settings.name='Non-Color'
+    image.pixels.foreach_set(np.asarray(values,np.float32).ravel())
+    image.filepath_raw=str(TEXTURES/(name+'.png'))
+    image.file_format='PNG';image.save();image.pack()
+    return image
+
+def image_node(material,image):
+    node=material.node_tree.nodes.new('ShaderNodeTexImage');node.image=image
+    return node
+
+feather_material=next(obj.data.materials[0] for obj in objects if 'feather' in obj.name.lower())
+node_tree=feather_material.node_tree
+shader=node_tree.nodes.get('Principled BSDF')
+yy,xx=np.mgrid[0:1024,0:1024].astype(np.float32)/1023
+edge=np.abs(xx-.46)*2
+grain=yy+.22*edge+.015*np.sin(yy*17+edge*5)
+barbs=np.sin(grain*685)+.31*np.sin(grain*1733)
+shaft=np.exp(-((xx-.46)/.016)**2)*(1-.86*yy)
+shade=.80-.17*(1-yy)**2-.14*yy**5-.09*edge**2+.022*barbs+.13*shaft
+rgba=np.ones((1024,1024,4),np.float32)
+for channel,value in enumerate((1.03,.995,.94)):rgba[...,channel]=np.clip(shade*value,0,1)
+base=image_node(feather_material,texture('Dawnwing_Feather_BaseColor',rgba))
+node_tree.links.new(base.outputs['Color'],shader.inputs['Base Color'])
+dy,dx=np.gradient(.10*shaft+.007*barbs)
+normal=np.stack((-24*dx,-24*dy,np.ones_like(dx)),axis=-1)
+rgba[...,:3]=.5+.5*normal/np.linalg.norm(normal,axis=-1,keepdims=True)
+normal_image=image_node(feather_material,texture('Dawnwing_Feather_Normal',rgba,True))
+normal_map=node_tree.nodes.new('ShaderNodeNormalMap')
+normal_map.inputs['Strength'].default_value=.45
+node_tree.links.new(normal_image.outputs['Color'],normal_map.inputs['Color'])
+node_tree.links.new(normal_map.outputs[0],shader.inputs['Normal'])
+
+body=next(obj for obj in objects if obj.name.startswith('Pegasus_Body'))
+coat=body.data.materials[0]
+node_tree=coat.node_tree
+shader=node_tree.nodes.get('Principled BSDF')
+x,y,z=points(body).T
+flecks=np.sin(x*33+y*27)*np.sin(z*28+y*12)*np.cos(z*29-x*26)
+dapple=.085*flecks*smooth(.14,.44,np.abs(x))*smooth(1.13,1.65,z)*(1-smooth(2.2,2.8,z))
+muzzle_fade=smooth(1.79,2.08,-y)*np.exp(-((z-2.53)/.34)**2)
+leg_fade=1-smooth(.18,.58,z)
+masks=np.ones((len(x),4),np.float32)
+for channel,value in enumerate((.52,.46,.37)):
+    masks[:,channel]=np.clip(.94+dapple-value*muzzle_fade-(.16-channel*.018)*leg_fade,0,1)
+colors=body.data.color_attributes.new(name='Coat markings',type='FLOAT_COLOR',domain='POINT')
+colors.data.foreach_set('color',masks.ravel())
+markings=node_tree.nodes.new('ShaderNodeVertexColor');markings.layer_name=colors.name
+mix=node_tree.nodes.new('ShaderNodeMixRGB');mix.blend_type='MULTIPLY';mix.inputs[0].default_value=1
+previous_base=shader.inputs['Base Color'].links[0].from_socket
+node_tree.links.new(previous_base,mix.inputs[1]);node_tree.links.new(markings.outputs['Color'],mix.inputs[2])
+node_tree.links.new(mix.outputs[0],shader.inputs['Base Color'])
+baked=bpy.data.images.new('Dawnwing_Coat_BaseColor',2048,2048,alpha=False)
+target=image_node(coat,baked);node_tree.nodes.active=target
+bpy.ops.object.select_all(action='DESELECT');body.select_set(True);bpy.context.view_layer.objects.active=body
+bpy.ops.object.bake(type='DIFFUSE')
+baked.filepath_raw=str(TEXTURES/'Dawnwing_Coat_BaseColor.png');baked.file_format='PNG';baked.save();baked.pack()
+node_tree.links.new(target.outputs['Color'],shader.inputs['Base Color'])
+node_tree.nodes.remove(mix);node_tree.nodes.remove(markings);body.data.color_attributes.remove(colors)
+for obj in objects:
+    material=obj.data.materials[0]
+    shader=material.node_tree.nodes.get('Principled BSDF')
+    if 'mane_and_tail' in obj.name.lower():
+        shader.inputs['Base Color'].default_value=(.31,.32,.30,1)
+        material.diffuse_color=(.31,.32,.30,1)
+    elif 'amber_iris' in obj.name.lower():
+        shader.inputs['Base Color'].default_value=(.045,.022,.010,1)
+        shader.inputs['Roughness'].default_value=.36
+print('DAWNWING SURFACES BAKED',flush=True)
 arm_data=bpy.data.armatures.new('Pegasus skeleton')
 arm=bpy.data.objects.new('PegasusRig',arm_data)
 bpy.data.collections['PEGASUS | original static companion'].objects.link(arm)
@@ -50,31 +176,30 @@ for suffix,side in [('L',-1),('R',1)]:
         bone(stem+'.Lower',knee,fetlock,stem+'.Upper')
         bone(stem+'.Foot',fetlock,toe,stem+'.Lower')
         legs[stem]=(Vector(root),Vector(knee),Vector(fetlock),Vector(toe))
-    points=[(side*.34,-.35,2.04),(side*.96,-.22,2.58),(side*1.49,-.17,2.92),(side*2.15,-.27,3.18),(side*2.66,-.37,3.28)]
-    for i in range(4):bone('Wing.'+suffix+'.'+str(i+1),points[i],points[i+1],'Chest' if i==0 else 'Wing.'+suffix+'.'+str(i))
-    bone('Ear.'+suffix,(side*.13,-1.40,3.17),(side*.18,-1.37,3.50),'Head')
+    joints=[(side*.34,-.35,2.04),(side*.96,-.22,2.58),(side*1.49,-.17,2.92),(side*2.15,-.27,3.18),(side*2.66,-.37,3.28)]
+    for i in range(4):bone('Wing.'+suffix+'.'+str(i+1),joints[i],joints[i+1],'Chest' if i==0 else 'Wing.'+suffix+'.'+str(i))
+    bone('Ear.'+suffix,(side*.13,-1.40,3.17),(side*.18,-1.37,3.37),'Head')
 bpy.ops.object.mode_set(mode='OBJECT')
 names=[b.name for b in arm_data.bones if b.use_deform];indices={n:i for i,n in enumerate(names)}
 for pb in arm.pose.bones:pb.rotation_mode='QUATERNION'
 
-def smooth(a,b,x):
-    t=np.clip((x-a)/(b-a),0,1);return t*t*(3-2*t)
-def points(obj):
-    a=np.empty(len(obj.data.vertices)*3,np.float32);obj.data.vertices.foreach_get('co',a);return a.reshape(-1,3)
 def body_weights(p):
     x,y,z=p.T;w=np.zeros((len(p),len(names)),np.float32)
     # Upper-neck influence is based on height as well as longitudinal position.
     anchors=[('Head',-1.64),('Neck.02',-1.25),('Neck.01',-.98),('Chest',-.64),('Spine',.0),('Pelvis',.8)]
     centres=np.array([v for _,v in anchors]);high=np.clip(np.searchsorted(centres,y),1,len(centres)-1);low=high-1;t=smooth(centres[low],centres[high],y)
     for i,(name,_) in enumerate(anchors):w[:,indices[name]]=np.where(low==i,1-t,0)+np.where(high==i,t,0)
-    head=smooth(2.72,3.02,z)*(1-smooth(-1.45,-1.18,y))
+    head=smooth(2.37,2.71,z)*(1-smooth(-1.48,-1.24,y))
+    head=np.maximum(head,1-smooth(-1.62,-1.48,y))
     w*=1-head[:,None];w[:,indices['Head']]+=head
     for stem,(a,k,f,toe) in legs.items():
         front=stem.startswith('Fore');side=(x<0) if '.L' in stem else (x>=0)
         center=-.79 if front else .91
-        gate=(1-smooth(.22,.48,np.abs(y-center)))*(1-smooth(1.23,1.67,z))*smooth(.12,.27,np.abs(x))*side
+        lower_leg=1-smooth(.5,1.02,z)
+        gate=np.maximum(lower_leg*((y<0) if front else (y>0)),
+                        (1-smooth(.23,.52,np.abs(y-center)))*(1-smooth(1.23,1.67,z))*smooth(.12,.27,np.abs(x)))*side
         w*=1-gate[:,None]
-        foot=1-smooth(.24,.39,z);upper=smooth(.63,.95,z);lower=np.maximum(0,1-foot-upper)
+        foot=1-smooth(.27,.36,z);upper=smooth(.62,.89,z);lower=np.maximum(0,1-foot-upper)
         for key,v in [('Upper',upper),('Lower',lower),('Foot',foot)]:w[:,indices[stem+'.'+key]]+=gate*v
     tail=smooth(1.16,1.35,y)
     w*=1-tail[:,None]
@@ -83,10 +208,12 @@ def body_weights(p):
     return w
 def wing_weights(p):
     w=np.zeros((len(p),len(names)),np.float32)
-    centres=np.array([.50,1.17,1.79,2.40]);x=np.abs(p[:,0]);high=np.clip(np.searchsorted(centres,x),1,3);low=high-1;t=smooth(centres[low],centres[high],x)
+    x=np.abs(p[:,0])
+    transitions=[smooth(joint-.12,joint+.12,x) for joint in [.96,1.49,2.15]]
+    blend=[1-transitions[0],transitions[0]-transitions[1],transitions[1]-transitions[2],transitions[2]]
     for side in ['L','R']:
         sign=p[:,0]<0 if side=='L' else p[:,0]>=0
-        for i in range(4):w[:,indices['Wing.'+side+'.'+str(i+1)]]=(np.where(low==i,1-t,0)+np.where(high==i,t,0))*sign
+        for i in range(4):w[:,indices['Wing.'+side+'.'+str(i+1)]]=blend[i]*sign
     return w
 def bind(obj,w):
     top=np.argsort(w,axis=1)[:,-4:];values=np.take_along_axis(w,top,axis=1)
@@ -119,6 +246,11 @@ for obj in objects:
     elif any('skin details' in m.name for m in obj.data.materials if m) or 'coronet' in name:
         mask=(np.abs(p[:,0])>.42)&(p[:,2]>1.85)&(p[:,1]>-.95)&(p[:,1]<1.5)
         w[mask]=wing_weights(p[mask])
+    if 'feather' not in name and not name.startswith('tack_') and 'mane' not in name:
+        ear=smooth(3.17,3.29,p[:,2])*(1-smooth(.07,.13,np.abs(p[:,1]+1.40)))*smooth(.045,.105,np.abs(p[:,0]))
+        w*=1-ear[:,None]
+        w[:,indices['Ear.L']]+=ear*(p[:,0]<0)
+        w[:,indices['Ear.R']]+=ear*(p[:,0]>=0)
     bind(obj,w)
 print('PEGASUS SKINNED',len(arm_data.bones),'bones',flush=True)
 
@@ -127,67 +259,122 @@ def rot(name,xyz):
     arm.pose.bones[name].rotation_quaternion=q.inverted()@world@q
 def reset():
     for pb in arm.pose.bones:pb.matrix_basis.identity()
-def fold(amount=.18):
+
+def axes(direction,trailing):
+    along=Vector(direction).normalized()
+    across=(Vector(trailing)-along*along.dot(Vector(trailing))).normalized()
+    return Matrix((along,across,along.cross(across))).transposed()
+
+def fold(amount=1.0):
+    folded_axes=[
+        ((.40,.40,-.82),(.09,.90,.05)),
+        ((.10,-.85,.52),(.08,.92,-.15)),
+        ((.045,.77,.64),(.11,.90,-.43)),
+        ((.04,.83,.56),(.11,.91,-.41)),
+    ]
     for side,sign in [('L',-1),('R',1)]:
-        rot('Wing.'+side+'.1',(0,sign*.12*amount,sign*1.05*amount))
-        rot('Wing.'+side+'.2',(0,sign*.16*amount,sign*.18*amount))
-        rot('Wing.'+side+'.3',(0,-sign*.25*amount,-sign*1.1*amount))
-        rot('Wing.'+side+'.4',(0,0,-sign*.25*amount))
-def solve_leg(stem,target):
+        parent=Quaternion()
+        for j,((out,back,up),(trailing_x,trailing_y,trailing_z)) in enumerate(folded_axes,1):
+            name=f'Wing.{side}.{j}'
+            rest=Vector(spec[name]['b'])-Vector(spec[name]['a'])
+            start=axes(rest,(sign*.20,1,-.26))
+            end=axes((sign*out,back,up),(sign*trailing_x,trailing_y,trailing_z))
+            posed=Quaternion().slerp((end@start.transposed()).to_quaternion(),amount)
+            bone_basis=arm_data.bones[name].matrix_local.to_quaternion()
+            arm.pose.bones[name].rotation_quaternion=bone_basis.inverted()@parent.inverted()@posed@bone_basis
+            parent=posed
+
+def solve_leg(stem,target,hoof_pitch=0):
     a,k,f,toe=legs[stem];l1=(k-a).length;l2=(f-k).length
     dy=target[0]-a.y;dz=target[1]-a.z;dist=min(l1+l2-.001,max(abs(l1-l2)+.001,math.hypot(dy,dz)))
     theta=math.atan2(dy,-dz);alpha=math.acos(max(-1,min(1,(l1*l1+dist*dist-l2*l2)/(2*l1*dist))))
     # Hind hocks bend backwards; fore knees bend forwards during swing.
     knee_sign=1 if stem.startswith('Hind') else -1
     upper=theta+knee_sign*alpha
-    ky=a.y+math.sin(upper)*l1;kz=a.z-math.cos(upper)*l1
-    lower=math.atan2(target[0]-ky,-(target[1]-kz))
+    lower=upper-knee_sign*math.acos(max(-1,min(1,(dist*dist-l1*l1-l2*l2)/(2*l1*l2))))
     rest_upper=math.atan2(k.y-a.y,-(k.z-a.z));rest_lower=math.atan2(f.y-k.y,-(f.z-k.z))
     u=upper-rest_upper;l=lower-rest_lower-u
-    rot(stem+'.Upper',(u,0,0));rot(stem+'.Lower',(l,0,0));rot(stem+'.Foot',(-u-l,0,0))
+    rot(stem+'.Upper',(u,0,0));rot(stem+'.Lower',(l,0,0));rot(stem+'.Foot',(hoof_pitch-u-l,0,0))
+
+def height_offset(value):
+    root=arm.pose.bones['Root']
+    root.location=root.bone.matrix_local.to_3x3().inverted()@Vector((0,0,value))
+
+def flight_pose(t,spread,flap):
+    fold(spread)
+    if spread<=0:
+        for side,sign in [('L',-1),('R',1)]:
+            rot(f'Wing.{side}.1',(0,sign*(.13+.61*flap*math.sin(t)),sign*.05))
+            rot(f'Wing.{side}.2',(0,sign*(.06+.20*flap*math.sin(t-.63)),sign*.055))
+            rot(f'Wing.{side}.3',(0,sign*(.04+.18*flap*math.sin(t-.99)),sign*.07))
+            rot(f'Wing.{side}.4',(0,sign*.10*flap*math.sin(t-1.28),0))
+    tuck=1-spread
+    for stem in legs:
+        front=stem.startswith('Fore')
+        hoof=legs[stem][2]
+        solve_leg(stem,(hoof.y+(.45 if front else -.26)*tuck,hoof.z+(.80 if front else .67)*tuck),-.45*tuck)
+    rot('Neck.01',(-.09*tuck,0,0))
+    rot('Tail.01',(-.38*tuck,0,.055*math.sin(t)*tuck))
 
 clips={}
-for name,seconds in [('Idle',3.0),('Walk',1.4),('Trot',.85),('Jump',1.1),('Wingbeat',1.7)]:
+one_shots={'Jump','Takeoff'}
+for name,seconds in [('Idle',3.0),('Walk',7/6),('Trot',2/3),('Jump',.54),('Takeoff',.63),('Wingbeat',1.45),('Glide',2.0)]:
     frames=round(seconds*24);arm.animation_data_create();action=bpy.data.actions.new(name);arm.animation_data.action=action
+    seconds=frames/24
     for frame in range(frames+1):
         phase=frame/frames;t=phase*math.tau;reset();fold()
         if name=='Idle':
             rot('Neck.01',(.012*math.sin(t),0,0));rot('Head',(.012*math.sin(t+.5),0,.01*math.sin(t)))
             rot('Tail.01',(0,.05*math.sin(t),.04*math.sin(t)));rot('Ear.L',(0,.06*math.sin(t+.3),0))
         elif name in ['Walk','Trot']:
-            stride=.48 if name=='Walk' else .68
+            stance=.62 if name=='Walk' else .52
+            stride=REFERENCE_SPEEDS[name]*seconds*stance/MODEL_SCALE
+            bob=-(.175 if name=='Walk' else .185)+.025*math.cos(t*2)
+            height_offset(bob)
             for stem in legs:
                 offset={'Fore.L':0,'Hind.R':.25,'Fore.R':.5,'Hind.L':.75}[stem] if name=='Walk' else (0 if stem in ['Fore.L','Hind.R'] else .5)
-                p=(phase+offset)%1;stance=.62 if name=='Walk' else .52
-                if p<stance:y=(p/stance-.5)*stride;lift=0
+                p=(phase+offset)%1
+                if p<stance:y=(p/stance-.5)*stride;lift=0;pitch=0
                 else:
-                    f=(p-stance)/(1-stance);y=(.5-f)*stride;lift=(.15 if name=='Walk' else .25)*math.sin(math.pi*f)
-                foot=legs[stem][2];solve_leg(stem,(foot.y+y,foot.z+lift))
-            rot('Neck.01',(.016*math.sin(t*2),0,0));rot('Tail.01',(0,.05*math.sin(t),.04*math.sin(t)))
-        elif name=='Wingbeat':
-            fold(0)
-            for side,sign in [('L',-1),('R',1)]:
-                rot('Wing.'+side+'.1',(0,sign*.48*math.sin(t),0))
-                rot('Wing.'+side+'.2',(0,sign*.16*math.sin(t-.4),0))
-                rot('Wing.'+side+'.3',(0,sign*.12*math.sin(t-.7),0))
+                    f=(p-stance)/(1-stance)
+                    y=(.5-f*f*(3-2*f))*stride
+                    lift=(.20 if name=='Walk' else .33)*math.sin(math.pi*f)**1.4
+                    pitch=.42*math.sin(math.tau*f)*math.sin(math.pi*f)
+                foot=legs[stem][2];solve_leg(stem,(foot.y+y,foot.z+lift-bob),pitch)
+            rot('Neck.01',(.038*math.sin(t*2),0,0));rot('Head',(-.022*math.sin(t*2-.4),0,0))
+            rot('Tail.01',(0,.10*math.sin(t),.06*math.sin(t)));rot('Tail.02',(.065*math.sin(t-.75),0,0))
+        elif name in ['Wingbeat','Glide','Takeoff']:
+            spread=1-float(smooth(0,.89,phase)) if name=='Takeoff' else 0
+            flight_pose(t,spread,1 if name=='Wingbeat' else 0)
+            if name=='Wingbeat':height_offset(.065*math.sin(t-.6))
+            elif name=='Glide':height_offset(.018*math.sin(t))
         else:
             lift=math.sin(math.pi*phase)
-            fold(.18*(1-lift))
             for stem in legs:
-                rot(stem+'.Upper',((-.25 if stem.startswith('Fore') else .17)*lift,0,0))
-                rot(stem+'.Lower',(.65*lift,0,0));rot(stem+'.Foot',(-.35*lift,0,0))
+                foot=legs[stem][2]
+                front=stem.startswith('Fore')
+                solve_leg(stem,(foot.y+(.37 if front else -.11)*lift,foot.z+(.53 if front else .31)*lift),-.32*lift)
+            rot('Neck.01',(.15*lift,0,0))
         for pb in arm.pose.bones:
             pb.keyframe_insert('rotation_quaternion',frame=frame)
             pb.keyframe_insert('location',frame=frame)
     for curve in action.fcurves if hasattr(action,'fcurves') else []:
         for point in curve.keyframe_points:point.interpolation='LINEAR'
-    clips[name]={'frames':frames,'seconds':seconds,'loop':name!='Jump'}
+    clips[name]={'frames':frames,'seconds':seconds,'loop':name not in one_shots}
+    if name in REFERENCE_SPEEDS:clips[name]['reference_speed_mps']=REFERENCE_SPEEDS[name]
     track=arm.animation_data.nla_tracks.new();track.name=name;strip=track.strips.new(name,0,action);track.mute=True
 arm.animation_data.action=None
-reset();scene.render.fps=24;scene.frame_start=0;scene.frame_end=72
+reset();fold();arm.scale=(MODEL_SCALE,)*3
+scene.render.fps=24;scene.frame_start=0;scene.frame_end=72
 
 # Retain the full source. The game copy uses one moderate reduction, shared by both presets.
+scene.render.resolution_percentage=100
+scene.camera.location=(4.9,-6.4,3.1)
+scene.camera.rotation_euler=(Vector((0,0,1.18))-scene.camera.location).to_track_quat('-Z','Y').to_euler()
+scene.render.engine='CYCLES'
+bpy.context.preferences.filepaths.save_version=0
 bpy.ops.wm.save_as_mainfile(filepath=str(OUT/'DawnwingPegasus-Rigged.blend'))
+reset()
 def select_asset():
     bpy.ops.object.select_all(action='DESELECT');arm.select_set(True)
     for obj in objects:obj.select_set(True)
@@ -203,7 +390,7 @@ for obj in objects:
 select_asset()
 native=ROOT/'native/assets/pegasus';native.mkdir(parents=True,exist_ok=True)
 bpy.ops.export_scene.gltf(filepath=str(native/'dawnwing.glb'),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=True)
-report={'bones':len(arm_data.bones),'clips':clips,'rig':'Explicit deform skeleton; no external rigging add-on','game_reduction':.52,'riding':'First ground-riding prototype; flight locomotion is not implemented'}
+report={'bones':len(arm_data.bones),'clips':clips,'rig':'Explicit deform skeleton; no external rigging add-on','game_reduction':.52,'scale_from_original':MODEL_SCALE,'riding':'Compact fold on the ground, with takeoff, wingbeat and glide clips for camp flight'}
 (OUT/'rig-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 (native/'animation-info.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 manifest_path=ROOT/'native/assets-manifest.json'

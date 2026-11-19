@@ -329,7 +329,7 @@ func near_temple() -> Dictionary:
 	return {}
 
 func interaction_text() -> String:
-	if is_instance_valid(player.mount):return "Dismount Dawnwing"
+	if is_instance_valid(player.mount):return "" if player.mount.airborne else "Dismount Dawnwing"
 	if is_instance_valid(pegasus) and player.position.distance_to(pegasus.position)<3.2:return "Ride Dawnwing"
 	if Vector2(player.position.x,player.position.z).distance_to(Vector2(0,16))<9:return "Camp quest board"
 	if near_gate():

@@ -1,8 +1,6 @@
 # Asterion Sanctuary — native prototype
 
-**Dawnwing riding test:** use Map → Wayfarer Hall, approach the pale Pegasus and interact to mount. Move, Run to trot, Jump to leap and Interact to dismount. See [PEGASUS.md](PEGASUS.md). The current candidate is `builds/asterion-pegasus-test.apk`; this is ground riding only, with Android performance still unmeasured.
-
-**Dawnwing riding test:** use Map → Wayfarer Hall, approach the pale Pegasus and interact to mount. Move, Run to trot, Jump to leap and Interact to dismount. See [PEGASUS.md](PEGASUS.md). The current candidate is `builds/asterion-pegasus-test.apk`; this is ground riding only, with Android performance still unmeasured.
+To ride Dawnwing, use **Map → Wayfarer Hall**, approach the pale Pegasus and interact. Press **F** or tap **Flight** to take off, and use the same control over open ground to land. See [PEGASUS.md](PEGASUS.md) for controls and model files.
 
 **Current street layout:** one primary street with required access branches; disconnected pads, duplicate routes and the central plaza are removed. The map now shows the actual paved footprint. See [STREETS.md](STREETS.md) for the full review. The local candidate is `builds/asterion-street-review-test.apk`; installed-device results below refer to earlier builds.
 

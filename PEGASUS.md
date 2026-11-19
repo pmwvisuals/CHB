@@ -1,6 +1,6 @@
 # Dawnwing Pegasus — first static companion model
 
-The static files described below are preserved. A subsequent rig and native ground-riding prototype are documented in [PEGASUS-RIDING.md](PEGASUS-RIDING.md).
+The static files described below are the original checkpoint. The polished rig, folded wings and native flight controls are documented in [PEGASUS-RIDING.md](PEGASUS-RIDING.md).
 
 An original pale Pegasus for a future rideable companion. This checkpoint covers the model: horse anatomy, ivory coat, silver flax mane and tail, two layered feather wings, slate hooves and removable leather/linen/bronze tack. It is not yet rigged, animated, rideable or placed in the live camp.
 

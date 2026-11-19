@@ -19,12 +19,12 @@ for obj in meshes:
         assert 1<=len([g for g in v.groups if g.weight>0])<=4
         assert abs(sum(g.weight for g in v.groups)-1)<.015
 assert triangles<150000
-assert len(bpy.data.images)>=3
+assert len(bpy.data.images)>=4
 actions={}
 for action in bpy.data.actions:
-    for name in ['Idle','Walk','Trot','Jump','Wingbeat']:
+    for name in ['Idle','Walk','Trot','Jump','Takeoff','Wingbeat','Glide']:
         if action.name.endswith(name):actions[name]=action
-assert len(actions)==5,actions.keys()
+assert len(actions)==7,actions.keys()
 poses={}
 for name,action in actions.items():
     arm.animation_data_create();arm.animation_data.action=action
@@ -47,6 +47,14 @@ for name,action in actions.items():
         maxima=Vector(tuple(max(maxima[i],high[i]) for i in range(3)))
         minima=Vector(tuple(min(minima[i],low[i]) for i in range(3)))
     poses[name]={'min':list(minima),'max':list(maxima)}
-report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and twelve skinned meshes','Every vertex has one to four normalized finite skin weights','Coat and feather maps are retained','Five clips sampled for finite bounded deformation','Game model below 150k triangles'],'limitations':['Initial ground-riding animation pass; not final commercial animation','Wings remain moderately open on the ground','Wingbeat clip does not implement flight locomotion','Android performance not measured']}
+def span(name):
+    return poses[name]['max'][0]-poses[name]['min'][0]
+
+for name in ['Idle','Walk','Trot','Jump']:
+    assert span(name)<span('Glide')*.46,(name,span(name))
+    assert poses[name]['min'][2]>-.055,(name,poses[name])
+assert span('Glide')>3.7 and span('Wingbeat')>3.7
+assert 2.15<poses['Idle']['max'][2]<2.55,poses['Idle']
+report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and twelve skinned meshes','Every vertex has one to four normalized finite skin weights','Coat and feather color and normal maps are retained','All seven clips have finite bounded deformation','The wings stay compact in all ground clips and extend in flight','Game model below 150k triangles'],'limitations':['Gait contact is authored on level ground','Android performance not measured']}
 (BASE/'Rigged/validation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print('RIGGED PEGASUS VALIDATED',json.dumps(report),flush=True)
