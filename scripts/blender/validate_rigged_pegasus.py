@@ -34,12 +34,14 @@ for action in bpy.data.actions:
         if action.name.endswith(name):actions[name]=action
 assert len(actions)==7,actions.keys()
 poses={}
+wing_samples={}
 for name,action in actions.items():
     arm.animation_data_create();arm.animation_data.action=action
     for track in arm.animation_data.nla_tracks:track.mute=True
     # Imported action slots are selected explicitly in current Blender.
     if hasattr(action,'slots') and action.slots:arm.animation_data.action_slot=action.slots[0]
     maxima=Vector((0,0,0));minima=Vector((0,0,0))
+    wing_samples[name]=[]
     for t in [0,.25,.5,.75,1.0]:
         frame=action.frame_range[0]+(action.frame_range[1]-action.frame_range[0])*t
         bpy.context.scene.frame_set(int(frame),subframe=frame%1)
@@ -47,7 +49,12 @@ for name,action in actions.items():
         points=[]
         for obj in meshes:
             posed=obj.evaluated_get(deps)
-            points.extend(posed.matrix_world@v.co for v in posed.data.vertices)
+            surface=[posed.matrix_world@v.co for v in posed.data.vertices]
+            points.extend(surface)
+        wing_samples[name].append([
+            arm.pose.bones[f'Wing.{side}.{joint}'].rotation_quaternion.copy()
+            for side in ('L','R') for joint in range(1,5)
+        ])
         assert all(math.isfinite(x) for p in points for x in p)
         low=Vector(tuple(min(p[i] for p in points) for i in range(3)))
         high=Vector(tuple(max(p[i] for p in points) for i in range(3)))
@@ -59,10 +66,14 @@ def span(name):
     return poses[name]['max'][0]-poses[name]['min'][0]
 
 for name in ['Idle','Walk','Trot','Jump']:
-    assert span(name)<span('Glide')*.46,(name,span(name))
+    assert span(name)>3.9,(name,span(name))
     assert poses[name]['min'][2]>-.055,(name,poses[name])
+    for sample in wing_samples[name]:
+        assert all(abs(first.dot(current))>.99999 for first,current in zip(wing_samples['Idle'][0],sample)),name
+assert any(abs(first.dot(current))<.98 for sample in wing_samples['Wingbeat']
+           for first,current in zip(wing_samples['Wingbeat'][0],sample))
 assert span('Glide')>3.7 and span('Wingbeat')>3.7
 assert 2.15<poses['Idle']['max'][2]<2.55,poses['Idle']
-report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and thirteen skinned meshes','Both independent wing meshes are retained','Every vertex has one to four normalized finite skin weights','Coat and feather maps and the new iris texture are retained','Corneas and eyelid margins follow the head as rigidly attached surfaces','All seven clips have finite bounded deformation','The wings stay compact in all ground clips and extend in flight','Game model below 150k triangles'],'limitations':['Gait contact is authored on level ground','Android performance not measured']}
+report={'bones':len(arm.data.bones),'meshes':len(meshes),'triangles':triangles,'animations':list(actions),'sampled_pose_bounds':poses,'checks':['Native GLB reimports with one 31-bone skeleton and thirteen skinned meshes','Both independent wing meshes are retained','Every vertex has one to four normalized finite skin weights','Coat and feather maps and the new iris texture are retained','Corneas and eyelid margins follow the head as rigidly attached surfaces','All seven clips have finite bounded deformation','The ground clips share one fixed open wing pose and Wingbeat animates the wings','Game model below 150k triangles'],'limitations':['Gait contact is authored on level ground','Android performance not measured']}
 (BASE/'Rigged/validation.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print('RIGGED PEGASUS VALIDATED',json.dumps(report),flush=True)

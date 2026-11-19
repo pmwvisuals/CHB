@@ -10,7 +10,7 @@ with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
     for p in sorted((asset/'Rigged/Textures').glob('*.png')):z.write(p,'Dawnwing Pegasus/Textures/'+p.name)
     p=asset/'Textures/Pegasus_Coat_Normal.png'
     z.write(p,'Dawnwing Pegasus/Textures/'+p.name)
-    for name in ['Folded.png','Walking.png','Flight.png','Portrait.png','Wings.png']:
+    for name in ['Standing.png','Walking.png','Flight.png','Portrait.png','Wings.png']:
         z.write(asset/'Rigged/Previews'/name,'Dawnwing Pegasus/Previews/'+name)
     z.write(root/'native/assets/pegasus/dawnwing.glb','Dawnwing Pegasus/Game/dawnwing.glb')
     z.write(root/'PEGASUS-RIDING.md','Dawnwing Pegasus/README.md')

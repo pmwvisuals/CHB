@@ -42,5 +42,5 @@
   "rig": "Explicit deform skeleton; no external rigging add-on",
   "game_reduction": 0.52,
   "scale_from_original": 0.71,
-  "riding": "Compact fold on the ground, with takeoff, wingbeat and glide clips for camp flight"
+  "riding": "Fixed open wings in all ground poses, with wing motion in Takeoff and Wingbeat"
 }

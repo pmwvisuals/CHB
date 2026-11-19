@@ -308,14 +308,14 @@
     },
     {
       "file": "assets/pegasus/dawnwing.glb",
-      "bytes": 10514376,
-      "sha256": "7a0892936725b49a3f9259d60a4fbf0af0208a010590c946c4ad280cbd0436aa",
+      "bytes": 10512880,
+      "sha256": "779cc36cc3c23e2ffd990adcc66fc796d4c23e34efd528dcd506b24744b2e72e",
       "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
     },
     {
       "file": "assets/pegasus/animation-info.json",
-      "bytes": 1016,
-      "sha256": "ba81a962ca4bd47f9bdb5b2ebacb5279807dbe01334c90c3f76933467e73c526",
+      "bytes": 1012,
+      "sha256": "52b40767f69d4eda7c52bc82669b9586879512ce1cb0fbc98713c648499b8545",
       "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
     }
   ]

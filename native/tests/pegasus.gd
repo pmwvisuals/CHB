@@ -37,6 +37,9 @@ func run():
 	await frames(30)
 	check(is_instance_valid(mount) and mount.is_on_floor(),"Dawnwing spawns grounded in the camp field")
 	check(mount.clips.size()==7,"The native model imports four ground clips and three flight clips")
+	var skeleton:Skeleton3D=mount.model.find_children("*","Skeleton3D",true,false)[0]
+	var wing_joint:=skeleton.find_bone("Wing.L.1")
+	var ground_wing:=skeleton.get_bone_pose_rotation(wing_joint)
 	check(not mount.mount_player(player),"Mounting is blocked from a distance")
 	player.set_physics_process(false)
 	player.position=mount.position+Vector3(140,0,0)
@@ -62,6 +65,7 @@ func run():
 		await physics_frame
 		mount.drive(player,1.0/60)
 	check(mount.position.distance_to(start)>1.0 and mount.active_clip=="Walk","Mounted movement drives real physics and the walk animation")
+	check(absf(ground_wing.dot(skeleton.get_bone_pose_rotation(wing_joint)))>.9999,"Walking keeps the same open wing pose as idle")
 	check(player.position.distance_to(mount.position)<.3,"The rider remains attached to the saddle during movement")
 	if "--capture" in OS.get_cmdline_user_args():
 		for i in range(4):await process_frame
@@ -90,7 +94,7 @@ func run():
 	await request_flight(session,player)
 	await physics_frame
 	mount.drive(player,1.0/60)
-	check(mount.airborne and mount.active_clip=="Takeoff","Flight opens the wings and begins takeoff")
+	check(mount.airborne and mount.active_clip=="Takeoff","Takeoff starts from the open wing pose")
 	if session.touch_controls:
 		await frames(2)
 		check(player.hud.flight_button.text=="LAND" and player.hud.jump_button.text=="CLIMB","Touch controls switch to Land and Climb in flight")
@@ -98,6 +102,9 @@ func run():
 		await physics_frame
 		mount.drive(player,1.0/60)
 	check(mount.position.y>takeoff.y+3 and mount.active_clip=="Wingbeat" and not mount.dismount(),"A real climb reaches wingbeat and blocks aerial dismount")
+	var wing_in_motion:=skeleton.get_bone_pose_rotation(wing_joint)
+	await frames(12)
+	check(absf(wing_in_motion.dot(skeleton.get_bone_pose_rotation(wing_joint)))<.9999,"Wingbeat rotates the wings in flight")
 	var climb_start:float=mount.position.y
 	session.jump_requested=true
 	session.touch_move=Vector2(0,-1)
@@ -121,7 +128,9 @@ func run():
 	for i in range(240):
 		await physics_frame
 		mount.drive(player,1.0/60)
-	check(mount.is_on_floor() and not mount.airborne and mount.active_clip=="Idle","The Pegasus touches down and returns to the folded ground animation")
+	check(mount.is_on_floor() and not mount.airborne and mount.active_clip=="Idle","The Pegasus touches down and returns to idle")
+	await frames(24)
+	check(absf(ground_wing.dot(skeleton.get_bone_pose_rotation(wing_joint)))>.9999,"Landing settles the wings into the original open pose")
 	var obstacle:=StaticBody3D.new()
 	var collision:=CollisionShape3D.new()
 	var shape:=BoxShape3D.new()

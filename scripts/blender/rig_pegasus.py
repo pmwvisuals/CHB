@@ -3,7 +3,7 @@ from pathlib import Path
 import bpy,math,json,os,tempfile,hashlib,sys
 import bmesh
 import numpy as np
-from mathutils import Vector,Matrix,Euler,Quaternion
+from mathutils import Vector,Matrix,Euler
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(Path(__file__).resolve().parent))
@@ -338,23 +338,6 @@ def rot(name,xyz):
 def reset():
     for pb in arm.pose.bones:pb.matrix_basis.identity()
 
-def axes(direction,trailing):
-    along=Vector(direction).normalized()
-    across=(Vector(trailing)-along*along.dot(Vector(trailing))).normalized()
-    return Matrix((along,across,along.cross(across))).transposed()
-
-def fold(amount=1.0):
-    for side,sign in [('L',-1),('R',1)]:
-        name=f'Wing.{side}.1'
-        start=axes((sign,-.035,.33),(0,1,-.18))
-        end=axes((sign*.09,.994,.055),(sign*.105,.02,-1))
-        posed=Quaternion().slerp((end@start.transposed()).to_quaternion(),amount)
-        bone_basis=arm_data.bones[name].matrix_local.to_quaternion()
-        shoulder=arm.pose.bones[name]
-        shoulder.rotation_quaternion=bone_basis.inverted()@posed@bone_basis
-        shoulder.location=bone_basis.inverted()@Vector((sign*.20,.012,-.086))*amount
-        shoulder.scale=(1-.29*amount,)*3
-
 def solve_leg(stem,target,hoof_pitch=0):
     a,k,f,toe=legs[stem];l1=(k-a).length;l2=(f-k).length
     dy=target[0]-a.y;dz=target[1]-a.z;dist=min(l1+l2-.001,max(abs(l1-l2)+.001,math.hypot(dy,dz)))
@@ -371,15 +354,12 @@ def height_offset(value):
     root=arm.pose.bones['Root']
     root.location=root.bone.matrix_local.to_3x3().inverted()@Vector((0,0,value))
 
-def flight_pose(t,spread,flap):
-    fold(spread)
-    if spread<=0:
-        for side,sign in [('L',-1),('R',1)]:
-            rot(f'Wing.{side}.1',(0,sign*(.13+.61*flap*math.sin(t)),sign*.05))
-            rot(f'Wing.{side}.2',(0,sign*(.06+.20*flap*math.sin(t-.63)),sign*.055))
-            rot(f'Wing.{side}.3',(0,sign*(.04+.18*flap*math.sin(t-.99)),sign*.07))
-            rot(f'Wing.{side}.4',(0,sign*.10*flap*math.sin(t-1.28),0))
-    tuck=1-spread
+def flight_pose(t,tuck,flap):
+    for side,sign in [('L',-1),('R',1)]:
+        rot(f'Wing.{side}.1',(0,sign*(.13*tuck+.61*flap*math.sin(t)),sign*.05*tuck))
+        rot(f'Wing.{side}.2',(0,sign*(.06*tuck+.20*flap*math.sin(t-.63)),sign*.055*tuck))
+        rot(f'Wing.{side}.3',(0,sign*(.04*tuck+.18*flap*math.sin(t-.99)),sign*.07*tuck))
+        rot(f'Wing.{side}.4',(0,sign*.10*flap*math.sin(t-1.28),0))
     for stem in legs:
         front=stem.startswith('Fore')
         hoof=legs[stem][2]
@@ -393,7 +373,7 @@ for name,seconds in [('Idle',3.0),('Walk',7/6),('Trot',2/3),('Jump',.54),('Takeo
     frames=round(seconds*24);arm.animation_data_create();action=bpy.data.actions.new(name);arm.animation_data.action=action
     seconds=frames/24
     for frame in range(frames+1):
-        phase=frame/frames;t=phase*math.tau;reset();fold()
+        phase=frame/frames;t=phase*math.tau;reset()
         if name=='Idle':
             rot('Neck.01',(.012*math.sin(t),0,0));rot('Head',(.012*math.sin(t+.5),0,.01*math.sin(t)))
             rot('Tail.01',(0,.05*math.sin(t),.04*math.sin(t)));rot('Ear.L',(0,.06*math.sin(t+.3),0))
@@ -415,8 +395,9 @@ for name,seconds in [('Idle',3.0),('Walk',7/6),('Trot',2/3),('Jump',.54),('Takeo
             rot('Neck.01',(.038*math.sin(t*2),0,0));rot('Head',(-.022*math.sin(t*2-.4),0,0))
             rot('Tail.01',(0,.10*math.sin(t),.06*math.sin(t)));rot('Tail.02',(.065*math.sin(t-.75),0,0))
         elif name in ['Wingbeat','Glide','Takeoff']:
-            spread=1-float(smooth(0,.89,phase)) if name=='Takeoff' else 0
-            flight_pose(t,spread,1 if name=='Wingbeat' else 0)
+            tuck=float(smooth(0,.82,phase)) if name=='Takeoff' else 1
+            flap=.62*math.sin(math.pi*phase) if name=='Takeoff' else float(name=='Wingbeat')
+            flight_pose(t,tuck,flap)
             if name=='Wingbeat':height_offset(.065*math.sin(t-.6))
             elif name=='Glide':height_offset(.018*math.sin(t))
         else:
@@ -429,20 +410,18 @@ for name,seconds in [('Idle',3.0),('Walk',7/6),('Trot',2/3),('Jump',.54),('Takeo
         for pb in arm.pose.bones:
             pb.keyframe_insert('rotation_quaternion',frame=frame)
             pb.keyframe_insert('location',frame=frame)
-            if pb.name in {'Wing.L.1','Wing.R.1'}:
-                pb.keyframe_insert('scale',frame=frame)
     for curve in action.fcurves if hasattr(action,'fcurves') else []:
         for point in curve.keyframe_points:point.interpolation='LINEAR'
     clips[name]={'frames':frames,'seconds':seconds,'loop':name not in one_shots}
     if name in REFERENCE_SPEEDS:clips[name]['reference_speed_mps']=REFERENCE_SPEEDS[name]
     track=arm.animation_data.nla_tracks.new();track.name=name;strip=track.strips.new(name,0,action);track.mute=True
 arm.animation_data.action=None
-reset();fold();arm.scale=(MODEL_SCALE,)*3
+reset();arm.scale=(MODEL_SCALE,)*3
 scene.render.fps=24;scene.frame_start=0;scene.frame_end=72
 
 # Retain the full source. The game copy uses one moderate reduction, shared by both presets.
 scene.render.resolution_percentage=100
-scene.camera.location=(4.9,-6.4,3.1)
+scene.camera.location=(5.4,-8.3,4.2)
 scene.camera.rotation_euler=(Vector((0,0,1.18))-scene.camera.location).to_track_quat('-Z','Y').to_euler()
 scene.render.engine='CYCLES'
 bpy.context.preferences.filepaths.save_version=0
@@ -463,7 +442,7 @@ for obj in objects:
 select_asset()
 native=ROOT/'native/assets/pegasus';native.mkdir(parents=True,exist_ok=True)
 bpy.ops.export_scene.gltf(filepath=str(native/'dawnwing.glb'),export_format='GLB',use_selection=True,export_animations=True,export_animation_mode='NLA_TRACKS',export_force_sampling=True,export_apply=True)
-report={'bones':len(arm_data.bones),'clips':clips,'rig':'Explicit deform skeleton; no external rigging add-on','game_reduction':.52,'scale_from_original':MODEL_SCALE,'riding':'Compact fold on the ground, with takeoff, wingbeat and glide clips for camp flight'}
+report={'bones':len(arm_data.bones),'clips':clips,'rig':'Explicit deform skeleton; no external rigging add-on','game_reduction':.52,'scale_from_original':MODEL_SCALE,'riding':'Fixed open wings in all ground poses, with wing motion in Takeoff and Wingbeat'}
 (OUT/'rig-report.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 (native/'animation-info.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 manifest_path=ROOT/'native/assets-manifest.json'
