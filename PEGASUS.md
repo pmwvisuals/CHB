@@ -1,6 +1,8 @@
 # Dawnwing Pegasus — first static companion model
 
-The static files described below are the original checkpoint. The polished rig, folded wings and native flight controls are documented in [PEGASUS-RIDING.md](PEGASUS-RIDING.md).
+The static files described below are the original checkpoint. The current rig, fixed open wings and native flight controls are documented in [PEGASUS-RIDING.md](PEGASUS-RIDING.md).
+
+The standalone buyer download is dawnwing-pegasus-buyer.zip. It contains a clean Blender scene, full and reduced GLBs, five texture maps, usage terms, an import guide and walking/flight GIFs. Its independent Godot preview plays all seven clips. The buyer guide and usage terms are maintained under scripts/pegasus-buyer. Preparation, validation and packaging use scripts/blender/prepare_pegasus_release.py, scripts/blender/validate_pegasus_release.py and scripts/package-pegasus-release.py. Both models and the Blender file were reopened from an extracted package; the standalone Godot checks also pass from that extraction.
 
 An original pale Pegasus for a future rideable companion. This checkpoint covers the model: horse anatomy, ivory coat, silver flax mane and tail, two layered feather wings, slate hooves and removable leather/linen/bronze tack. It is not yet rigged, animated, rideable or placed in the live camp.
 

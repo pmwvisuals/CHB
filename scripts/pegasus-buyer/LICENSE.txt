@@ -1,0 +1,18 @@
+DAWNWING PEGASUS ASSET LICENSE 1.0
+Licensor: PMW Visuals, the seller.
+
+This license applies to files supplied with a lawful purchase or an explicit license grant from PMW Visuals.
+
+The purchaser receives a non-exclusive, worldwide, perpetual license to use, modify and incorporate the supplied model, textures, animations and preview code into personal and commercial games, applications, films, rendered images and other larger creative works. No per-project royalty is due to the seller. Attribution is optional.
+
+The purchaser may share source files with employees and contractors working on the purchaser's projects. Those collaborators may use the files only for that work. Independent studios using the asset for their own projects need their own license.
+
+Finished works containing the asset may be distributed commercially. Where practical, package reusable source assets so end users receive the finished work rather than an asset library.
+
+The source model, textures, animations, preview code and modified versions may not be sold, sublicensed, uploaded or distributed as standalone assets, stock files, asset packs or competing asset services. Do not claim exclusive ownership or authorship of the original asset. This license transfers usage permissions and grants no exclusivity.
+
+The asset was created using AI-assisted procedural Blender scripts. The seller grants permissions only to the extent of the rights the seller holds. Any separately identified third-party component remains subject to its own license.
+
+Files are provided as is. Compatibility and performance depend on the buyer's project and hardware. Mandatory consumer rights and the storefront's refund terms remain applicable. Any limitation of liability applies only to the extent permitted by law.
+
+Material breach terminates the permissions granted by this license unless resolved with the seller. Where a storefront has a mandatory asset license, that license governs to the extent it conflicts with these terms.
