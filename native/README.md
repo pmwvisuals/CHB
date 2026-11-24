@@ -1,5 +1,7 @@
 # Asterion Sanctuary — native prototype
 
+The former campfire amphitheatre is now ordinary grassy ground. Seating, firepit, flames, firelight and Ember walk are removed. The local candidate is builds/asterion-cleared-camp-test.apk. Physical-device FPS has not been measured for this revision.
+
 To ride Dawnwing, use **Map → Wayfarer Hall**, approach the pale Pegasus and interact. Press **F** or tap **Flight** to take off, and use the same control over open ground to land. See [PEGASUS.md](PEGASUS.md) for controls and model files.
 
 **Current street layout:** one primary street with required access branches; disconnected pads, duplicate routes and the central plaza are removed. The map now shows the actual paved footprint. See [STREETS.md](STREETS.md) for the full review. The local candidate is `builds/asterion-street-review-test.apk`; installed-device results below refer to earlier builds.

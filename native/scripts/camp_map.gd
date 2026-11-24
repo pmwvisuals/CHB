@@ -118,8 +118,6 @@ func draw_map(canvas:Control):
 	draw_building(canvas,Vector2(-40,-121),Vector2(5.4,.8),0.0,"Deepwood Gate")
 	canvas.draw_rect(Rect2(map_center+Vector2(53,-20.1)*map_scale,Vector2(22,4.2)*map_scale),Color("806448"))
 	if road_review:
-		canvas.draw_circle(map_center+Vector2(0,-62)*map_scale,10*map_scale,Color("70523b"),false,1.5)
-		canvas.draw_string(get_theme_default_font(),map_center+Vector2(0,-62)*map_scale+Vector2(-25,-12),"Campfire",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
 		canvas.draw_string(get_theme_default_font(),map_center+Vector2(0,114)*map_scale+Vector2(10,0),"Arrival Ridge",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
 		canvas.draw_string(get_theme_default_font(),map_center+Vector2(75,-18)*map_scale+Vector2(4,0),"Dock",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("eee3c7"))
 	var shrine:Dictionary=world.layout.get("shrine",{})

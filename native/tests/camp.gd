@@ -70,7 +70,7 @@ func run():
 	session.data.time = 720.0
 	camp._process(.4)
 	var local_lights=camp.find_children("*","OmniLight3D",true,false)
-	check(local_lights.size()==3 and local_lights.all(func(l):return camp.get_node("HephaestusOilLamps").is_ancestor_of(l) or camp.get_node("SanctuaryCampfire").is_ancestor_of(l)),"Two forge lamps and the amphitheatre fire remain; retired night-light slots are absent")
+	check(local_lights.size()==2 and local_lights.all(func(l):return camp.get_node("HephaestusOilLamps").is_ancestor_of(l)),"Only the two forge lamps remain after campfire removal")
 	app.queue_free()
 	await frames(4)
 	DirAccess.remove_absolute(session.save_path)

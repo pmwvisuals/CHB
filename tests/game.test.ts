@@ -36,7 +36,7 @@ player=p(0,45,groundHeight(0,45));player.keys.add('KeyW');step(player,world.octr
 player=p(-55,62,groundHeight(-55,62));player.keys.add('KeyW');step(player,world.octree,360);assert.ok(player.collider.start.z<52&&player.collider.start.z>43,`house entry at ${player.collider.start.z}`);pass('Big House ground-floor doorway is enterable');
 player=p(55,20,groundHeight(55,20));player.yaw=-Math.PI/2;player.keys.add('KeyW');step(player,world.octree,900);assert.ok(player.collider.start.x<66);pass('lakeshore stops entry into deep water');
 const blockedStreets:string[]=[];
-for(const name of ['Main street','West service lane','Wayfarer walk','East service lane','Dining walk','Lake walk','Training walk','Training entrance','Ember walk','Lakeside pavilion walk','Boat dock walk']){
+for(const name of ['Main street','West service lane','Wayfarer walk','East service lane','Dining walk','Lake walk','Training walk','Training entrance','Lakeside pavilion walk','Boat dock walk']){
  const route=campRoutes.find(r=>r.name===name)!,points=routePoints(route.points);player=p(points[0].x,points[0].z,groundHeight(points[0].x,points[0].z));player.keys.add('KeyW');
  for(let j=8;j<=160;j+=8){const target=points[j];let frames=0;while(Math.hypot(target.x-player.collider.start.x,target.z-player.collider.start.z)>.65&&frames++<500){player.yaw=Math.atan2(player.collider.start.x-target.x,player.collider.start.z-target.z);step(player,world.octree,1);}if(frames>=500){blockedStreets.push(`${name} blocked near ${player.collider.start.x}, ${player.collider.start.z}`);break;}}
  if(!blockedStreets.some(s=>s.startsWith(name+' blocked')))pass(name+' is continuously walkable');

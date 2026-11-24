@@ -1,3 +1,7 @@
+# Cleared campfire area
+
+Removed the amphitheatre seating, firepit, bare circle, flames, firelight, map marker and access path. Rebuilt scenery, physics, architecture sections and contact lighting. Scenery drops by 2,184 triangles and collision by 724 triangles. Cleared-ground, native camp and street checks pass, as do the browser tests, type checking, production build and page checks. A native render shows ordinary grassy ground. The signed APK is builds/asterion-cleared-camp-test.apk. Physical-device performance has not been remeasured.
+
 # Dawnwing flight and model polish
 
 The smaller rig uses compact wing poses for all ground actions and extends its wings in Takeoff, Wingbeat and Glide. Blender reimports and checks all seven clips, glTF textures and skinning. The native Pegasus suite covers flight, ground riding and returning safely to the field. See [PEGASUS.md](PEGASUS.md).

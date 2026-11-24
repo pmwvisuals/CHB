@@ -73,18 +73,6 @@
       "source": "user-supplied Galaxy Abundant lantern; CC BY 4.0; see assets/props/LANTERN-CREDITS.txt"
     },
     {
-      "bytes": 711616,
-      "file": "assets/campfire/campfire-flames.glb",
-      "sha256": "daea3dc2185047772c104cc0931ea5b7d4718eb4cc6e7fe61081f2905ae2a775",
-      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
-    },
-    {
-      "bytes": 1626058,
-      "file": "assets/campfire/flames.png",
-      "sha256": "a2e87bffb54efbc1c2ee8f01d0e3269ecc27360406bb305ed974996264760eb8",
-      "source": "User-supplied campfire/Blender.zip and Textures.zip; stable flame poses"
-    },
-    {
       "bytes": 1116,
       "file": "assets/forest-creatures/CREDITS.txt",
       "sha256": "22b673c2cbc3607be90e718e81934e4e3ec50c45a50cf51e1847b10faa1170f9",
@@ -229,9 +217,21 @@
       "source": "User-supplied temple models; scripts/blender/prepare_poseidon.py; see CREDITS.txt"
     },
     {
-      "bytes": 53028644,
+      "file": "assets/pegasus/dawnwing.glb",
+      "bytes": 10512880,
+      "sha256": "779cc36cc3c23e2ffd990adcc66fc796d4c23e34efd528dcd506b24744b2e72e",
+      "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
+    },
+    {
+      "file": "assets/pegasus/animation-info.json",
+      "bytes": 1012,
+      "sha256": "52b40767f69d4eda7c52bc82669b9586879512ce1cb0fbc98713c648499b8545",
+      "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
+    },
+    {
+      "bytes": 52713200,
       "file": "assets/camp/camp-static.glb",
-      "sha256": "868500b5c2810b13b2714836edf0fd2edd0b94f5ad96d7402ceb5b3329a9515e",
+      "sha256": "68e4f86579c03fa02c967970234f66822ae1fd3e0892e449c294df46fd2a027b",
       "source": "generated from lib/game browser sources"
     },
     {
@@ -241,21 +241,21 @@
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 16174932,
+      "bytes": 16122868,
       "file": "assets/camp/camp-collision.glb",
-      "sha256": "e124da313621ee2209b9ff7a2c4dced21ef0ca3eb391e6212ec7049e4676abd7",
+      "sha256": "5921f9a33a94022fb04cee53cd74321897a2c16d87a1759686d330406c0f8a7f",
       "source": "generated from lib/game browser sources"
     },
     {
       "bytes": 157,
       "file": "assets/camp/surface-cells.json",
-      "sha256": "d642e98a679f1fa27ae454703abfc4d149eb6d10639fb95b0a375625f041d4dd",
+      "sha256": "8a8997117e7bfa3858090fa4467a0f4d01240567ef7841366bc44ec306f64717",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 69932,
+      "bytes": 69929,
       "file": "assets/camp/habitat.png",
-      "sha256": "02bc5007873fdb7caf64cd2d7d162250b681942d3f9d7eaf623d26bd71cef9af",
+      "sha256": "f257738e819d8ecb09abf923fac9a572b93c62a236448581b0506acd8924a0a4",
       "source": "generated from lib/game browser sources"
     },
     {
@@ -277,46 +277,22 @@
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 4850341,
+      "bytes": 4843711,
       "file": "assets/camp/camp-layout.json",
-      "sha256": "324242bcb371a6dad6ecbd87a6627d1eae2ea85d61d7ba34c8823e6ba81bde6b",
+      "sha256": "1d8bc6e5d9f00b0ee9f51b21899555b571d24f3d1590ebbe3d4ac15eeabbe56b",
       "source": "generated from lib/game browser sources"
     },
     {
-      "bytes": 1820774,
+      "bytes": 1897020,
+      "file": "assets/camp/forest-vegetation-lods.glb",
+      "sha256": "53840b7bf4e5b664f801d553a174ea2706f603af035a9ae59e741d95702a212f",
+      "source": "generated from lib/game browser sources"
+    },
+    {
+      "bytes": 1814135,
       "file": "assets/camp/camp-physics.scn",
-      "sha256": "a1196dab3839e44ec57bf6c29ff851e30c869a77a0725f2e925f959efffc8aa2",
+      "sha256": "1130c2bafdd1b8938ccca0682552ea18e8c455af6c2304aff5acf40face6caad",
       "source": "exact collision faces from camp-collision.glb; physics only"
-    },
-    {
-      "file": "assets/atmosphere/bake-report.json",
-      "bytes": 563,
-      "sha256": "dde94b753802670c96771d8fad99fa7f06f64ddd09065e8371da15aac656c87d",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "file": "assets/atmosphere/cloud-banks.png",
-      "bytes": 81676,
-      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "file": "assets/atmosphere/ground-light.png",
-      "bytes": 1995687,
-      "sha256": "499c490c457af590175c83e11a84d9582bcdb8ddd6490c3889a127d1c178ad1b",
-      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
-    },
-    {
-      "file": "assets/pegasus/dawnwing.glb",
-      "bytes": 10512880,
-      "sha256": "779cc36cc3c23e2ffd990adcc66fc796d4c23e34efd528dcd506b24744b2e72e",
-      "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
-    },
-    {
-      "file": "assets/pegasus/animation-info.json",
-      "bytes": 1012,
-      "sha256": "52b40767f69d4eda7c52bc82669b9586879512ce1cb0fbc98713c648499b8545",
-      "source": "Original Dawnwing Pegasus; scripts/blender/rig_pegasus.py"
     },
     {
       "bytes": 3079,
@@ -343,298 +319,316 @@
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 3952714,
+      "bytes": 3947261,
       "file": "assets/camp/architecture/ground.scn",
-      "sha256": "ff56404110624ba5e34e0d4a0e4f72be5f1998235d1cb1fa2d7d0e0bf61384aa",
+      "sha256": "53b19e5b378e4de59450ff5fd32a7299b3cd0b0dc1795e40d9d7517f90c0ca6b",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 332329,
+      "bytes": 332330,
       "file": "assets/camp/architecture/cell_-120_-120.scn",
-      "sha256": "54ba3ed9c53f790dbe61780f3e7697d45f29bad52b590614e8253f93d3e78898",
+      "sha256": "ca9dc35aa86f85c8a8c828b590915239c907481bd31bdad13ef92eab8636bcb9",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 1852,
+      "bytes": 1850,
       "file": "assets/camp/architecture/cell_-120_-168.scn",
-      "sha256": "f558cc7ecad2b47007ff3fe1904b23d2bb92c4748e793903383457f3ff722251",
+      "sha256": "2e8e09b11ac57cb9b801928a809c37df5d095621df14f4c71c61f82ca3248920",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 19319,
+      "bytes": 19318,
       "file": "assets/camp/architecture/cell_-120_-24.scn",
-      "sha256": "bbb933982bbf499483a7e02f26564282174188da7077bf4449c25592a5afbf67",
+      "sha256": "6bd80e973647758c5da83d3f5f64fcda3f5b27230712d6fab0350964c1fca379",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 2300889,
+      "bytes": 2300695,
       "file": "assets/camp/architecture/cell_-120_-72.scn",
-      "sha256": "e1ed1d3a71a1bc23fb742339ffc8fa8f83e4a526cf17de1e4ff23b05e063cf29",
+      "sha256": "2f8254f612ea00cb5832b6e295e28d809d62d7918fe03f400faf57e3b872a2ca",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 303874,
+      "bytes": 303870,
       "file": "assets/camp/architecture/cell_-120_120.scn",
-      "sha256": "0c9033297f5b648124fa38098683ec8680bc79e02f8ea5c30cde80855c9e8668",
+      "sha256": "0668cf9ddb9b65d37fcf908054e4247af5ea6da366f99cd69378f7895e89fc86",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 1829265,
+      "bytes": 1829263,
       "file": "assets/camp/architecture/cell_-120_72.scn",
-      "sha256": "064f630a6ebd40644e0b5ad4534beb3c9fe499b198d2f17a0f9f5816babeed10",
+      "sha256": "377baafa5e2cbea293f948e8107152961954367a794f18321cb04303655c78b5",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 520509,
+      "bytes": 520514,
       "file": "assets/camp/architecture/cell_-168_-120.scn",
-      "sha256": "abb8d26bc92494800051509e802c1f44e4a24ca5ebc07cd4175114db85bdbf0a",
+      "sha256": "4a7edece52ad4a0c95d65c3c72939aede0a2498c3659f519835c6cbdbaf5270d",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 1157492,
+      "bytes": 1157496,
       "file": "assets/camp/architecture/cell_-168_-24.scn",
-      "sha256": "0e81489c49905c726387308cac4013a721eafda3d7d9ada9c3dbbeb015dd0d18",
+      "sha256": "8adb9d4ae1df4b92f9e6fd056ee0f7c2bd26d4dddb39a8a844a8502b368d319e",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 47540,
+      "bytes": 47541,
       "file": "assets/camp/architecture/cell_-168_24.scn",
-      "sha256": "c3554606b54c8409ae8b98bd95bed98a85f644a16db1b6d9d269d55cb3bfbaff",
+      "sha256": "8314255224b6e6c6f7a9788ad62662f378d17499c1c9980218f635c6afdb83b8",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 17888,
+      "bytes": 17889,
       "file": "assets/camp/architecture/cell_-168_72.scn",
-      "sha256": "adf606b34510fc421f052ec3d85c4e0f8419982e6249d462a147160329497465",
+      "sha256": "451ead0bf0e04db5e2bf0ee75c5b374e4fcaebe0c4e1ee9f6dc4b555899e9d26",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 61694,
+      "bytes": 61693,
       "file": "assets/camp/architecture/cell_-24_-120.scn",
-      "sha256": "864e3cc05ef8f7d9eac2252a141e7a3d21d42a3d36c5703a0b681384e42a4ab1",
+      "sha256": "7dbcc8d8337cb71e1659cd877e8be5466e612004d83642a1d0e70f82f664ffcd",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 410534,
+      "bytes": 410538,
       "file": "assets/camp/architecture/cell_-24_-168.scn",
-      "sha256": "5e0324eb0b5d80b7e16c2f8db906002f7dc15b66ff411e07ec35c4f28a5fc54a",
+      "sha256": "66bd0c5de5c093ab21dd0cc439ca6dd68288092d0c96c109391c0e264c981e07",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 303721,
+      "bytes": 304988,
       "file": "assets/camp/architecture/cell_-24_-24.scn",
-      "sha256": "0efbc21a947503d078c179d295989751964e0677251ee703b6c2c5302cf07757",
+      "sha256": "2a4f268f51331a2addec4eabb14d59b9eaaa328c72279ca13f6f5c549712aae3",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 133588,
+      "bytes": 100773,
       "file": "assets/camp/architecture/cell_-24_-72.scn",
-      "sha256": "6340b4f0bd9005102a4b9a0fae1e09f3afddcb7e9e7e75676c75b32137a29dad",
+      "sha256": "221d11b43911b24adc5c1a4e44cd714223cceb6f5619938bd6071f0d2ecb402e",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 830840,
+      "bytes": 830843,
       "file": "assets/camp/architecture/cell_-24_120.scn",
-      "sha256": "7f11cac0bcbda1681e4bdc17f18d40f79c314d04c5c8b9a97ed0ba32c39fd4d8",
+      "sha256": "cbacea6ba4cd89905f775c95ec96e957ca99159aaff244be94f0637db6c5507a",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 796194,
+      "bytes": 796197,
       "file": "assets/camp/architecture/cell_-24_168.scn",
-      "sha256": "5251d2125bee9bdd52673faae1e1ff8f79a6a973c9fa04fb1e6cca42009c3222",
+      "sha256": "aca2b94c01199042d9aef8b89ae359d3d4044c20d81ae1611462528d0f5bba3e",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 364614,
+      "bytes": 364778,
       "file": "assets/camp/architecture/cell_-24_24.scn",
-      "sha256": "87bd078c8e2415fe9cf1622aa3faf6b026aa6288ff9a7b9c2b4975d8ae8d9257",
+      "sha256": "ff6ea4b127c7c5d2ebf2d6ed986dbdd1773211bd85853c3d94194606ee9b4f2c",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 204123,
+      "bytes": 204113,
       "file": "assets/camp/architecture/cell_-24_72.scn",
-      "sha256": "df8e3a4c44bfed38fab9a615c5db83a68b2de6a5203b50f40320e454d5cacbcb",
+      "sha256": "0a885c2aecbb337f6d54869914c04fc28133e781fd38036fe4248c157c1e52ec",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 37745,
+      "bytes": 37736,
       "file": "assets/camp/architecture/cell_-72_-120.scn",
-      "sha256": "f7d3037b5ab07eacf9a1f925604399ef3090f412bea5dc02a7f4af8e70ed47e3",
+      "sha256": "8a3de828e583041cd638f6d83389b0be71601314677db3516ecfa9c11a617acd",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 25267,
+      "bytes": 25270,
       "file": "assets/camp/architecture/cell_-72_-168.scn",
-      "sha256": "3015925b0ef54fcb10d8dcf451fcb1f60e0c5f2efbc62d321abbe099413a4b4f",
+      "sha256": "4ad7126c5a625b3d8ff6553d552dd4ed3e4715e0020a0235155f250cce497dda",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 404815,
+      "bytes": 404812,
       "file": "assets/camp/architecture/cell_-72_-24.scn",
-      "sha256": "2b6ac5b8769cf3db6b22a732e38749001d879467cfee30e8b2ae1909ad83e1c1",
+      "sha256": "4fa019869e20f59e82069a228105e3e43c002bbc932e6ade797caaa668c8aef2",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 87262,
+      "bytes": 87258,
       "file": "assets/camp/architecture/cell_-72_-72.scn",
-      "sha256": "b1e89ec7c741c7e4763e76b0e74dcfc08c68fd1a83419bcf14cfecbd949a6f57",
+      "sha256": "41a521163feb9e3e3400f45e5c555f262de0c993e4ae4034319ed8e53ac6d442",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 184388,
+      "bytes": 184387,
       "file": "assets/camp/architecture/cell_-72_120.scn",
-      "sha256": "2c228ad997bbdbc92fc85a31283a780a6ed80351023dd699af2e4a0da443f8ce",
+      "sha256": "84fa22d385a7832f4fd70ce2de457f94f6e188b34cb91331d769dbc974c1948d",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 362423,
+      "bytes": 362422,
       "file": "assets/camp/architecture/cell_-72_168.scn",
-      "sha256": "274a38880f68c6896753b76f45e058bb2e46c0ac5e65885f1916e6fb1e9afd2e",
+      "sha256": "97c88e30a7a23843ed32ba8f75fa8f8b3402314a14e3717c596974e8a8e5f06c",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 1269811,
+      "bytes": 1269808,
       "file": "assets/camp/architecture/cell_-72_24.scn",
-      "sha256": "7e0de92cab871c2ba4ef23450b10cdd1e190b9e9c94b3762d8261a5a49eeb39f",
+      "sha256": "48a48161f23b1af5e91fa7c03f93ae93ee2ccb292fe4bafaf094960d1e55bf84",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 338049,
+      "bytes": 338052,
       "file": "assets/camp/architecture/cell_-72_72.scn",
-      "sha256": "9dd734b826c10b2d10041f35cd900178a67ee56cefaaa9c29dae0635ec8c756a",
+      "sha256": "a7b50bac22cfaff7945b4698d544be11d374541df8cadfb23a6c634aaf8558d1",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 1072283,
+      "bytes": 1072282,
       "file": "assets/camp/architecture/cell_120_-120.scn",
-      "sha256": "f4161873065558b75d4fb4b33719d2eac77a5ab7dd83dcb406f632dc759e2dec",
+      "sha256": "91f843324e354f0505f182a759cc6410e0383da4ecafd2718920f4a9b74877c1",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
       "bytes": 97213,
       "file": "assets/camp/architecture/cell_120_-24.scn",
-      "sha256": "595de7503d8dd51654c26c24f8a64b89e0ce794cf6c258f2fe08685642514428",
+      "sha256": "339ad83f38cfdb2c37b3c26d8d3e112102b8cb5686983c5a04676de00a69dc84",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
       "bytes": 28003,
       "file": "assets/camp/architecture/cell_120_-72.scn",
-      "sha256": "f66dbf4df77f0f0d7fea5a8dd7db3effbdc27e1c23222f6b476416753d13c9ad",
+      "sha256": "f4d61b60cedcae2f610828f255c0dd09e60459d77ec65492421fbb7bbfd36b93",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 838876,
+      "bytes": 838875,
       "file": "assets/camp/architecture/cell_120_120.scn",
-      "sha256": "71bb8c52071081d3f0ef83798d751d63365fe8332b7d402b92e6ec6ad3b0ff66",
+      "sha256": "e21c418a7e0f68ea5f7a98bff19397ae3de03ee7f29b88f4bea9e56e80a78e06",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 261765,
+      "bytes": 261767,
       "file": "assets/camp/architecture/cell_120_24.scn",
-      "sha256": "f01e07d00ba349006daa2edfe08ddb8cdf0853cd0de22f5cd226745b0d89bbb2",
+      "sha256": "4a8886f87c13a87d8578c63524ee0d4c96c6aa10662454f59fba70998d5c43d6",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 45995,
+      "bytes": 45997,
       "file": "assets/camp/architecture/cell_120_72.scn",
-      "sha256": "054a5705a18dc6299d42261e9f7bca71c5ee362fd33dcc7849585edf31597d80",
+      "sha256": "118ede2462f91f111bb9a23621f33c26949cfdf2bffbdc40b9d3738ea911d078",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 110677,
+      "bytes": 110678,
       "file": "assets/camp/architecture/cell_168_-120.scn",
-      "sha256": "9f662920eee7dcf006c77d996ec269f7d5573ebf1a678c4cb0884274b19f9cc4",
+      "sha256": "2a4aa3a0503876e76d60ac4a67b70c41e6519b152a195bb716dbe6d2589c76f4",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 187506,
+      "bytes": 187502,
       "file": "assets/camp/architecture/cell_168_120.scn",
-      "sha256": "d881b2c12c408fbcb82eeeff18de527b4c8a5c324fabea817cc73dd996f25345",
+      "sha256": "a61eaf20cbaf2f242f03d6cc6ad7fc54be272676cf9d986f8329bc7a22acd0c2",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 2056510,
+      "bytes": 2056516,
       "file": "assets/camp/architecture/cell_168_72.scn",
-      "sha256": "c78cc77bc178c9bfdd4ae5b623413d686d27eb2f1a6f40f2ad870bb35985c092",
+      "sha256": "d12ec5087a86193367ca577a78f90d5c638563425b7f7990bbdf7e69a3060d95",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 23891,
+      "bytes": 23893,
       "file": "assets/camp/architecture/cell_24_-120.scn",
-      "sha256": "cffb646508c25d302b77fc82d4dc867cfd7e47d1e6150c544e2f0e3cf8d07979",
+      "sha256": "241b6cebc902e8d30d91abe8f516e4dd2e6a1802d6813560a843cbc86a5e89e0",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 417325,
+      "bytes": 417320,
       "file": "assets/camp/architecture/cell_24_-168.scn",
-      "sha256": "edce95504113ca59fd8ac742fda20a2d884f9fcf7e6fb340e6669c220edce21c",
+      "sha256": "1ee3fa5af1dda3d016b71e993eb49cc2aa90982144316d713d3fe7500569d8f6",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 235932,
+      "bytes": 234694,
       "file": "assets/camp/architecture/cell_24_-24.scn",
-      "sha256": "f95106b9dee0f9189566aaa83e53c5d5388269e8c5e6d38dfe0e64b35e629e4d",
+      "sha256": "f68db6523c59ab71e256117c4fdd8a50219d5fb4bd8727e02d7e75af63da8a70",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 77289,
+      "bytes": 51138,
       "file": "assets/camp/architecture/cell_24_-72.scn",
-      "sha256": "2c46bf2f1ffdd906fbedf8477837d14559a4860188eed3a7319c104a810e3e19",
+      "sha256": "1925868bed258c72a044db4f416f6c426dd832d2b1ecf9767264195f0d8354cd",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 81723,
+      "bytes": 81693,
       "file": "assets/camp/architecture/cell_24_120.scn",
-      "sha256": "21ab6591513ac1d8d78a5ffd2475cdefb8468371f286f1c3073914b6ed22ddc1",
+      "sha256": "997a0e3b60ba2e993660aef12db13c7d286e9aa8aa905abad16e8934c150dd40",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 305904,
+      "bytes": 305910,
       "file": "assets/camp/architecture/cell_24_24.scn",
-      "sha256": "71bc3819acbf67b91e1d63c7b784e27e6e24df5ca279f47eb91d59cfcaf1d1b1",
+      "sha256": "652b2e47c5b60e03b7e4739380f0cf1c086562270efcf0c274a5d0bf033c9535",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 635499,
+      "bytes": 635180,
       "file": "assets/camp/architecture/cell_24_72.scn",
-      "sha256": "1b12e28dae68ea6b4fe0d56abdece8540877933f0b0166431c6b7382e339dae6",
+      "sha256": "07dfafecc7234a66cff1f54805742f81120ee78220ea8557a36058e4dae8b7cd",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 380453,
+      "bytes": 380450,
       "file": "assets/camp/architecture/cell_72_-24.scn",
-      "sha256": "0f1ca2e37eab15e5ed7e48fde24f963181b03b450c66dd080d68eba2af3a53a6",
+      "sha256": "a833d41d9876b56460c7055678d1ab10ebbf9eab0fc5716415c257d95730b586",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 46421,
+      "bytes": 46417,
       "file": "assets/camp/architecture/cell_72_-72.scn",
-      "sha256": "64389aa9a522cc2fb40b4dcf81f0463e4f9fc7f786be2f73727dfb193afa3fb8",
+      "sha256": "7fdade1692061027ffb3f82bd1128af9ad2d907de42405a83f13efd140833d6d",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 46354,
+      "bytes": 46357,
       "file": "assets/camp/architecture/cell_72_120.scn",
-      "sha256": "0ff51f1e6dbd2239619a769e58e1672fd3bed794c24fae3bd3f5681e2a7c9e84",
+      "sha256": "4401d48f0ba1b0c263a03a19724d7f9002820191deb749c20ce3f89e84656865",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 610663,
+      "bytes": 610667,
       "file": "assets/camp/architecture/cell_72_24.scn",
-      "sha256": "a06aab892177ec4f8c5e3fd65760cb475d547e1a91a918e460b902b02686147c",
+      "sha256": "559abc28152120a277f388fafc66552acaf1e080a3b6211271c04489b88a9e7b",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 491054,
+      "bytes": 491133,
       "file": "assets/camp/architecture/cell_72_72.scn",
-      "sha256": "407d318e5cf1dd4a9fe78df2ce9d52981578bd6c4ab3aae3a2aae5f73c530f35",
+      "sha256": "42f376519e9a1d51353ab0d292a6928a0ca494c79a4daf3114c4047d9165fa9e",
       "source": "scripts/bake-native-architecture.gd"
     },
     {
-      "bytes": 12747,
+      "bytes": 12762,
       "file": "assets/camp/architecture/index.json",
-      "sha256": "1a218c213466784b1e1acfebcd2b2e6bd0c1edc6a43c4ea874fbc57ca59c41bc",
+      "sha256": "e11769681d9623258a5261a01087972583ae3a6c22444022b7ef8266c17f18cf",
       "source": "scripts/bake-native-architecture.gd"
+    },
+    {
+      "file": "assets/atmosphere/bake-report.json",
+      "bytes": 563,
+      "sha256": "ebf5be07ff368e8e7101049b7547bd0f3c5de0ddb0b4738d1ddf95d6483c7a52",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/cloud-banks.png",
+      "bytes": 81676,
+      "sha256": "9c712238d34ad53f11e8d7f334f4736923250805d7d09407d02843a4870affa8",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
+    },
+    {
+      "file": "assets/atmosphere/ground-light.png",
+      "bytes": 1989978,
+      "sha256": "b6a833a02617dea609b2dfb6419582284f9ef0a1d1a94c98b519b740da3af6bc",
+      "source": "scripts/bake-native-atmosphere.py; original cloud shapes and retained tree placements"
     }
   ]
 }

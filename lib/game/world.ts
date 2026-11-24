@@ -26,7 +26,7 @@ import {boundaryContour,insideCamp,insideCampTerrain} from './camp-boundary';
 import {forestDepth} from './forest-border-layout';
 import {buildCampLighting} from './camp-lighting';
 
-export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; fire: T.Group; embers: T.Points; sun: T.DirectionalLight; atmosphere:ReturnType<typeof buildAtmosphere>; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
+export interface World { scene: T.Scene; octree: Octree; water: T.Mesh; sun: T.DirectionalLight; atmosphere:ReturnType<typeof buildAtmosphere>; foliage: T.InstancedMesh[]; setQuality:(quality:Settings['quality'])=>void; update: (time: number, camera?:T.Vector3) => void; dispose: () => void }
 export function buildWorld(): World {
   const scene = new T.Scene(); scene.background = new T.Color('#9dbed8'); scene.fog = new T.FogExp2('#9bafba', .0013);
   const collision = new T.Group();
@@ -70,7 +70,6 @@ export function buildWorld(): World {
   for(let i=0;i<144;i++)rand();
   const paths=campRoutes.map(r=>({points:routePoints(r.points),width:r.width}));
   const paving=limestoneRoadMaterial(),streetGeometry=surface.stamp(pavedRectangleGeometry(streetRectangles),.11),street=mesh(streetGeometry,paving,scene);street.name='Walkable limestone road';street.castShadow=false;collision.add(new T.Mesh(streetGeometry));
-  function circleGround(x:number,z:number,r:number,color:string){const geo=new T.CircleGeometry(r,64);geo.rotateX(-Math.PI/2);geo.translate(x,0,z);geo.userData.surfacePolygons=[Array.from({length:64},(_,i)=>i+1)];const fitted=surface.stamp(geo,.025),m=mesh(fitted,mat(color),scene);m.castShadow=false;return m;}
   // The communal green shares the living terrain, rather than two flat coloured discs.
 
   // Twelve individually decorated cabins face the communal green.
@@ -96,16 +95,8 @@ export function buildWorld(): World {
   for(let i=0;i<44;i++){const angle=i/44*Math.PI*2,x=94+Math.cos(angle)*14.5,z=5+Math.sin(angle)*14.5;if(x<84&&Math.abs(z-5)<3)continue;const c=new T.Mesh(new T.BoxGeometry(2.3,3,2.3));c.position.set(x,2,z);collision.add(c);}
   // Surface waves are shaded continuously; preserve the old decal random stream.
   for(let i=0;i<112;i++)rand();
-  // Amphitheatre seating and animated fire.
-  circleGround(0,-62,15,'#ada58a');const fire=group(0,-62);
-  for(let i=0;i<15;i++){const a=i/15*Math.PI*2;mesh(new T.DodecahedronGeometry(.55),stone,fire,Math.sin(a)*2,.25,Math.cos(a)*2);}
-  for(let i=0;i<5;i++){const log=box(fire,0,.4,0,.38,.38,3.5,wood);log.rotation.y=i*.8;}
-  const flames=new T.Group();fire.add(flames);
-  for(let i=0;i<7;i++){const m=mesh(new T.ConeGeometry(.3+rand()*.45,1.4+rand()*1.8,7),new T.MeshBasicMaterial({color:i%2?'#ffbf53':'#ed793c',transparent:true,opacity:.85}),flames,(rand()-.5)*1.2,1.1,(rand()-.5)*1.2);m.userData.phase=rand()*6;}
-  for(let r=0;r<3;r++)for(let i=0;i<10;i++){const a=Math.PI*.17+i/9*Math.PI*1.66;const b=box(fire,Math.sin(a)*(7+r*2.6),.4+r*.17,Math.cos(a)*(7+r*2.6),3.4,.7,1.2,wood,true);b.rotation.y=a;}
-  const firelight=new T.PointLight('#ff9d4e',18,15,2);firelight.position.set(0,2,-62);scene.add(firelight);
-  const ep:number[]=[];for(let i=0;i<65;i++)ep.push((rand()-.5)*3,rand()*6,(rand()-.5)*3);
-  const eg=new T.BufferGeometry();eg.setAttribute('position',new T.Float32BufferAttribute(ep,3));const embers=new T.Points(eg,new T.PointsMaterial({color:'#ffcc73',size:.09,transparent:true,opacity:.8}));embers.position.set(0,1,-62);scene.add(embers);
+  // Retain the seeded planting stream after clearing the amphitheatre.
+  for(let i=0;i<230;i++)rand();
   // Forest shrine, flowering terraces and entrance architecture.
   const shrine=group(forgottenShrine.x,forgottenShrine.z);shrine.rotation.y=forgottenShrine.rotation;box(shrine,0,.12,0,7,.24,6,stone,true);for(const x of [-2.7,2.7]){cyl(shrine,x,2.3,-1,.3,4.3,trim);box(shrine,x,2.3,-1,.5,4.3,.5,trim,true);}roof(shrine,7,4,4.4,'#939d8b');box(shrine,0,.6,-.6,2,1.2,1.2,stone,true);const shrineMark=text('REMEMBER THE GODS',3);shrineMark.position.set(0,3.7,.9);shrine.add(shrineMark);
   for(let row=0;row<7;row++)for(let j=0;j<32;j++){
@@ -166,10 +157,8 @@ export function buildWorld(): World {
   surface.dispose();delete scene.userData.terrainSurface;
   collision.updateMatrixWorld(true);const octree=new Octree().fromGraphNode(collision);
   const foliage=[grass,wisps];
-  return {scene,octree,water,fire,embers,sun,atmosphere,foliage,setQuality:q=>{planting.setQuality(q);},update(time,camera){
+  return {scene,octree,water,sun,atmosphere,foliage,setQuality:q=>{planting.setQuality(q);},update(time,camera){
     atmosphere.update(time,camera);campLighting.update(camera);trainingGround.update(time);lakeside.update(time);forestBorder.update(time,camera);templeExteriors.update(time);planting.update(time,camera);flowers.update(time,camera);
-    flames.children.forEach((f,i)=>{f.scale.y=1+Math.sin(time*5+i)*.18;f.rotation.y=time*.3+i;});firelight.intensity=16+Math.sin(time*8)*2;
-    const p=eg.attributes.position;for(let i=0;i<p.count;i++)p.setY(i,(ep[i*3+1]+time*.8)%6);p.needsUpdate=true;
     (water.material as T.MeshStandardMaterial).roughness=.17+Math.sin(time*.4)*.012;
     meadow.update(time);
   },dispose(){atmosphere.dispose();forestBorder.dispose();planting.dispose();flowers.dispose();const geos=new Set<T.BufferGeometry>(),mats=new Set<T.Material>(),textures=new Set<T.Texture>();scene.traverse(o=>{if(o instanceof T.Mesh||o instanceof T.Points||o instanceof T.Line){geos.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:[o.material]){mats.add(m);for(const value of Object.values(m)){if(value instanceof T.Texture)textures.add(value);}}}});collision.traverse(o=>{if(o instanceof T.Mesh)geos.add(o.geometry);});geos.forEach(g=>g.dispose());mats.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());scene.clear();collision.clear();octree.clear();}};

@@ -15,7 +15,6 @@ export const campRoutes:StreetRoute[]=[
  {name:'Dining walk',kind:'access',width:2.0,points:[[46,64],[46,51]]},
  {name:'Training walk',kind:'access',width:2.0,points:[[-24,-12],[-96,-12],[-96,-110]]},
  {name:'Training entrance',kind:'access',width:2.0,points:[[-67,-12],[-67,-20]]},
- {name:'Ember walk',kind:'access',width:1.8,points:[[-24,-62],[-15,-62]]},
  {name:'Lake walk',kind:'access',width:2.0,points:[[0,20],[34,20],[34,5],[55,5]]},
  {name:'Lakeside pavilion walk',kind:'access',width:1.8,points:[[55,5],[55,29],[65,29],[65,35]]},
  {name:'Boat dock walk',kind:'access',width:1.8,points:[[53,5],[53,-18]]},
